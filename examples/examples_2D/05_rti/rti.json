@@ -1,0 +1,78 @@
+{
+    "general": {
+        "case_name": "rti",
+        "end_time": 1.95,
+        "save_path": "./results",
+        "save_dt": 0.05
+    },
+    "domain": {
+        "x": {
+            "cells": 128,
+            "range": [0.0, 0.25]
+        },
+        "y": {
+            "cells": 512,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },   
+    "boundary_condition": {
+        "types": {
+            "east": "symmetry",
+            "west": "symmetry",
+            "north": "dirichlet",
+            "south": "dirichlet",
+            "top": "inactive",
+            "bottom": "inactive"
+        },
+        "dirichlet_functions": {
+            "north": {
+                "rho": 1.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 2.5
+            },
+            "south": {
+                "rho": 2.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            }
+        }
+    },
+    "initial_condition": {
+        "rho": "lambda x, y: (y < 0.5) * 2.0 + (y >= 0.5) * 1.0",
+        "u": 0.0,
+        "v": "lambda x, y: (x < 0.125) * ((y < 0.5) * (-0.025) * np.sqrt(5./3. * (y + 0.5)) * np.cos(8.*np.pi*x) + (y >= 0.5) * (-0.025) * np.sqrt(5./3. * (y + 1.5)) * np.cos(8.*np.pi*x)) + (x >= 0.125) * ((y < 0.5) * (-0.025) * np.sqrt(5./3. * (y + 0.5)) * np.cos(8.*np.pi*(0.25 - x)) + (y >= 0.5) * (-0.025) * np.sqrt(5./3. * (y + 1.5)) * np.cos(8.*np.pi*(0.25 - x)))",
+        "w": 0.0,
+        "p": "lambda x, y: (y < 0.5) * (2. * y + 1.) + (y >= 0.5) * (y + 1.5)"
+    },
+    "gravity": [
+        0.0,
+        1.0,
+        0.0
+    ],
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.0,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.6666666666666667,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

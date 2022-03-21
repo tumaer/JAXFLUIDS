@@ -1,0 +1,57 @@
+{
+    "general": {
+        "case_name": "linearadvection",
+        "save_path": "./results",
+        "end_time": 2.0,
+        "save_dt": 1.0
+    },
+    "domain": {
+        "x": {
+            "cells": 200,
+            "range": [0.0, 2.0]
+        },
+        "y": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "periodic",
+            "west": "periodic",
+            "north": "inactive",
+            "south": "inactive",
+            "top": "inactive",
+            "bottom": "inactive"
+        }
+    },
+    "initial_condition": {
+        "rho": "lambda x: ((x>=0.2) & (x<=0.4)) * ( 1/6*(np.exp(-334.477 * (x-0.3-0.005)**2) + np.exp(-334.477 * (x - 0.3 + 0.005)**2) + 4 * np.exp(-334.477 * (x - 0.3)**2))) + ((x>=0.6) & (x<=0.8)) * 1 + ((x>=1.0) & (x<=1.2)) * (1 - np.abs(10 * (x - 1.1))) + ((x>=1.4) & (x<=1.6)) * (1/6 * (np.sqrt(np.maximum( 1 - 100 * (x - 1.5 - 0.005)**2, 0)) + np.sqrt(np.maximum( 1 - 100 * (x - 1.5 + 0.005)**2, 0)) + 4 * np.sqrt(np.maximum( 1 - 100 * (x - 1.5)**2, 0))) ) + ~( ((x>=0.2) & (x<=0.4)) | ((x>=0.6) & (x<=0.8)) | ((x>=1.0) & (x<=1.2)) | ((x>=1.4) & (x<=1.6)) ) * 0.01",
+        "u": 1.0,
+        "v": 0.0,
+        "w": 0.0,
+        "p": 1.0
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.0,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

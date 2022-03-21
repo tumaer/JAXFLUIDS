@@ -1,0 +1,91 @@
+{
+    "general": {
+        "case_name": "mergingdroplets",
+        "end_time": 1.0,
+        "save_path": "./results",
+        "save_dt": 1e-2
+    },
+    "domain": {
+        "x": {
+            "cells": 100,
+            "range": [-0.4, 0.4]
+        },
+        "y": {
+            "cells": 100,
+            "range": [-0.4, 0.4]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "primes": {
+                "east": "neumann",
+                "west": "neumann",
+                "north": "neumann",
+                "south": "neumann",
+                "top": "inactive",
+                "bottom": "inactive"
+            },
+            "levelset": {
+                "east": "neumann",
+                "west": "neumann",
+                "north": "neumann",
+                "south": "neumann",
+                "top": "inactive",
+                "bottom": "inactive"
+            }
+        }
+    },
+    "initial_condition": {
+        "primes": {
+            "positive" : {
+                "rho": 1.0,
+                "u": "lambda x, y: jnp.where(x < 0, 1, 0) * 0.5 + jnp.where(x >= 0, 1, 0) * (-0.5)",
+                "v": 0.0,
+                "w": 0.0,
+                "p": 3.0
+            },
+            "negative": {
+                "rho": 0.1,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 2.0
+            }
+        },
+        "levelset": "lambda x, y:  jnp.where(x < 0, 1, 0) * (0.1 - jnp.sqrt((x+0.15)**2 + y**2)) + jnp.where(x > 0, 1, 0) * (0.1 - jnp.sqrt((x-0.15)**2 + y**2)) "
+    },
+
+    "material_properties": {
+        "positive": {
+            "type": "IdealGas",
+            "dynamic_viscosity": 5e-4,
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": 0.0,
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "negative": {
+            "type": "IdealGas",
+            "dynamic_viscosity": 1e-4,
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": 0.0,
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "pairing" : {
+            "surface_tension_coefficient": 1e-1
+        }
+    },
+
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    }
+
+}

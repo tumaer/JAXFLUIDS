@@ -1,0 +1,90 @@
+{
+    "general": {
+        "case_name": "doublemach",
+        "end_time": 0.28,
+        "save_path": "./results",
+        "save_dt": 0.01
+    },
+    "domain": {
+        "x": {
+            "cells": 256,
+            "range": [0.0, 4.0]
+        },
+        "y": {
+            "cells": 384,
+            "range": [0.0, 6.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "neumann",
+            "west": "dirichlet",
+            "north": "neumann",
+            "south": [
+                [
+                    "dirichlet",
+                    "symmetry"
+                ],
+                [
+                    [
+                        0.0,
+                        0.041666666666666664
+                    ],
+                    [
+                        0.041666666666666664,
+                        1.0
+                    ]
+                ]
+            ],
+            "top": "inactive",
+            "bottom": "inactive"
+        },
+        "dirichlet_functions": {
+            "south": {
+                "rho": 8.0,
+                "u": 7.144709581221618,
+                "v": -4.125,
+                "w": 0.0,
+                "p": 116.5
+            },
+            "west": {
+                "rho": 8.0,
+                "u": 7.144709581221618,
+                "v": -4.125,
+                "w": 0.0,
+                "p": 116.5
+            }
+        }
+    },
+
+    "initial_condition": {
+        "rho": "lambda x,y: 8.0*(y > np.sqrt(3.0) * (x - 1.0 / 6.0)) + 1.4*(y <= np.sqrt(3.0) * (x - 1.0 / 6.0))",
+        "u": "lambda x,y: 7.144709581221618*(y > np.sqrt(3.0) * (x - 1.0 / 6.0)) + 0.0*(y <= np.sqrt(3.0) * (x - 1.0 / 6.0))",
+        "v": "lambda x,y: -4.125*(y > np.sqrt(3.0) * (x - 1.0 / 6.0)) + 0.0*(y <= np.sqrt(3.0) * (x - 1.0 / 6.0))",
+        "w": 0.0,
+        "p": "lambda x,y: 116.5*(y > np.sqrt(3.0) * (x - 1.0 / 6.0)) + 1.0*(y <= np.sqrt(3.0) * (x - 1.0 / 6.0))"
+    },
+
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.0,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

@@ -1,0 +1,80 @@
+{
+    "general": {
+        "case_name": "cylinderflow",
+        "end_time": 2.0,
+        "save_path": "./results",
+        "save_dt": 1e-2
+    },
+    "domain": {
+        "x": {
+            "cells": 300,
+            "range": [-0.3, 1.7]
+        },
+        "y": {
+            "cells": 150,
+            "range": [-0.5, 0.5]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "primes": {
+                "east": "neumann",
+                "west": "dirichlet",
+                "north": "symmetry",
+                "south": "symmetry",
+                "top": "inactive",
+                "bottom": "inactive"
+            },
+            "levelset": {
+                "east": "neumann",
+                "west": "neumann",
+                "north": "symmetry",
+                "south": "symmetry",
+                "top": "inactive",
+                "bottom": "inactive"
+            }
+        },
+        "dirichlet_functions": {
+            "west": {
+                "rho": 1.4,
+                "u": 3.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            }
+        }
+    },
+
+    "initial_condition": {
+        "primes":{
+            "rho": 1.0,
+            "u": 0.0,
+            "v": 0.0,
+            "w": 0.0,
+            "p": 1.0
+        },
+        "levelset": "lambda x,y: - 0.1 + jnp.sqrt(x**2 + y**2)"
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 1e-4,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 0.7142857142857143
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

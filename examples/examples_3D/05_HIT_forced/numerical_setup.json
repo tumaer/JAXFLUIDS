@@ -1,0 +1,39 @@
+{
+    "conservatives": {
+        "halo_cells": 4,
+        "time_integration" : {
+            "integrator": "RK3",
+            "CFL": 0.9
+        },
+        "convective_fluxes": {
+            "convective_solver": "ALDM"
+        },
+        "dissipative_fluxes": {
+            "reconstruction_stencil": "R2",
+            "derivative_stencil_center": "DC2",
+            "derivative_stencil_face": "DF2"
+        }
+    },
+    "active_physics": {
+        "is_convective_flux": true,
+        "is_viscous_flux": true,
+        "is_heat_flux": true,
+        "is_volume_force": false,
+        "is_surface_tension": false
+    },
+    "active_forcings": { 
+        "is_mass_flow_forcing": false,
+        "is_temperature_forcing": false,
+        "is_turb_hit_forcing": true
+    },
+    "output":  {
+        "is_double_precision_compute": true,
+        "is_double_precision_output": true,
+        "is_xdmf": true,
+        "derivative_stencil": "DC4",
+        "quantities": {
+            "primes": ["density", "velocity", "pressure", "temperature"],
+            "miscellaneous": ["vorticity"]
+        }
+    }
+}

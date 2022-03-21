@@ -1,0 +1,74 @@
+{
+    "general": {
+        "case_name": "heatequation",
+        "end_time": 5.0,
+        "save_path": "./results",
+        "save_dt": 0.1
+    },
+    "domain": {
+        "x": {
+            "cells": 50,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "dirichlet",
+            "west": "dirichlet",
+            "north": "inactive",
+            "south": "inactive",
+            "top": "inactive",
+            "bottom": "inactive"
+        },
+        "dirichlet_functions": {
+            "east": {
+                "rho": 0.5,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            },
+            "west": {
+                "rho": 1.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            }
+        }
+    },
+
+    "initial_condition": {
+        "rho": 1.0,
+        "u": 0.0,
+        "v": 0.0,
+        "w": 0.0,
+        "p": 1.0
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.0,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.1,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

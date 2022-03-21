@@ -1,0 +1,14 @@
+__pycache__
+__pycache__/
+results
+results/
+*/jaxfluids.egg-info
+tensorboard/
+*.dat
+*.tex
+*.mp4
+build
+dist
+jaxfluids*.rst
+.DS_Store
+.ipynb_checkpoints

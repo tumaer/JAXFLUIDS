@@ -1,0 +1,113 @@
+{
+    "general": {
+        "case_name": "movingsolids",
+        "end_time": 2.0,
+        "save_path": "./results",
+        "save_dt": 1e-2
+    },
+    "domain": {
+        "x": {
+            "cells": 200,
+            "range": [-1.0, 1.0]
+        },
+        "y": {
+            "cells": 200,
+            "range": [-1.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "primes": {
+                "east": "symmetry",
+                "west": "symmetry",
+                "north": "symmetry",
+                "south": "symmetry",
+                "top": "inactive",
+                "bottom": "inactive"
+            },
+            "levelset": {
+                "east": "symmetry",
+                "west": "symmetry",
+                "north": "symmetry",
+                "south": "symmetry",
+                "top": "inactive",
+                "bottom": "inactive"
+            }
+        }
+    },
+    "initial_condition": {
+        "primes":{
+            "rho": 1.0,
+            "u": 0.0,
+            "v": 0.0,
+            "w": 0.0,
+            "p": 1.0
+        },
+        "levelset" : [
+            {
+                "shape": "rounded_square",
+                "parameters": {
+                    "length": 0.2,
+                    "radius": 0.02,
+                    "position": [0.0, 0.75]
+                },
+                "bounding_domain": "lambda x, y : jnp.where(y > 0.55, 1, 0)"
+            },
+            {
+                "shape": "rounded_square",
+                "parameters": {
+                    "length": 0.2,
+                    "radius": 0.02,
+                    "position": [0.0, -0.75]
+                },
+                "bounding_domain": "lambda x, y : jnp.where(y < -0.55, 1, 0)"
+            },
+    
+            {
+                "shape": "circle",
+                "parameters": {
+                    "radius": 0.1,
+                    "position": [0.25, 0.0]
+                },
+                "bounding_domain": "lambda x, y : jnp.where((jnp.abs(y) <= 0.55) & (x >= 0.0), 1, 0)"
+            },
+            {
+                "shape": "circle",
+                "parameters": {
+                    "radius": 0.1,
+                    "position": [-0.25, 0.0]
+                },
+                "bounding_domain": "lambda x, y : jnp.where((jnp.abs(y) <= 0.55) & (x < 0.0), 1, 0)"
+            }
+            
+        ]
+    },
+    "solid_interface_velocity" : [
+        {
+            "function": "lambda x,y,t: ( 6 * y * jnp.tanh((t - 1.0)*10),  - 6 * x * jnp.tanh((t - 1.0)*10) )",
+            "bounding_domain": "lambda x,y,t: jnp.where(jnp.sqrt(x**2+y**2) < 0.5, 1, 0)"
+        },
+        {
+            "function": "lambda x,y,t: ( 3 * y , - 3 * x )",
+            "bounding_domain": "lambda x,y,t: jnp.where(jnp.sqrt(x**2+y**2) >= 0.5, 1, 0)"
+        }
+    ],
+    "material_properties": {
+        "type": "SafeIdealGas",
+        "dynamic_viscosity": 1e-4,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    }
+}

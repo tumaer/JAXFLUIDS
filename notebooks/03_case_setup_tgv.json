@@ -1,0 +1,58 @@
+{
+    "general": {
+        "case_name": "tgv",
+        "end_time": 10.0,
+        "save_path": "./results",
+        "save_dt": 0.5
+    },
+    "domain": {
+        "x": {
+            "cells": 64,
+            "range": [0.0, 6.283185307179586]
+        },
+        "y": {
+            "cells": 64,
+            "range": [0.0, 6.283185307179586]
+        },
+        "z": {
+            "cells": 64,
+            "range": [0.0, 6.283185307179586]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "periodic",
+            "west": "periodic",
+            "north": "periodic",
+            "south": "periodic",
+            "top": "periodic",
+            "bottom": "periodic"
+        }
+    },
+
+    "initial_condition": {
+        "rho": 1.0,
+        "u": "lambda x, y, z:  1.0 * np.sin(x / 1.0) * np.cos(y / 1.0) * np.cos(z / 1.0)",
+        "v": "lambda x, y, z: -1.0 * np.cos(x / 1.0) * np.sin(y / 1.0) * np.cos(z / 1.0)",
+        "w": 0.0,
+        "p": "lambda x, y, z: 1.0 * 1.0**2 * (1 / 1.4 / 0.1**2 + 1/16.0 * ((np.cos(2 * x / 1.0) + np.cos(2 * y / 1.0)) * (np.cos(2 * z / 1.0) + 2)))"
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.0,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.6666666666666667,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

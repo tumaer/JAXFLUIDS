@@ -1,0 +1,60 @@
+{
+    "general": {
+        "case_name": "greshovortex",
+        "end_time": 84.51542547,
+        "save_path": "./results",
+        "save_dt": 1.0
+    },
+    "domain": {
+        "x": {
+            "cells": 96,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 96,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "periodic",
+            "west": "periodic",
+            "north": "periodic",
+            "south": "periodic",
+            "top": "inactive",
+            "bottom": "inactive"
+        }
+    },
+    "initial_condition": {
+        "rho": 1.0,
+        "u": "lambda x, y: ((x <= 0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.2)) * ( np.sqrt(1.4)*0.01 * (1 + np.sin(np.arctan((y-0.5)/(x-0.5))) * 2* np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4 )  )  +  ((x >  0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.2)) * ( np.sqrt(1.4)*0.01 * (1 - np.sin(np.arctan((y-0.5)/(x-0.5))) * 2* np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4 )  )  +  ((x <= 0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.2) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.4)) * ( np.sqrt(1.4)*0.01 * (1 + np.sin(np.arctan((y-0.5)/(x-0.5))) * 2*( 1- np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4 ) )  )  +  ((x >  0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.2) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.4)) * ( np.sqrt(1.4)*0.01 * (1 - np.sin(np.arctan((y-0.5)/(x-0.5))) * 2*( 1- np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4 ) )  )  +  (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.4) * ( np.sqrt(1.4)*0.01 )",
+        "v": "lambda x, y: ((x <= 0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.2)) * ( -np.sqrt(1.4)*0.01 * (np.cos(np.arctan((y-0.5)/(x-0.5))) * 2* np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4  ) )     +  ((x >  0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.2)) * (  np.sqrt(1.4)*0.01 * (np.cos(np.arctan((y-0.5)/(x-0.5))) * 2* np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4  ) )     +  ((x <= 0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.2) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.4)) * ( -np.sqrt(1.4)*0.01 * (np.cos(np.arctan((y-0.5)/(x-0.5))) * 2*( 1- np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4 )  ) )     +  ((x >  0.5) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.2) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.4)) * (  np.sqrt(1.4)*0.01 * (np.cos(np.arctan((y-0.5)/(x-0.5))) * 2*( 1- np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) / 0.4 )  ) )     +  (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.4) * 0.0",
+        "w": 0.0,
+        "p": "lambda x, y: (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.2) * ( 1.0 + (0.01*0.01*1.4) * ( 2*((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))/(0.4*0.4) + 2- np.log(16) ) )  +  ((np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.2) & (np.sqrt((x-0.5)**2 + (y-0.5)**2) < 0.4)) * ( 1.0 + (0.01*0.01*1.4) * ( 2*((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))/(0.4*0.4) - 8 * np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5)) /0.4 + 4*np.log(np.sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))/0.4) + 6 ) )  +  (np.sqrt((x-0.5)**2 + (y-0.5)**2) >= 0.4) * 1.0"
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.1,
+        "dynamic_viscosity_parameters": [0.0, 1.0, 1.0],
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

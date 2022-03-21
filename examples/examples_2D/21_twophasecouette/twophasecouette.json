@@ -1,0 +1,100 @@
+{
+    "general": {
+        "case_name": "twophasecouette",
+        "end_time": 5.0,
+        "save_path": "./results",
+        "save_dt": 1.0e-1
+    },
+    "domain": {
+        "x": {
+            "cells": 5,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 50,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "primes": {
+                "east": "periodic",
+                "west": "periodic",
+                "north": "wall",
+                "south": "wall",
+                "top": "inactive",
+                "bottom": "inactive"
+            },
+            "levelset": {
+                "east": "periodic",
+                "west": "periodic",
+                "north": "neumann",
+                "south": "neumann",
+                "top": "inactive",
+                "bottom": "inactive"
+            }
+        },
+        "wall_velocity_functions": {
+            "north": {"u": 0.1, "w": 0.0},
+            "south": {"u": 0.0, "w": 0.0}
+        }
+    },
+    "initial_condition": {
+        "primes": {
+            "positive": {
+                "rho": 1.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            },
+            "negative": {
+                "rho": 1.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            }
+        },
+        "levelset": "lambda x, y:  y - 0.5"
+    },
+
+
+    "material_properties": {
+        "positive": {
+            "type": "IdealGas",
+            "dynamic_viscosity": 1e-1,
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": 0.0,
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "negative": {
+            "type": "IdealGas",
+            "dynamic_viscosity": 3e-1,
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": 0.0,
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "pairing" : {
+            "surface_tension_coefficient": 0.0
+        }
+    },
+
+    "forcings": {
+        "temperature_target": 1.0
+    },
+
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    }
+
+}

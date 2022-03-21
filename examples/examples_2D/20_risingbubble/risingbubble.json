@@ -1,0 +1,105 @@
+{
+    "general": {
+        "case_name": "risingbubble",
+        "end_time": 3.0,
+        "save_path": "./results",
+        "save_dt": 2e-2    
+    },
+
+    "domain": {
+        "x": {
+            "cells": 100,
+            "range": [-0.5, 0.5]
+        },
+        "y": {
+            "cells": 200,
+            "range": [0.0, 2.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "primes": {
+                "east": "symmetry",
+                "west": "symmetry",
+                "north": "dirichlet",
+                "south": "wall",
+                "top": "inactive",
+                "bottom": "inactive"
+            },
+            "levelset": {
+                "east": "symmetry",
+                "west": "symmetry",
+                "north": "neumann",
+                "south": "neumann",
+                "top": "inactive",
+                "bottom": "inactive"
+            }
+        },
+        "dirichlet_functions": {
+            "north": {
+                "rho": 1000.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 10000.0
+            }
+        }
+    },
+    "initial_condition": {
+        "primes": {
+            "positive" : {
+                "rho": 1000.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": "lambda x, y: 12000 - 1000*y*0.98"
+            },
+            "negative": {
+                "rho": 100.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 11550.0
+            }
+        },
+        "levelset": "lambda x, y:  - 0.25 + jnp.sqrt(x**2 + (y - 0.5)**2)"
+    },
+
+    "gravity": [0.0, -0.98, 0.0],
+    
+    "material_properties": {
+        "positive": {
+            "type": "StiffenedGas",
+            "dynamic_viscosity": 10.0,
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": 0.0,
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0,
+            "background_pressure": 5e4
+        },
+        "negative": {
+            "type": "StiffenedGas",
+            "dynamic_viscosity": 1.0,
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": 0.0,
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0,
+            "background_pressure": 5e4
+        },
+        "pairing" : {
+            "surface_tension_coefficient": 24.5
+        }
+    },
+
+    "nondimensionalization_parameters": {
+        "density_reference": 1000,
+        "length_reference": 0.25,
+        "velocity_reference": 0.5,
+        "temperature_reference": 1.0
+    }
+
+}

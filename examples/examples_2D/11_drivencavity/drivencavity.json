@@ -1,0 +1,56 @@
+{
+    "general": {
+        "case_name": "drivencavity",
+        "end_time": 100.0,
+        "save_path": "./results",
+        "save_dt": 1.0
+    },
+    "domain": {
+        "x": {
+            "cells": 100,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 100,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "wall",
+            "west": "wall",
+            "north": "wall",
+            "south": "wall",
+            "top": "inactive",
+            "bottom": "inactive"
+        },
+        "wall_velocity_functions": {
+            "north": {"u": 5e-1, "w": 0.0}
+        }
+    },
+    "initial_condition": {
+        "rho": 1.0,
+        "u": 0.0,
+        "v": 0.0,
+        "w": 0.0,
+        "p": 5.0
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 1e-4,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    }
+}

@@ -1,0 +1,66 @@
+{
+    "general": {
+        "case_name": "HIT",
+        "end_time": 10.0,
+        "save_path": "./results",
+        "save_dt": 0.1
+    },
+    "domain": {
+        "x": {
+            "cells": 16,
+            "range": [0.0, 6.283185307179586]
+        },
+        "y": {
+            "cells": 16,
+            "range": [0.0, 6.283185307179586]
+        },
+        "z": {
+            "cells": 16,
+            "range": [0.0, 6.283185307179586]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "periodic",
+            "west": "periodic",
+            "north": "periodic",
+            "south": "periodic",
+            "top": "periodic",
+            "bottom": "periodic"
+        }
+    },
+    "initial_condition": {
+        "turb_init_params": {
+        "turb_case"         : "RISTORCELLI",
+        "energy_spectrum"   : "ISOTROPIC_FORCED",
+        "xi_0"              : 4,
+        "ma_target"         : 0.4,
+        "T_ref"             : 1.0,
+        "rho_ref"           : 1.0,
+        "ic_type"           : "IC1",
+        "seed"              : 0
+        }
+    },
+    "forcings": {
+        "temperature_target": 1.0
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": "lambda T: 0.0028 * T**0.76",
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": "Prandtl",
+        "prandtl_number": 0.72,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 4.4642857142857135
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./"
+    }
+}

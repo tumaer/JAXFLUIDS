@@ -1,0 +1,62 @@
+{
+    "general": {
+        "case_name": "shockvortex",
+        "end_time": 0.8,
+        "save_path": "./results",
+        "save_dt": 1e-2
+    },
+    "domain": {
+        "x": {
+            "cells": 100,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 100,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "neumann",
+            "west": "dirichlet",
+            "north": "symmetry",
+            "south": "symmetry",
+            "top": "inactive",
+            "bottom": "inactive"
+        },
+        "dirichlet_functions": {
+            "west": {
+                "rho": 1.0,
+                "u": 1.3015375522819157,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            }
+        }
+    },
+    "initial_condition": {
+        "rho": "lambda x,y: (x < 0.5) * 1.0 + (x >= 0.5) * 1.1690821256038648  + (x < 0.5) * ( 1.0 - (1.4-1)*0.3**2/4/0.204/1.4 * np.exp( 2*0.204*( 1 - ((x-0.25)**2 + (y-0.5)**2)/0.05**2 ) ) )**(1.0/(1.4-1.0))",
+        "u": "lambda x,y: (x < 0.5) * 1.1 * np.sqrt(1.4) + (x >= 0.5) * 1.1 * np.sqrt(1.4) / 1.1690821256038648 + (x < 0.5) * (0.3 * np.sqrt((x-0.25)**2 + (y-0.5)**2)/0.05 * np.exp( 0.204*( 1 - ((x-0.25)**2 + (y-0.5)**2)/0.05**2 ) ) * np.sin( np.arctan((y-0.5)/(x-0.25)) + (x-0.25<0)*np.pi + ((x-0.25>0)&(y-0.5<0))*2*np.pi )) ",
+        "v": "lambda x,y: (x < 0.5) * (-0.3 * np.sqrt((x-0.25)**2 + (y-0.5)**2)/0.05 * np.exp( 0.204*( 1 - ((x-0.25)**2 + (y-0.5)**2)/0.05**2 ) ) * np.cos( np.arctan((y-0.5)/(x-0.25)) + (x-0.25<0)*np.pi + ((x-0.25>0)&(y-0.5<0))*2*np.pi ))",
+        "w": 0.0,
+        "p": "lambda x,y: (x < 0.5) * 1.0 + (x >= 0.5) * 1.2450000000000003 + (x < 0.5) * ( 1.0 - (1.4-1)*0.3**2/4/0.204/1.4 * np.exp( 2*0.204*( 1 - ((x-0.25)**2 + (y-0.5)**2)/0.05**2 ) ))**(1.4/(1.4-1.0))"
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 1e-4,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    }
+}
