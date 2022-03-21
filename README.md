@@ -7,8 +7,12 @@ with complex spatio-temporal interactions.
 Fluid flows are omnipresent in nature and engineering applications, and their accurate simulation is essential
 for providing insights into these processes.
 ML is becoming more and more present in computational fluid dynamics (CFD).
-However, up to this date, there does not exist a general-purpose ML-CFD package which provides 1) powerful state-of-the-art 
-numerical methods, 2) seamless hybridization of ML with CFD, and 3) full automatic differentiation capabilities.
+However, up to this date, there does not exist a general-purpose ML-CFD package which provides
+
+1) powerful state-of-the-art numerical methods, 
+2) seamless hybridization of ML with CFD, 
+3) full automatic differentiation capabilities.
+
 Automatic differentiation in particular is essential to ML-CFD research as it provides gradient information and enables 
 optimization of preexisting and novel CFD models. 
 In this work, we propose JAX-FLUIDS: a comprehensive fully-differentiable compressible 
