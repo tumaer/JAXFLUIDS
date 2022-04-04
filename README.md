@@ -34,7 +34,7 @@ This github is currently under construction. The source code will be available u
 [Aaron B. Buhendwa](https://www.epc.ed.tum.de/en/aer/mitarbeiter-innen/cv-2/a-d/m-sc-aaron-buhendwa/)
 [Nikolaus A. Adams](https://www.epc.ed.tum.de/en/aer/members/cv/prof-adams/)
 
-Correspondence via [mail](mailto:aaron.buhendwa@tum.de,mailto:deniz.bezgin@tum.de).
+Correspondence via [mail](mailto:aaron.buhendwa@tum.de;deniz.bezgin@tum.de).
 
 # License
 This project is licensed under the MIT License - see 
@@ -42,3 +42,13 @@ the [LICENSE](LICENSE) file for details
 
 # Citation
 https://arxiv.org/abs/2203.13760
+
+```
+@article{Bezgin2022,
+   author = {Deniz A. Bezgin and Aaron B. Buhendwa and Nikolaus A. Adams},
+   month = {3},
+   title = {JAX-FLUIDS: A fully-differentiable high-order computational fluid dynamics solver for compressible two-phase flows},
+   url = {http://arxiv.org/abs/2203.13760},
+   year = {2022},
+}
+```
