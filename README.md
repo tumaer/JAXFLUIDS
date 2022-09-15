@@ -46,12 +46,12 @@ To install the CPU-only version of JAX-Fluids, you can run
 ```bash
 git clone https://github.com/tumaer/JAXFLUIDS.git .
 cd JAXFLUIDS
-pip install jaxfluids
+pip install .
 ```
 Note that if you want to install JAX-Fluids in editable mode,
 e.g., for code development on your local machine, run
 ```bash
-pip install --editable jaxfluids
+pip install --editable .
 ```
 ### GPU and CPU support
 If you want to install JAX-Fluids with CPU and GPU support, you must
@@ -61,7 +61,7 @@ After installing CUDA, run the following
 ```bash
 git clone https://github.com/tumaer/JAXFLUIDS.git .
 cd JAXFLUIDS
-pip install jaxfluids[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install .[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 For more information
 on JAX on GPU please refer to the [github of JAX](https://github.com/google/jax)
