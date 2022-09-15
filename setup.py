@@ -34,7 +34,7 @@ if __name__=='__main__':
         ],
         extras_require={
             # Use cuda to install CUDA version, use as follows:
-            # $ pip install jaxfluids[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+            # $ pip install .[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
             "cuda": ["jaxlib"],
         },
         url="https://github.com/tumaer/JAXFLUIDS",
