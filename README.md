@@ -8,7 +8,7 @@ enables automatic differentiation for end-to-end optimization
 of numerical models.
 
 To learn more about implementation details and details on numerical methods provided 
-by JAX-Fluids, read [our paper](https://www.sciencedirect.com/science/article/abs/pii/S0010465522002466)
+by JAX-Fluids, feel free to read [our paper](https://www.sciencedirect.com/science/article/abs/pii/S0010465522002466).
 
 Authors:
 
@@ -44,22 +44,24 @@ an updated and upgraded pip version.
 ### CPU-only support
 To install the CPU-only version of JAX-Fluids, you can run
 ```bash
-git clone https://github.com/tumaer/JAXFLUIDS.git .
+git clone https://github.com/tumaer/JAXFLUIDS.git
 cd JAXFLUIDS
 pip install .
 ```
-Note that if you want to install JAX-Fluids in editable mode,
+Note: if you want to install JAX-Fluids in editable mode,
 e.g., for code development on your local machine, run
 ```bash
 pip install --editable .
 ```
+
+Note: if you want to use jaxlib on a Mac with M1 chip, check the discussion [here](https://github.com/google/jax/issues/5501).
 ### GPU and CPU support
 If you want to install JAX-Fluids with CPU and GPU support, you must
 first install [CUDA](https://developer.nvidia.com/cuda-downloads) -
 we have tested JAX-Fluids with CUDA 11.1 or newer.
 After installing CUDA, run the following
 ```bash
-git clone https://github.com/tumaer/JAXFLUIDS.git .
+git clone https://github.com/tumaer/JAXFLUIDS.git
 cd JAXFLUIDS
 pip install .[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
@@ -67,10 +69,10 @@ For more information
 on JAX on GPU please refer to the [github of JAX](https://github.com/google/jax)
 
 ## Quickstart
-This github contains five jupyter-notebooks which will get you started quickly.
+This github contains five [jupyter-notebooks](https://github.com/tumaer/JAXFLUIDS/tree/main/notebooks) which will get you started quickly.
 They demonstrate how to run simple simulations like a 1D sod shock tube or 
 a 2D supersonic cylinder flow. Furthermore, they show how you can easily
-switch up the numerical and/or case setup in order to, e.g., increase the order
+switch the numerical and/or case setup in order to, e.g., increase the order
 of the spatial reconstruction stencil or decrease the resolution of the simulation.
 
 ## Upcoming features 
