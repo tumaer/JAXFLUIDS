@@ -9,6 +9,7 @@ of numerical models.
 
 To learn more about implementation details and details on numerical methods provided 
 by JAX-Fluids, feel free to read [our paper](https://www.sciencedirect.com/science/article/abs/pii/S0010465522002466).
+And also check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.html) of JAX-Fluids.
 
 Authors:
 
@@ -80,7 +81,7 @@ of the spatial reconstruction stencil or decrease the resolution of the simulati
 - CPU/GPU/TPU parallelization based on homogenous domain decomposition
 
 ## Documentation
-Will be available soon.
+Check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.html) of JAX-Fluids.
 
 ## Citation
 https://doi.org/10.1016/j.cpc.2022.108527

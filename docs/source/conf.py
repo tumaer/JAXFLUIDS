@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# qlbm documentation build configuration file, created by
+# JAX-Fluids documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  9 13:47:02 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src'))
+sys.path.insert(0, os.path.abspath('../../src/'))
 
 import sphinx_rtd_theme
 
@@ -66,8 +66,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'jaxfluids'
-copyright = "2022, Chair of Aerodynamics and Fluid Mechanics, Techincal University of Munich"
-author = "Chair of Aerodynamics and Fluid Mechanics, Techincal University of Munich"
+copyright = "2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich"
+author = "Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
