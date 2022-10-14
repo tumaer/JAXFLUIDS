@@ -1,0 +1,7 @@
+h5py
+jax
+jaxlib
+dm-haiku
+optax
+ipykernel
+nbsphinx
