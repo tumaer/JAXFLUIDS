@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids package &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="jaxfluids.forcing package" href="jaxfluids.forcing.html" />
+    <link rel="prev" title="Change log" href="change_log.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">jaxfluids package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.levelset.html">jaxfluids.levelset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.materials.html">jaxfluids.materials package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.shock_sensor.html">jaxfluids.shock_sensor package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.boundary_condition">jaxfluids.boundary_condition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.domain_information">jaxfluids.domain_information module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.flux_computation">jaxfluids.flux_computation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.initializer">jaxfluids.initializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.input_reader">jaxfluids.input_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.simulation_manager">jaxfluids.simulation_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.space_solver">jaxfluids.space_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.unit_handler">jaxfluids.unit_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids.utilities">jaxfluids.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-jaxfluids">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#available-subpackages">Available subpackages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>jaxfluids package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jaxfluids.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="jaxfluids-package">
+<h1>jaxfluids package<a class="headerlink" href="#jaxfluids-package" title="Permalink to this headline"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.forcing.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.forcing.html#module-jaxfluids.forcing.forcing">jaxfluids.forcing.forcing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.forcing.html#module-jaxfluids.forcing.pid_control">jaxfluids.forcing.pid_control module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.forcing.html#module-jaxfluids.forcing">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.iles.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.iles.html#module-jaxfluids.iles.ALDM">jaxfluids.iles.ALDM module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.iles.html#module-jaxfluids.iles.ALDM_WENO1">jaxfluids.iles.ALDM_WENO1 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.iles.html#module-jaxfluids.iles.ALDM_WENO3">jaxfluids.iles.ALDM_WENO3 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.iles.html#module-jaxfluids.iles.ALDM_WENO5">jaxfluids.iles.ALDM_WENO5 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.iles.html#module-jaxfluids.iles">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.io_utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.io_utils.html#module-jaxfluids.io_utils.logger">jaxfluids.io_utils.logger module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.io_utils.html#module-jaxfluids.io_utils.output_writer">jaxfluids.io_utils.output_writer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.io_utils.html#module-jaxfluids.io_utils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.levelset.html">jaxfluids.levelset package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.geometry_calculator">jaxfluids.levelset.geometry_calculator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.helper_functions">jaxfluids.levelset.helper_functions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.interface_flux_computer">jaxfluids.levelset.interface_flux_computer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.interface_quantity_computer">jaxfluids.levelset.interface_quantity_computer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.levelset_creator">jaxfluids.levelset.levelset_creator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.levelset_handler">jaxfluids.levelset.levelset_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.levelset_reinitializer">jaxfluids.levelset.levelset_reinitializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset.quantity_extender">jaxfluids.levelset.quantity_extender module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.levelset.html#module-jaxfluids.levelset">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.materials.html">jaxfluids.materials package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials.ideal_gas">jaxfluids.materials.ideal_gas module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials.material">jaxfluids.materials.material module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials.material_manager">jaxfluids.materials.material_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials.safe_ideal_gas">jaxfluids.materials.safe_ideal_gas module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials.stiffened_gas">jaxfluids.materials.stiffened_gas module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials.tait">jaxfluids.materials.tait module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.materials.html#module-jaxfluids.materials">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.post_process.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.post_process.html#module-jaxfluids.post_process.post_process_utils">jaxfluids.post_process.post_process_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.post_process.html#module-jaxfluids.post_process">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.shock_sensor.html">jaxfluids.shock_sensor package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.shock_sensor.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.shock_sensor.html#module-jaxfluids.shock_sensor.ducros">jaxfluids.shock_sensor.ducros module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.shock_sensor.html#module-jaxfluids.shock_sensor.shock_sensor">jaxfluids.shock_sensor.shock_sensor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.shock_sensor.html#module-jaxfluids.shock_sensor">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.solvers.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html">jaxfluids.solvers.riemann_solvers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.AUSMP">jaxfluids.solvers.riemann_solvers.AUSMP module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.HLL">jaxfluids.solvers.riemann_solvers.HLL module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.HLLC">jaxfluids.solvers.riemann_solvers.HLLC module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.HLLCLM">jaxfluids.solvers.riemann_solvers.HLLCLM module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#jaxfluids-solvers-riemann-solvers-laxfriedrichs-module">jaxfluids.solvers.riemann_solvers.LaxFriedrichs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.RiemannNN">jaxfluids.solvers.riemann_solvers.RiemannNN module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.Rusanov">jaxfluids.solvers.riemann_solvers.Rusanov module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.RusanovNN">jaxfluids.solvers.riemann_solvers.RusanovNN module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.eigendecomposition">jaxfluids.solvers.riemann_solvers.eigendecomposition module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.riemann_solver">jaxfluids.solvers.riemann_solvers.riemann_solver module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers.signal_speeds">jaxfluids.solvers.riemann_solvers.signal_speeds module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.riemann_solvers.html#module-jaxfluids.solvers.riemann_solvers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.solvers.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers.flux_splitting_scheme">jaxfluids.solvers.flux_splitting_scheme module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers.high_order_godunov">jaxfluids.solvers.high_order_godunov module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers.source_term_solver">jaxfluids.solvers.source_term_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.stencils.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.derivative.html">jaxfluids.stencils.derivative package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative.deriv_fourth_order_center">jaxfluids.stencils.derivative.deriv_fourth_order_center module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative.deriv_fourth_order_face">jaxfluids.stencils.derivative.deriv_fourth_order_face module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative.deriv_second_order_center">jaxfluids.stencils.derivative.deriv_second_order_center module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative.deriv_second_order_face">jaxfluids.stencils.derivative.deriv_second_order_face module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative.second_deriv_fourth_order_center">jaxfluids.stencils.derivative.second_deriv_fourth_order_center module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative.second_deriv_second_order_center">jaxfluids.stencils.derivative.second_deriv_second_order_center module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.derivative.html#module-jaxfluids.stencils.derivative">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.levelset.html">jaxfluids.stencils.levelset package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.deriv_first_order">jaxfluids.stencils.levelset.deriv_first_order module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.deriv_first_order_subcell_fix">jaxfluids.stencils.levelset.deriv_first_order_subcell_fix module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.houc3">jaxfluids.stencils.levelset.houc3 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.houc5">jaxfluids.stencils.levelset.houc5 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.houc7">jaxfluids.stencils.levelset.houc7 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.weno3_deriv">jaxfluids.stencils.levelset.weno3_deriv module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset.weno5_deriv">jaxfluids.stencils.levelset.weno5_deriv module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.levelset.html#module-jaxfluids.stencils.levelset">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html">jaxfluids.stencils.reconstruction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.central_fourth_order">jaxfluids.stencils.reconstruction.central_fourth_order module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.central_second_order">jaxfluids.stencils.reconstruction.central_second_order module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.teno5">jaxfluids.stencils.reconstruction.teno5 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno1_js">jaxfluids.stencils.reconstruction.weno1_js module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno3_fp">jaxfluids.stencils.reconstruction.weno3_fp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno3_js">jaxfluids.stencils.reconstruction.weno3_js module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno3_n">jaxfluids.stencils.reconstruction.weno3_n module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno3_nn_opt1">jaxfluids.stencils.reconstruction.weno3_nn_opt1 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno3_nn_opt2">jaxfluids.stencils.reconstruction.weno3_nn_opt2 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno3_z">jaxfluids.stencils.reconstruction.weno3_z module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno5_js">jaxfluids.stencils.reconstruction.weno5_js module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno5_z">jaxfluids.stencils.reconstruction.weno5_z module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno6_cu">jaxfluids.stencils.reconstruction.weno6_cu module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno6_cum1">jaxfluids.stencils.reconstruction.weno6_cum1 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno6_cum2">jaxfluids.stencils.reconstruction.weno6_cum2 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno6_cumd">jaxfluids.stencils.reconstruction.weno6_cumd module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno7_js">jaxfluids.stencils.reconstruction.weno7_js module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction.weno9_js">jaxfluids.stencils.reconstruction.weno9_js module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.reconstruction.html#module-jaxfluids.stencils.reconstruction">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.stencils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.stencils.html#module-jaxfluids.stencils.spatial_derivative">jaxfluids.stencils.spatial_derivative module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.stencils.html#module-jaxfluids.stencils.spatial_reconstruction">jaxfluids.stencils.spatial_reconstruction module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.stencils.html#module-jaxfluids.stencils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.time_integration.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.time_integration.html#module-jaxfluids.time_integration.RK2">jaxfluids.time_integration.RK2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.time_integration.html#module-jaxfluids.time_integration.RK3">jaxfluids.time_integration.RK3 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.time_integration.html#module-jaxfluids.time_integration.euler">jaxfluids.time_integration.euler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.time_integration.html#module-jaxfluids.time_integration.time_integrator">jaxfluids.time_integration.time_integrator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.time_integration.html#module-jaxfluids.time_integration">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.turb.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.turb.html#module-jaxfluids.turb.turb_init_cond">jaxfluids.turb.turb_init_cond module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.turb.html#module-jaxfluids.turb.turb_stats">jaxfluids.turb.turb_stats module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.turb.html#module-jaxfluids.turb.turb_stats_manager">jaxfluids.turb.turb_stats_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.turb.html#module-jaxfluids.turb.turb_utils">jaxfluids.turb.turb_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.turb.html#module-jaxfluids.turb">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.boundary_condition">
+<span id="jaxfluids-boundary-condition-module"></span><h2>jaxfluids.boundary_condition module<a class="headerlink" href="#module-jaxfluids.boundary_condition" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.boundary_condition.</span></span><span class="sig-name descname"><span class="pre">BoundaryCondition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">wall_velocity_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dirichlet_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">neumann_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The BoundaryCondition class implements functionality to enforce user-
+specified boundary conditions. Boundary conditions are enforced on the
+primitive variables and the level-set field (for two-phase simulations
+only).</p>
+<p>Boundary conditions for the primitive variables:
+1) Periodic
+2) Symmetric
+3) No-slip walls
+4) Dirichlet
+5) Neumann</p>
+<p>Boundary conditions for the level-set field:
+1) Periodic
+2) Symmetry
+3) Zero-Gradient</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.assign_corners">
+<span class="sig-name descname"><span class="pre">assign_corners</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.assign_corners"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.assign_corners" title="Permalink to this definition"></a></dt>
+<dd><p>Identifies the boundary type pairs at the corners (2D) / edges (3D) of
+computational domain. This is necessary to fill the halo cells that are located at
+the diagonal extension of the domain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary containing the boundary type pairs at each boundary corner/edge location</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.dirichlet">
+<span class="sig-name descname"><span class="pre">dirichlet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.dirichlet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.dirichlet" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the halo cells of the primitive and conservative variable buffer at the specified location
+according to the dirichlet boundary condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Conservative variable buffer</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>functions</strong> (<em>Union</em><em>[</em><em>Callable</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – Dirichlet functions</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive and conservative variable buffers with filled halos at specified location</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_levelset">
+<span class="sig-name descname"><span class="pre">fill_boundary_levelset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.fill_boundary_levelset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_levelset" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the levelset buffer halo cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Levelset buffer with filled halo cells</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_primes">
+<span class="sig-name descname"><span class="pre">fill_boundary_primes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.fill_boundary_primes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_primes" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the halo cells of the primitive and conservative variable buffers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive and conservative variable buffer with filled halo cells</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.fill_corners_levelset">
+<span class="sig-name descname"><span class="pre">fill_corners_levelset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.fill_corners_levelset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.fill_corners_levelset" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the levelset buffer halo cells that are located at the diagional extension of the domain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Levelset buffer with filled halo cells at the corners</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.fill_corners_primes">
+<span class="sig-name descname"><span class="pre">fill_corners_primes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.fill_corners_primes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.fill_corners_primes" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the prime buffer halo cells that are located at the diagonal extension of the domain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of the primitive variables</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive variables buffer with filled halo cells at the corners</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.get_slices_fill">
+<span class="sig-name descname"><span class="pre">get_slices_fill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.get_slices_fill"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.get_slices_fill" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the slice objects to fill the halos depending on the range at the specified boundary location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Slice objects</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.get_slices_retrieve">
+<span class="sig-name descname"><span class="pre">get_slices_retrieve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.get_slices_retrieve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.get_slices_retrieve" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the slice objects to retrieve the values depending on the range at the specified boundary location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>boundary_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Slice objects</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.neumann">
+<span class="sig-name descname"><span class="pre">neumann</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.neumann"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.neumann" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the halo cells of the primitive and conservative variable buffer at the specified
+location according to the neumann boundary condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Conservative variable buffer</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>functions</strong> (<em>Union</em><em>[</em><em>Callable</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – Neumann functions</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive and conservative variable buffers with filled halos at specified location</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.periodic">
+<span class="sig-name descname"><span class="pre">periodic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.periodic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.periodic" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the halos of the conservative and primitive variable buffer at
+the specified location according to the periodic boundary condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Conservative variable buffer</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive and conservative variable buffers with filled halos at specified location</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.periodic_levelset">
+<span class="sig-name descname"><span class="pre">periodic_levelset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.periodic_levelset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.periodic_levelset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.symmetry">
+<span class="sig-name descname"><span class="pre">symmetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.symmetry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.symmetry" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the halo cells of the primitive and conservative variable buffer
+at the specified location according to the symmetric boundary condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Conservative variable buffer</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive and conservative variable buffers with filled halos at specified location</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.symmetry_levelset">
+<span class="sig-name descname"><span class="pre">symmetry_levelset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.symmetry_levelset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.symmetry_levelset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.boundary_condition.BoundaryCondition.wall">
+<span class="sig-name descname"><span class="pre">wall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/boundary_condition.html#BoundaryCondition.wall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.boundary_condition.BoundaryCondition.wall" title="Permalink to this definition"></a></dt>
+<dd><p>Fills the halo cells of the primitive and conservative variable buffer at the specified
+location according to the no-slip wall boundary condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Conservative variable buffer</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>location</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Boundary location</p></li>
+<li><p><strong>functions</strong> (<em>Dict</em>) – Wall velocity functions</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+<li><p><strong>b_range</strong> (<em>List</em>) – List containing the spatial range of the boundary at the specified location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Primitive and conservative variable buffers with filled halos at specified location</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.domain_information">
+<span id="jaxfluids-domain-information-module"></span><h2>jaxfluids.domain_information module<a class="headerlink" href="#module-jaxfluids.domain_information" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.domain_information.DomainInformation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.domain_information.</span></span><span class="sig-name descname"><span class="pre">DomainInformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ny</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nh_conservatives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nh_geometry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/domain_information.html#DomainInformation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.domain_information.DomainInformation" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This DomainInformation class holds information about the computational domain, e.g.,
+mesh, number of cells, extension in each spatial direction, active axis, domain slice objects etc..</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.domain_information.DomainInformation.compute_mesh_xi">
+<span class="sig-name descname"><span class="pre">compute_mesh_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nxi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_size_xi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/domain_information.html#DomainInformation.compute_mesh_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.domain_information.DomainInformation.compute_mesh_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes cell center coordinates, cell face coordinates and cell sizes in the specified direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nxi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of cells in xi direction</p></li>
+<li><p><strong>domain_size_xi</strong> (<em>List</em>) – Domain size in xi direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Cell center coordinates, cell face coordinates and cell sizes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.flux_computation">
+<span id="jaxfluids-flux-computation-module"></span><h2>jaxfluids.flux_computation module<a class="headerlink" href="#module-jaxfluids.flux_computation" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.flux_computation.FluxComputer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.flux_computation.</span></span><span class="sig-name descname"><span class="pre">FluxComputer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numerical_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/flux_computation.html#FluxComputer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.flux_computation.FluxComputer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The Flux Computer sets up the user-specified flux function
+for the calculation of the convective terms. The flux calculation
+is called in the space solver by compute_convective_flux_xi().</p>
+<p>There are three general options for the convective flux function.
+1) High-order Godunov Scheme
+2) Flux-splitting Scheme
+3) ALDM Scheme</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.flux_computation.FluxComputer.compute_convective_flux_xi">
+<span class="sig-name descname"><span class="pre">compute_convective_flux_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_parameters_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_networks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/flux_computation.html#FluxComputer.compute_convective_flux_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.flux_computation.FluxComputer.compute_convective_flux_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the convective fluxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Conservative variable buffer</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction</p></li>
+<li><p><strong>ml_parameters_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary of neural network weights, defaults to None</p></li>
+<li><p><strong>ml_networks_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary of neural network architectures, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Convective fluxes in axis direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.initializer">
+<span id="jaxfluids-initializer-module"></span><h2>jaxfluids.initializer module<a class="headerlink" href="#module-jaxfluids.initializer" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.initializer.Initializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.initializer.</span></span><span class="sig-name descname"><span class="pre">Initializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_reader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.input_reader.InputReader" title="jaxfluids.input_reader.InputReader"><span class="pre">jaxfluids.input_reader.InputReader</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/initializer.html#Initializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.initializer.Initializer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The Initializer class implements functionality to create a dictionary of initial buffers that is
+passed to the simulate() method of the SimulationManager class. The initialization() method returns this
+dictionary. The initial buffers are created in one of the following ways:
+1) From a restart file that is specified in the case setup.
+2) From turbulent initial condition parameters that are specified in the case setup
+3) From the initial primitive buffer that is passed to the initialization() method
+4) From the initial conditions for primitive variables specified in case setup
+Note that if multiple of the above are provided, the priority is 1) - 4).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.initializer.Initializer.initialization">
+<span class="sig-name descname"><span class="pre">initialization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_prime_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.23)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/initializer.html#Initializer.initialization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.initializer.Initializer.initialization" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a dictionary of initial buffers. The buffers are either created from the case setup file
+or from the user_prime_init argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>user_prime_init</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>jnp.DeviceArray</em><em>]</em><em>, </em><em>optional</em>) – User specified initial buffer for the primitive variables, defaults to None</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary of initial buffers</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>, Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>, Union[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.input_reader">
+<span id="jaxfluids-input-reader-module"></span><h2>jaxfluids.input_reader module<a class="headerlink" href="#module-jaxfluids.input_reader" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.input_reader.InputReader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.input_reader.</span></span><span class="sig-name descname"><span class="pre">InputReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/input_reader.html#InputReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.input_reader.InputReader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The InputReader class to reads a case setup
+and a numerical setup for setting up a JAX-FLUIDS simulation. Case setup
+and numerical setup can be provided as either a path to a json file or
+as a preloaded dictionary.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.input_reader.InputReader.info">
+<span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/input_reader.html#InputReader.info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.input_reader.InputReader.info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.input_reader.InputReader.sanity_check">
+<span class="sig-name descname"><span class="pre">sanity_check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/input_reader.html#InputReader.sanity_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.input_reader.InputReader.sanity_check" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the case setup and numerical setup is consistent.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.simulation_manager">
+<span id="jaxfluids-simulation-manager-module"></span><h2>jaxfluids.simulation_manager module<a class="headerlink" href="#module-jaxfluids.simulation_manager" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.simulation_manager.</span></span><span class="sig-name descname"><span class="pre">SimulationManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_reader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.input_reader.InputReader" title="jaxfluids.input_reader.InputReader"><span class="pre">jaxfluids.input_reader.InputReader</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The SimulationManager is the top-level class in JAX-FLUIDS. It
+provides functionality to perform conventional CFD simulations
+as well as end-to-end optimization of ML models.</p>
+<p>The most important methods of the SimulationManager are:
+1) simulate()               -   Performs conventional CFD simulation.
+2) feedforward()            -   Feedforward of a batch of data, i.e.,</p>
+<blockquote>
+<div><p>advances a batch of initial conditions in time for a fixed amount of steps</p>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>do_integration_step()    -   Performs a single integration step</p></li>
+</ol>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager.advance">
+<span class="sig-name descname"><span class="pre">advance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager.advance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager.advance" title="Permalink to this definition"></a></dt>
+<dd><p>Advances the initial buffers in time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>buffer_dictionary</strong> – ictionary containing the material field buffers,</p>
+</dd>
+</dl>
+<p>levelset quantitiy buffers, time control and mass flow forcing parameters
+:type buffer_dictionary: Dict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager.compute_timestep">
+<span class="sig-name descname"><span class="pre">compute_timestep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager.compute_timestep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager.compute_timestep" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the physical time step size depending on the active physics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Time step size</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager.do_integration_step">
+<span class="sig-name descname"><span class="pre">do_integration_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apertures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reinitialize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forcings_dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_parameters_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_networks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager.do_integration_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager.do_integration_step" title="Permalink to this definition"></a></dt>
+<dd><p>Performs an integration step using the specified integration scheme. For twophase simulations
+a single RK stage consists of the following:
+1) Compute right-hand-side of Navier-Stokes and levelset advection equation
+2) Transform volume-averaged conservatives to actual conservatives</p>
+<blockquote>
+<div><p>that can be integrated according to volume fraction</p>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><dl class="simple">
+<dt>Prepare the conservative and levelset buffer for integration according</dt><dd><p>to the present integration scheme</p>
+</dd>
+</dl>
+</li>
+<li><p>Integrate conservatives</p></li>
+<li><p>Integrate levelset + reinitialize levelset + fill levelset boundaries</p></li>
+<li><p>Compute volume fraction and apertures from integrated levelset quantities</p></li>
+<li><p>Apply the mixing procedure to the integrated conservative variables</p></li>
+<li><dl class="simple">
+<dt>Transform mixed conservative variables to volume-averaged conservative variables and compute</dt><dd><p>corresponding primitive variables</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Extend primitive variables into ghost cells and compute conservative variables in ghost cells from extended primitive</dt><dd><p>variables</p>
+</dd>
+</dl>
+</li>
+<li><p>Fill material boundaries</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>timestep_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical time step size</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+<li><p><strong>levelset</strong> (<em>Union</em><em>[</em><em>jnp.DeviceArray</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Levelset buffer, defaults to None</p></li>
+<li><p><strong>volume_fraction</strong> (<em>Union</em><em>[</em><em>jnp.DeviceArray</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Volume fraction buffer, defaults to None</p></li>
+<li><p><strong>apertures</strong> (<em>Union</em><em>[</em><em>List</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Aperture buffers, defaults to None</p></li>
+<li><p><strong>reinitialize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a><em>, </em><em>optional</em>) – Flag indicating whether to reinitialize levelset in the present time step, defaults to False</p></li>
+<li><p><strong>forcings_dictionary</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing forcing buffers, defaults to None</p></li>
+<li><p><strong>ml_parameters_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing NN weights, defaults to None</p></li>
+<li><p><strong>ml_networks_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing NN architectures, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of material fields dictionary, levelset quantities dictionary and residual dictionary</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[Dict, Dict, Dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager.feed_forward">
+<span class="sig-name descname"><span class="pre">feed_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_primes_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_levelset_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_parameters_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_networks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager.feed_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager.feed_forward" title="Permalink to this definition"></a></dt>
+<dd><p>Vectorized version of the _feed_forward() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_primes_init</strong> (<em>jnp.DeviceArray</em>) – batch of initial primitive variable buffers</p></li>
+<li><p><strong>batch_levelset_init</strong> (<em>jnp.DeviceArray</em>) – batch of initial levelset buffers</p></li>
+<li><p><strong>n_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of integration steps</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Physical time step size</p></li>
+<li><p><strong>t_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Physical start time</p></li>
+<li><p><strong>output_freq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>, </em><em>optional</em>) – Frequency in time steps for output, defaults to 1</p></li>
+<li><p><strong>ml_parameters_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – NN weights, defaults to None</p></li>
+<li><p><strong>ml_networks_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – NN architectures, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager.initialize" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes the simulation, i.e., creates the output directory,
+logs the numerical and case setup, and writes the initial output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>buffer_dictionary</strong> – Dictionary containing the material field buffers,</p>
+</dd>
+</dl>
+<p>levelset quantitiy buffers, time control and mass flow forcing parameters
+:type buffer_dictionary: Dict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.simulation_manager.SimulationManager.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/simulation_manager.html#SimulationManager.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.simulation_manager.SimulationManager.simulate" title="Permalink to this definition"></a></dt>
+<dd><p>Performs a conventional CFD simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>buffer_dictionary</strong> – Dictionary containing the material field buffers,</p>
+</dd>
+</dl>
+<p>levelset quantitiy buffers, time control and mass flow forcing parameters
+:type buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.space_solver">
+<span id="jaxfluids-space-solver-module"></span><h2>jaxfluids.space_solver module<a class="headerlink" href="#module-jaxfluids.space_solver" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.space_solver.SpaceSolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.space_solver.</span></span><span class="sig-name descname"><span class="pre">SpaceSolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gravity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler" title="jaxfluids.levelset.levelset_handler.LevelsetHandler"><span class="pre">jaxfluids.levelset.levelset_handler.LevelsetHandler</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/space_solver.html#SpaceSolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.space_solver.SpaceSolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The Space Solver class manages the calculation of the righ-hand-side (i.e., fluxes) of the NSE
+and, for two-phase simulations, manages the calculation of the rhs of the level-set advection.</p>
+<p>Depending on the numerical setup, the calculation of the fluxes for the NSE has contributions from:
+1) Convective flux
+2) Viscous flux
+3) Heat flux
+4) Interface exchange flux
+5) Volume force flux
+6) External forcing</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.space_solver.SpaceSolver.compute_rhs">
+<span class="sig-name descname"><span class="pre">compute_rhs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apertures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forcings_dictionary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_parameters_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_networks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/space_solver.html#SpaceSolver.compute_rhs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.space_solver.SpaceSolver.compute_rhs" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the right-hand-side of the Navier-Stokes equations depending
+on active physics and active axis. For levelset simulations with FLUID-FLUID or FLUID-SOLID-DYNAMIC
+interface interactions, also computes the right-hand-side of the levelset advection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em><em>, </em><em>optional</em>) – Levelset buffer, defaults to None</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em><em>, </em><em>optional</em>) – Volume fraction buffer, defaults to None</p></li>
+<li><p><strong>apertures</strong> (<em>List</em><em>, </em><em>optional</em>) – Aperture buffers, defaults to None</p></li>
+<li><p><strong>forcings_dictionary</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Forcings dictionary, defaults to None</p></li>
+<li><p><strong>ml_parameters_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing NN weights, defaults to None</p></li>
+<li><p><strong>ml_networks_dict</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Dictionary containing NN architectures, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing the right-hand-side buffer of the Navier-Stokes equations, the</p>
+</dd>
+</dl>
+<p>right-hand-side buffer of the levelset advection equation and the maximum extension residual of the interface quantities
+:rtype: Tuple[jnp.DeviceArray, Union[jnp.DeviceArray, None], Union[float, None]]</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.unit_handler">
+<span id="jaxfluids-unit-handler-module"></span><h2>jaxfluids.unit_handler module<a class="headerlink" href="#module-jaxfluids.unit_handler" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.unit_handler.UnitHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.unit_handler.</span></span><span class="sig-name descname"><span class="pre">UnitHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">density_reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature_reference</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/unit_handler.html#UnitHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.unit_handler.UnitHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The UnitHandler class implements functionaly to solve the NSE in non-dimensional form.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.unit_handler.UnitHandler.dimensionalize">
+<span class="sig-name descname"><span class="pre">dimensionalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/unit_handler.html#UnitHandler.dimensionalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.unit_handler.UnitHandler.dimensionalize" title="Permalink to this definition"></a></dt>
+<dd><p>Dimensionalizes the given quantity buffer w.r.t. the specified quanty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>Union</em><em>[</em><em>jnp.DeviceArray</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – Non-dimensional quantity buffer</p></li>
+<li><p><strong>quantity</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Quantity name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dimensional quantity buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.unit_handler.UnitHandler.non_dimensionalize">
+<span class="sig-name descname"><span class="pre">non_dimensionalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/unit_handler.html#UnitHandler.non_dimensionalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.unit_handler.UnitHandler.non_dimensionalize" title="Permalink to this definition"></a></dt>
+<dd><p>Non-dimensionalizes the given buffer w.r.t. the specified quantity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>Union</em><em>[</em><em>jnp.DeviceArray</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – Dimensional quantity buffer</p></li>
+<li><p><strong>quantity</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – Quantity name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Non-dimensional quantity buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.unit_handler.UnitHandler.non_dimensionalize_domain_size">
+<span class="sig-name descname"><span class="pre">non_dimensionalize_domain_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/unit_handler.html#UnitHandler.non_dimensionalize_domain_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.unit_handler.UnitHandler.non_dimensionalize_domain_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.utilities">
+<span id="jaxfluids-utilities-module"></span><h2>jaxfluids.utilities module<a class="headerlink" href="#module-jaxfluids.utilities" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.utilities.get_conservatives_from_primitives">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.utilities.</span></span><span class="sig-name descname"><span class="pre">get_conservatives_from_primitives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/utilities.html#get_conservatives_from_primitives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.utilities.get_conservatives_from_primitives" title="Permalink to this definition"></a></dt>
+<dd><p>Converts primitive variables to conservative variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>material_manager</strong> (<a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><em>MaterialManager</em></a>) – Class that calculats material quantities</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of conservative variables</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.utilities.get_fluxes_xi">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.utilities.</span></span><span class="sig-name descname"><span class="pre">get_fluxes_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/utilities.html#get_fluxes_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.utilities.get_fluxes_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the physical flux in a specified spatial direction.
+Cf. Eq. (3.65) in Toro.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which fluxes are calculated</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Physical fluxes in axis direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.utilities.get_primitives_from_conservatives">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.utilities.</span></span><span class="sig-name descname"><span class="pre">get_primitives_from_conservatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/utilities.html#get_primitives_from_conservatives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.utilities.get_primitives_from_conservatives" title="Permalink to this definition"></a></dt>
+<dd><p>Converts conservative variables to primitive variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>material_manager</strong> (<a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><em>MaterialManager</em></a>) – Class that calculats material quantities</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of primitive variables</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-jaxfluids" title="Permalink to this headline"></a></h2>
+<p>JAX-FLUIDS</p>
+<p>A fully-differentiable computational fluid dynamics solver
+for compressible two-phase flows. Solves the compressible
+single or two-phase Navier-Stokes equations in three spatial
+dimensions.</p>
+<p>Let’s make Machine Learning + Computational Fluid Dynamics great!</p>
+<p>Contact:
+<a class="reference external" href="mailto:deniz&#46;bezgin&#37;&#52;&#48;tum&#46;de">deniz<span>&#46;</span>bezgin<span>&#64;</span>tum<span>&#46;</span>de</a> / <a class="reference external" href="mailto:aaron&#46;buhendwa&#37;&#52;&#48;tum&#46;de">aaron<span>&#46;</span>buhendwa<span>&#64;</span>tum<span>&#46;</span>de</a></p>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h3>
+<p>Documentation available at: <a class="reference external" href="https://github.com/tumaer/JAXFLUIDS">https://github.com/tumaer/JAXFLUIDS</a></p>
+<p class="rubric">Examples</p>
+<p>The examples folder includes example CFD simulations in
+one, two, and three dimensions.</p>
+<p>For example in examples/examples_1D/02_sod</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">run_sod</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="available-subpackages">
+<h3>Available subpackages<a class="headerlink" href="#available-subpackages" title="Permalink to this headline"></a></h3>
+<dl class="simple">
+<dt>forcing</dt><dd><p>Implements external forces for the Navier-Stokes equations</p>
+</dd>
+<dt>iles</dt><dd><p>Implicit Large-Eddy Simulation models</p>
+</dd>
+<dt>io_utils</dt><dd><p>Tools for logging and writing output</p>
+</dd>
+<dt>levelset</dt><dd><p>Comprehensive level-set implementation for two-phase flows</p>
+</dd>
+<dt>materials</dt><dd><p>Materials and material managers</p>
+</dd>
+<dt>post_process</dt><dd><p>Tools for post-processing CFD simulations</p>
+</dd>
+<dt>shock_sensor</dt><dd><p>Shock-sensors</p>
+</dd>
+<dt>stencils</dt><dd><p>Spatial reconstruction and derivative stencils</p>
+</dd>
+<dt>time_integration</dt><dd><p>Explicit time integration schemes up to third-order</p>
+</dd>
+<dt>turb</dt><dd><p>Tools for turbulent initial conditions and statistics</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.Initializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.</span></span><span class="sig-name descname"><span class="pre">Initializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_reader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#jaxfluids.input_reader.InputReader" title="jaxfluids.input_reader.InputReader"><span class="pre">jaxfluids.input_reader.InputReader</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/initializer.html#Initializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.Initializer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The Initializer class implements functionality to create a dictionary of initial buffers that is
+passed to the simulate() method of the SimulationManager class. The initialization() method returns this
+dictionary. The initial buffers are created in one of the following ways:
+1) From a restart file that is specified in the case setup.
+2) From turbulent initial condition parameters that are specified in the case setup
+3) From the initial primitive buffer that is passed to the initialization() method
+4) From the initial conditions for primitive variables specified in case setup
+Note that if multiple of the above are provided, the priority is 1) - 4).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.Initializer.initialization">
+<span class="sig-name descname"><span class="pre">initialization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user_prime_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.23)"><span class="pre">numpy.ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/initializer.html#Initializer.initialization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.Initializer.initialization" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a dictionary of initial buffers. The buffers are either created from the case setup file
+or from the user_prime_init argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>user_prime_init</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>, </em><em>jnp.DeviceArray</em><em>]</em><em>, </em><em>optional</em>) – User specified initial buffer for the primitive variables, defaults to None</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dictionary of initial buffers</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>, Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a>, Union[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="change_log.html" class="btn btn-neutral float-left" title="Change log" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jaxfluids.forcing.html" class="btn btn-neutral float-right" title="jaxfluids.forcing package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.simulation_manager &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.simulation_manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.simulation_manager</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">from</span> <span class="nn">jax.config</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.boundary_condition</span> <span class="kn">import</span> <span class="n">BoundaryCondition</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.domain_information</span> <span class="kn">import</span> <span class="n">DomainInformation</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.forcing.forcing</span> <span class="kn">import</span> <span class="n">Forcing</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.input_reader</span> <span class="kn">import</span> <span class="n">InputReader</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.io_utils.logger</span> <span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.io_utils.output_writer</span> <span class="kn">import</span> <span class="n">OutputWriter</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.interface_quantity_computer</span> <span class="kn">import</span> <span class="n">InterfaceQuantityComputer</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">Material</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.solvers.riemann_solvers.eigendecomposition</span> <span class="kn">import</span> <span class="n">Eigendecomposition</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.solvers.riemann_solvers.riemann_solver</span> <span class="kn">import</span> <span class="n">RiemannSolver</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_handler</span> <span class="kn">import</span> <span class="n">LevelsetHandler</span> 
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_reinitializer</span> <span class="kn">import</span> <span class="n">LevelsetReinitializer</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.geometry_calculator</span> <span class="kn">import</span> <span class="n">GeometryCalculator</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.space_solver</span> <span class="kn">import</span> <span class="n">SpaceSolver</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.stencils</span> <span class="kn">import</span> <span class="n">DICT_FIRST_DERIVATIVE_CENTER</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.stencils.spatial_derivative</span> <span class="kn">import</span> <span class="n">SpatialDerivative</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.stencils.spatial_reconstruction</span> <span class="kn">import</span> <span class="n">SpatialReconstruction</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.time_integration</span> <span class="kn">import</span> <span class="n">DICT_TIME_INTEGRATION</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.time_integration.time_integrator</span> <span class="kn">import</span> <span class="n">TimeIntegrator</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.utilities</span> <span class="kn">import</span> <span class="n">get_primitives_from_conservatives</span><span class="p">,</span> <span class="n">get_conservatives_from_primitives</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.unit_handler</span> <span class="kn">import</span> <span class="n">UnitHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.turb.turb_stats_manager</span> <span class="kn">import</span> <span class="n">TurbStatsManager</span>
+
+<div class="viewcode-block" id="SimulationManager"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager">[docs]</a><span class="k">class</span> <span class="nc">SimulationManager</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; The SimulationManager is the top-level class in JAX-FLUIDS. It</span>
+<span class="sd">    provides functionality to perform conventional CFD simulations</span>
+<span class="sd">    as well as end-to-end optimization of ML models.</span>
+
+<span class="sd">    The most important methods of the SimulationManager are:</span>
+<span class="sd">    1) simulate()               -   Performs conventional CFD simulation.</span>
+<span class="sd">    2) feedforward()            -   Feedforward of a batch of data, i.e.,</span>
+<span class="sd">        advances a batch of initial conditions in time for a fixed amount of steps</span>
+<span class="sd">    3) do_integration_step()    -   Performs a single integration step</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_reader</span><span class="p">:</span> <span class="n">InputReader</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span>       <span class="o">=</span> <span class="n">input_reader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">numerical_setup</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_enable_x64&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;is_double_precision_compute&quot;</span><span class="p">])</span>
+
+        <span class="c1"># SET EPSILON IN CLASSES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;is_double_precision_compute&quot;</span><span class="p">]</span> \
+            <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+        <span class="n">classes</span>     <span class="o">=</span> <span class="p">[</span><span class="n">Material</span><span class="p">,</span> <span class="n">SpatialReconstruction</span><span class="p">,</span> <span class="n">SpatialDerivative</span><span class="p">,</span> <span class="n">Eigendecomposition</span><span class="p">,</span> <span class="n">RiemannSolver</span><span class="p">,</span>
+            <span class="n">GeometryCalculator</span><span class="p">,</span> <span class="n">LevelsetHandler</span><span class="p">,</span> <span class="n">LevelsetReinitializer</span><span class="p">,</span> <span class="n">InterfaceQuantityComputer</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_time</span> <span class="o">=</span> <span class="mf">1e-12</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span> <span class="o">=</span> <span class="n">UnitHandler</span><span class="p">(</span> <span class="o">**</span><span class="n">input_reader</span><span class="o">.</span><span class="n">nondimensionalization_parameters</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span> <span class="o">=</span> <span class="n">DomainInformation</span><span class="p">(</span>
+            <span class="n">dim</span>                 <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span>
+            <span class="n">nx</span>                  <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span>
+            <span class="n">ny</span>                  <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span>
+            <span class="n">nz</span>                  <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">nz</span><span class="p">,</span>
+            <span class="n">nh_conservatives</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;halo_cells&quot;</span><span class="p">],</span>
+            <span class="n">nh_geometry</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">][</span><span class="s2">&quot;halo_cells&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">domain_size</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize_domain_size</span><span class="p">(</span><span class="n">input_reader</span><span class="o">.</span><span class="n">domain_size</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span> <span class="o">=</span> <span class="n">MaterialManager</span><span class="p">(</span>
+            <span class="n">unit_handler</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+            <span class="n">material_properties</span> <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">material_properties</span><span class="p">,</span>
+            <span class="n">levelset_type</span>       <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">BoundaryCondition</span><span class="p">(</span>    
+            <span class="n">domain_information</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>
+            <span class="n">material_manager</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+            <span class="n">unit_handler</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+            <span class="n">boundary_types</span>          <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">boundary_location_types</span><span class="p">,</span>
+            <span class="n">wall_velocity_functions</span> <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">wall_velocity_functions</span><span class="p">,</span>
+            <span class="n">dirichlet_functions</span>     <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">dirichlet_functions</span><span class="p">,</span>
+            <span class="n">neumann_functions</span>       <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">neumann_functions</span><span class="p">,</span>
+            <span class="n">levelset_type</span>           <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TIME CONTROL</span>
+        <span class="k">if</span> <span class="s2">&quot;fixed_timestep&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;time_integration&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fixed_timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;time_integration&quot;</span><span class="p">][</span><span class="s2">&quot;fixed_timestep&quot;</span><span class="p">],</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fixed_timestep</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">input_reader</span><span class="o">.</span><span class="n">end_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CFL</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;time_integration&quot;</span><span class="p">][</span><span class="s2">&quot;CFL&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span> <span class="p">:</span> <span class="n">TimeIntegrator</span> <span class="o">=</span> <span class="n">DICT_TIME_INTEGRATION</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;time_integration&quot;</span><span class="p">][</span><span class="s2">&quot;integrator&quot;</span><span class="p">]](</span><span class="n">nh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_conservatives</span><span class="p">,</span> <span class="n">inactive_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">inactive_axis</span><span class="p">)</span>
+
+        <span class="c1"># LEVELSET HANDLER</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span>    <span class="o">=</span> <span class="n">LevelsetHandler</span><span class="p">(</span>
+                <span class="n">domain_information</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>   
+                <span class="n">numerical_setup</span>             <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">,</span>
+                <span class="n">material_manager</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+                <span class="n">unit_handler</span>                <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+                <span class="n">solid_interface_velocity</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">solid_interface_velocity</span><span class="p">,</span>
+                <span class="n">boundary_condition</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="c1"># SPACE SOLVER</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">space_solver</span> <span class="o">=</span> <span class="n">SpaceSolver</span><span class="p">(</span>
+            <span class="n">domain_information</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>    
+            <span class="n">material_manager</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+            <span class="n">numerical_setup</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">,</span>
+            <span class="n">gravity</span>             <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">input_reader</span><span class="o">.</span><span class="n">gravity</span><span class="p">,</span> <span class="s2">&quot;gravity&quot;</span><span class="p">),</span>
+            <span class="n">levelset_type</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span><span class="p">,</span>
+            <span class="n">levelset_handler</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+
+        <span class="c1"># TURBULENT STATISTICS </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">is_turb_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span> <span class="o">=</span> <span class="n">TurbStatsManager</span><span class="p">(</span>
+                <span class="n">domain_information</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>
+                <span class="n">material_manager</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># FORCINGS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">active_forcings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forcings_computer</span> <span class="o">=</span> <span class="n">Forcing</span><span class="p">(</span> 
+                <span class="n">domain_information</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>
+                <span class="n">material_manager</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span> 
+                <span class="n">unit_handler</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+                <span class="n">levelset_handler</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">levelset_type</span>           <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span><span class="p">,</span>
+                <span class="n">is_mass_flow_forcing</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_mass_flow_forcing&quot;</span><span class="p">],</span>
+                <span class="n">is_temperature_forcing</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_temperature_forcing&quot;</span><span class="p">],</span>
+                <span class="n">is_turb_hit_forcing</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_turb_hit_forcing&quot;</span><span class="p">],</span>
+                <span class="n">mass_flow_target</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">mass_flow_target</span><span class="p">,</span>
+                <span class="n">flow_direction</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">mass_flow_direction</span><span class="p">,</span>
+                <span class="n">temperature_target</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">temperature_target</span> 
+                <span class="p">)</span>
+
+        <span class="c1"># OUTPUT WRITER</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span> <span class="o">=</span> <span class="n">OutputWriter</span><span class="p">(</span>  
+            <span class="n">input_reader</span>                        <span class="o">=</span> <span class="n">input_reader</span><span class="p">,</span>
+            <span class="n">unit_handler</span>                        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+            <span class="n">domain_information</span>                  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>
+            <span class="n">material_manager</span>                    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+            <span class="n">levelset_handler</span>                    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">derivative_stencil_conservatives</span>    <span class="o">=</span> <span class="n">DICT_FIRST_DERIVATIVE_CENTER</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;derivative_stencil&quot;</span><span class="p">]](</span><span class="n">nh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_conservatives</span><span class="p">,</span> <span class="n">inactive_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">inactive_axis</span><span class="p">),</span>
+            <span class="n">derivative_stencil_geometry</span>         <span class="o">=</span> <span class="n">DICT_FIRST_DERIVATIVE_CENTER</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;derivative_stencil&quot;</span><span class="p">]](</span><span class="n">nh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_geometry</span><span class="p">,</span> <span class="n">inactive_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">inactive_axis</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">logging_level</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;logging&quot;</span><span class="p">])</span> 
+
+<div class="viewcode-block" id="SimulationManager.simulate"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Performs a conventional CFD simulation.</span>
+
+<span class="sd">        :param buffer_dictionary: Dictionary containing the material field buffers,</span>
+<span class="sd">        levelset quantitiy buffers, time control and mass flow forcing parameters</span>
+<span class="sd">        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulationManager.initialize"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Initializes the simulation, i.e., creates the output directory,</span>
+<span class="sd">        logs the numerical and case setup, and writes the initial output.</span>
+
+<span class="sd">        :param buffer_dictionary: Dictionary containing the material field buffers,</span>
+<span class="sd">        levelset quantitiy buffers, time control and mass flow forcing parameters</span>
+<span class="sd">        :type buffer_dictionary: Dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># CREATE OUTPUT FOLDER, CASE SETUP AND NUMERICAL SETUP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">create_folder</span><span class="p">()</span>
+
+        <span class="c1"># CONFIGURE LOGGER AND LOG NUMERICAL SETUP AND CASE SETUP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">configure_logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">save_path_case</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_initialization</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_numerical_setup_and_case_setup</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">info</span><span class="p">())</span>
+
+        <span class="c1"># LOG TURBULENT STATS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">is_turb_init</span><span class="p">:</span>
+            <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives</span>
+            <span class="n">turbulent_statistics_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">get_turbulent_statistics</span><span class="p">(</span>
+                <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">][</span><span class="s2">&quot;primes&quot;</span><span class="p">][</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_turbulent_stats_at_start</span><span class="p">(</span><span class="n">turbulent_statistics_dict</span><span class="p">)</span>
+
+        <span class="c1"># WRITE INITIAL OUTPUT</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">][</span><span class="s2">&quot;current_time&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">next_timestamp</span> <span class="o">+=</span> <span class="n">current_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">,</span> <span class="n">force_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulationManager.advance"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager.advance">[docs]</a>    <span class="k">def</span> <span class="nf">advance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Advances the initial buffers in time.</span>
+
+<span class="sd">        :param buffer_dictionary: ictionary containing the material field buffers,</span>
+<span class="sd">        levelset quantitiy buffers, time control and mass flow forcing parameters</span>
+<span class="sd">        :type buffer_dictionary: Dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># LOG SIMULATION START</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_sim_start</span><span class="p">()</span>
+
+        <span class="c1"># START LOOP</span>
+        <span class="n">start_loop</span>      <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">current_step</span>    <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">current_time</span>    <span class="o">=</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">][</span><span class="s2">&quot;current_time&quot;</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">current_time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps_time</span><span class="p">:</span>
+
+            <span class="n">start_iteration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="c1"># COMPUTE TIMESTEP </span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_timestep</span><span class="p">:</span>
+                <span class="n">timestep_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_timestep</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">timestep_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_timestep</span><span class="p">(</span>
+                        <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">],</span>
+                        <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">]</span>
+                        <span class="p">)</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">][</span><span class="s2">&quot;timestep_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timestep_size</span>
+
+            <span class="c1"># COMPUTE FORCINGS</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">active_forcings</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_turb_hit_forcing&quot;</span><span class="p">]:</span>
+                    <span class="n">material_fields</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_integration_step</span><span class="p">(</span>
+                            <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">],</span>
+                            <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">])</span>
+                    <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">][</span><span class="s2">&quot;primes_dash&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">material_fields</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">]</span>
+                <span class="n">forcings_dictionary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forcings_computer</span><span class="o">.</span><span class="n">compute_forcings</span><span class="p">(</span>
+                    <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">],</span>
+                    <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">],</span>
+                    <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">],</span>
+                    <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">],</span>
+                    <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_mass_flow_forcing&quot;</span><span class="p">]:</span>
+                    <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">forcings_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">forcings_dictionary</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># INTEGRATION STEP</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">reinitialize</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">current_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">interval_reinitialization</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reinitialize</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">material_fields</span><span class="p">,</span> <span class="n">levelset_quantities</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_integration_step</span><span class="p">(</span>
+                <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;machinelearning_modules&quot;</span><span class="p">],</span>
+                <span class="n">forcings_dictionary</span><span class="o">=</span><span class="n">forcings_dictionary</span><span class="p">,</span>
+                <span class="n">reinitialize</span><span class="o">=</span><span class="n">reinitialize</span>
+            <span class="p">)</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">material_fields</span><span class="p">)</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">levelset_quantities</span><span class="p">)</span>
+
+            <span class="c1"># INCREMENT PHYSICAL SIMULATION TIME</span>
+            <span class="n">current_time</span> <span class="o">+=</span> <span class="n">timestep_size</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">][</span><span class="s2">&quot;current_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_time</span>
+            
+            <span class="c1"># FORCE PYTHON TO WAIT FOR JAX COMPUTATIONS TO COMPLETE</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">][</span><span class="s2">&quot;cons&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">block_until_ready</span><span class="p">()</span>
+
+            <span class="c1"># WRITE H5 OUTPUT</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">,</span> <span class="n">force_output</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># COMPUTE WALL CLOCK FOR TIME STEP</span>
+            <span class="n">wall_clock_step</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_iteration</span>
+            <span class="n">wall_clock_step_cell</span> <span class="o">=</span>  <span class="n">wall_clock_step</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="n">mean_wall_clock_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">wall_clock_step</span> <span class="o">+</span> <span class="n">mean_wall_clock_step</span><span class="o">*</span><span class="p">(</span><span class="n">current_step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">current_step</span> <span class="k">if</span> <span class="n">current_step</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">wall_clock_step</span>
+            <span class="n">mean_wall_clock_step_cell</span> <span class="o">=</span> <span class="p">(</span><span class="n">wall_clock_step_cell</span> <span class="o">+</span> <span class="n">mean_wall_clock_step_cell</span><span class="o">*</span><span class="p">(</span><span class="n">current_step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">current_step</span> <span class="k">if</span> <span class="n">current_step</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">wall_clock_step_cell</span>
+            
+            <span class="c1"># INCREMENT CURRENT STEP</span>
+            <span class="n">current_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># LOG TERMINAL</span>
+            <span class="n">print_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;CURRENT TIME                   = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)),</span>
+                <span class="s1">&#39;CURRENT DT                     = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">timestep_size</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)),</span>
+                <span class="s1">&#39;CURRENT STEP                   = </span><span class="si">%6d</span><span class="s1">&#39;</span>   <span class="o">%</span> <span class="n">current_step</span><span class="p">,</span>
+                <span class="s1">&#39;WALL CLOCK TIMESTEP            = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">wall_clock_step</span><span class="p">,</span>
+                <span class="s1">&#39;MEAN WALL CLOCK TIMESTEP       = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">mean_wall_clock_step</span><span class="p">,</span>
+                <span class="s1">&#39;WALL CLOCK TIMESTEP CELL       = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wall_clock_step_cell</span><span class="p">),</span>
+                <span class="s1">&#39;MEAN WALL CLOCK TIMESTEP CELL  = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_wall_clock_step_cell</span><span class="p">)</span>
+            <span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">print_list</span> <span class="o">+=</span> <span class="p">[</span> <span class="s1">&#39;RESIDUAL EXTENSION PRIMES      = </span><span class="si">%4.4e</span><span class="s1">&#39;</span>    <span class="o">%</span> <span class="n">residuals</span><span class="p">[</span><span class="s2">&quot;extension_primes&quot;</span><span class="p">]</span> <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="n">print_list</span> <span class="o">+=</span> <span class="p">[</span> <span class="s1">&#39;RESIDUAL EXTENSION INTERFACE   = </span><span class="si">%4.4e</span><span class="s1">&#39;</span>    <span class="o">%</span> <span class="n">residuals</span><span class="p">[</span><span class="s2">&quot;extension_interface&quot;</span><span class="p">]</span> <span class="p">]</span>
+                <span class="n">print_list</span> <span class="o">+=</span> <span class="p">[</span> <span class="s1">&#39;RESIDUAL REINITIALIZATION      = </span><span class="si">%4.4e</span><span class="s1">&#39;</span>    <span class="o">%</span> <span class="n">residuals</span><span class="p">[</span><span class="s2">&quot;reinitialization&quot;</span><span class="p">]</span> <span class="p">]</span>
+                
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_end_time_step</span><span class="p">(</span><span class="n">print_list</span><span class="p">)</span>
+
+
+        <span class="c1"># FINAL OUTPUT</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">write_output</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">,</span> <span class="n">force_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">simulation_finish</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># LOG SIMULATION FINISH</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_sim_finish</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_loop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulationManager.do_integration_step"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager.do_integration_step">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">do_integration_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">apertures</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reinitialize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">forcings_dictionary</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+        <span class="n">ml_parameters_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Performs an integration step using the specified integration scheme. For twophase simulations </span>
+<span class="sd">        a single RK stage consists of the following:</span>
+<span class="sd">        1) Compute right-hand-side of Navier-Stokes and levelset advection equation</span>
+<span class="sd">        2) Transform volume-averaged conservatives to actual conservatives</span>
+<span class="sd">            that can be integrated according to volume fraction</span>
+<span class="sd">        3) Prepare the conservative and levelset buffer for integration according</span>
+<span class="sd">            to the present integration scheme</span>
+<span class="sd">        4) Integrate conservatives</span>
+<span class="sd">        5) Integrate levelset + reinitialize levelset + fill levelset boundaries</span>
+<span class="sd">        6) Compute volume fraction and apertures from integrated levelset quantities</span>
+<span class="sd">        7) Apply the mixing procedure to the integrated conservative variables</span>
+<span class="sd">        8) Transform mixed conservative variables to volume-averaged conservative variables and compute </span>
+<span class="sd">            corresponding primitive variables</span>
+<span class="sd">        9) Extend primitive variables into ghost cells and compute conservative variables in ghost cells from extended primitive</span>
+<span class="sd">            variables</span>
+<span class="sd">        10) Fill material boundaries</span>
+
+<span class="sd">        :param cons: Buffer of conservative variables</span>
+<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :param primes: Buffer of primitive variables</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param timestep_size: Current physical time step size</span>
+<span class="sd">        :type timestep_size: float</span>
+<span class="sd">        :param current_time: Current physical simulation time</span>
+<span class="sd">        :type current_time: float</span>
+<span class="sd">        :param levelset: Levelset buffer, defaults to None</span>
+<span class="sd">        :type levelset: Union[jnp.DeviceArray, None], optional</span>
+<span class="sd">        :param volume_fraction: Volume fraction buffer, defaults to None</span>
+<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None], optional</span>
+<span class="sd">        :param apertures: Aperture buffers, defaults to None</span>
+<span class="sd">        :type apertures: Union[List, None], optional</span>
+<span class="sd">        :param reinitialize: Flag indicating whether to reinitialize levelset in the present time step, defaults to False</span>
+<span class="sd">        :type reinitialize: bool, optional</span>
+<span class="sd">        :param forcings_dictionary: Dictionary containing forcing buffers, defaults to None</span>
+<span class="sd">        :type forcings_dictionary: Union[Dict, None], optional</span>
+<span class="sd">        :param ml_parameters_dict: Dictionary containing NN weights, defaults to None</span>
+<span class="sd">        :type ml_parameters_dict: Union[Dict, None], optional</span>
+<span class="sd">        :param ml_networks_dict: Dictionary containing NN architectures, defaults to None</span>
+<span class="sd">        :type ml_networks_dict: Union[Dict, None], optional</span>
+<span class="sd">        :return: Tuple of material fields dictionary, levelset quantities dictionary and residual dictionary</span>
+<span class="sd">        :rtype: Tuple[Dict, Dict, Dict]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># DEFAULT VALUES FOR RESIDUALS</span>
+        <span class="n">residual_primes</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">residual_reinit</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="k">else</span> <span class="mf">0.0</span>
+        
+        <span class="c1"># INIT BUFFER FOR RUNGE KUTTA SCHEME</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">no_stages</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">init_cons</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">transform_to_conservatives</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">init_levelset</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">,</span> <span class="s2">&quot;FLUID-SOLID-DYNAMIC&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">current_time_stage</span> <span class="o">=</span> <span class="n">current_time</span>
+
+        <span class="c1"># LOOP STAGES</span>
+        <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">no_stages</span> <span class="p">):</span>
+
+            <span class="c1"># RIGHT HAND SIDE</span>
+            <span class="n">rhs_cons</span><span class="p">,</span> <span class="n">rhs_levelset</span><span class="p">,</span> <span class="n">residual_interface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">space_solver</span><span class="o">.</span><span class="n">compute_rhs</span><span class="p">(</span>
+                <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">current_time_stage</span><span class="p">,</span> 
+                <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span><span class="p">,</span> 
+                <span class="n">forcings_dictionary</span><span class="p">,</span> 
+                <span class="n">ml_parameters_dict</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="p">)</span>
+
+            <span class="c1"># TRANSFORM TO CONSERVATIVES</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">transform_to_conservatives</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+
+            <span class="c1"># PREPARE BUFFER FOR RUNGE KUTTA INTEGRATION</span>
+            <span class="k">if</span> <span class="n">stage</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">cons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">prepare_buffer_for_integration</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">init_cons</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">,</span> <span class="s2">&quot;FLUID-SOLID-DYNAMIC&quot;</span><span class="p">]:</span>
+                    <span class="n">levelset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">prepare_buffer_for_integration</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">init_levelset</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span>
+
+            <span class="c1"># INTEGRATE</span>
+            <span class="n">cons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">rhs_cons</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">,</span> <span class="s2">&quot;FLUID-SOLID-DYNAMIC&quot;</span><span class="p">]:</span>
+                <span class="n">levelset_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">rhs_levelset</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">,</span> <span class="n">stage</span><span class="p">)</span>
+                
+                <span class="c1"># REINITIALIZE</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="ow">and</span> <span class="n">stage</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">no_stages</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">reinitialize</span><span class="p">:</span>
+                    <span class="n">levelset_new</span><span class="p">,</span> <span class="n">residual_reinit</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">reinitialize</span><span class="p">(</span><span class="n">levelset_new</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">residual_reinit</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                <span class="c1"># LEVELSET BOUNDARIES AND INTERFACE RECONSTRUCTION</span>
+                <span class="n">levelset_new</span>                        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_levelset</span><span class="p">(</span><span class="n">levelset_new</span><span class="p">)</span>
+                <span class="n">volume_fraction_new</span><span class="p">,</span> <span class="n">apertures_new</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_volume_fraction_and_apertures</span><span class="p">(</span><span class="n">levelset_new</span><span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-SOLID-STATIC&quot;</span><span class="p">:</span>
+                <span class="n">levelset_new</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">,</span> <span class="n">apertures_new</span> <span class="o">=</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span>
+
+            <span class="n">current_time_stage</span> <span class="o">=</span> <span class="n">current_time</span> <span class="o">+</span> <span class="n">timestep_size</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">time_integrator</span><span class="o">.</span><span class="n">timestep_increment_factor</span><span class="p">[</span><span class="n">stage</span><span class="p">]</span>
+
+            <span class="c1"># MIXING AND PRIME EXTENSION</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cons</span><span class="p">,</span> <span class="n">mask_small_cells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">mixing</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">levelset_new</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+                <span class="n">cons</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">transform_to_volume_averages</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">)</span>
+                <span class="n">primes</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_primitives_from_conservatives_in_real_fluid</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">levelset_new</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">,</span> <span class="n">mask_small_cells</span><span class="p">)</span>
+                <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">residual_primes</span>           <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">extend_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">levelset_new</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">,</span> <span class="n">current_time_stage</span><span class="p">,</span> <span class="n">mask_small_cells</span><span class="p">)</span>
+                <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span>    <span class="o">=</span> <span class="n">levelset_new</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">,</span> <span class="n">apertures_new</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">primes</span> <span class="o">=</span> <span class="n">get_primitives_from_conservatives</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+            
+            <span class="c1"># FILL BOUNDARIES</span>
+            <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">current_time_stage</span><span class="p">)</span>
+
+        <span class="c1"># CREATE DICTIONARIES</span>
+        <span class="n">material_fields</span>     <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cons&quot;</span><span class="p">:</span> <span class="n">cons</span><span class="p">,</span> <span class="s2">&quot;primes&quot;</span><span class="p">:</span> <span class="n">primes</span><span class="p">}</span>
+        <span class="n">levelset_quantities</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;levelset&quot;</span><span class="p">:</span> <span class="n">levelset</span><span class="p">,</span> <span class="s2">&quot;volume_fraction&quot;</span><span class="p">:</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="s2">&quot;apertures&quot;</span><span class="p">:</span> <span class="n">apertures</span><span class="p">}</span>
+        <span class="n">residuals</span>           <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;extension_primes&quot;</span><span class="p">:</span> <span class="n">residual_primes</span><span class="p">,</span> <span class="s2">&quot;extension_interface&quot;</span><span class="p">:</span> <span class="n">residual_interface</span><span class="p">,</span> <span class="s2">&quot;reinitialization&quot;</span><span class="p">:</span> <span class="n">residual_reinit</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">material_fields</span><span class="p">,</span> <span class="n">levelset_quantities</span><span class="p">,</span> <span class="n">residuals</span></div>
+
+<div class="viewcode-block" id="SimulationManager.compute_timestep"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager.compute_timestep">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_timestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
+            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the physical time step size depending on the active physics.</span>
+
+<span class="sd">        :param primes: Buffer of primitive variables</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param levelset: Levelset buffer</span>
+<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :param volume_fraction: Volume fraction buffer</span>
+<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :return: Time step size</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># DOMAIN INFORMATION</span>
+        <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives</span>
+        <span class="n">nhx_</span><span class="p">,</span> <span class="n">nhy_</span><span class="p">,</span> <span class="n">nhz_</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_geometry</span>
+        <span class="n">cell_sizes</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">cell_sizes</span>
+        <span class="n">min_cell_size</span>       <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dxi</span><span class="p">)</span> <span class="k">for</span> <span class="n">dxi</span> <span class="ow">in</span> <span class="n">cell_sizes</span><span class="p">]))</span>
+
+        <span class="c1"># COMPUTE TEMPERATURE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_physics&quot;</span><span class="p">][</span><span class="s2">&quot;is_viscous_flux&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_physics&quot;</span><span class="p">][</span><span class="s2">&quot;is_heat_flux&quot;</span><span class="p">]:</span>
+            <span class="n">temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_temperature</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">])</span>
+
+        <span class="c1"># COMPUTE MASKS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask_real</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_masks</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+
+        <span class="c1"># CONVECTIVE CONTRIBUTION</span>
+        <span class="n">speed_of_sound</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">],</span> <span class="n">rho</span><span class="o">=</span><span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">])</span>
+        <span class="n">abs_velocity</span>    <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">abs_velocity</span> <span class="o">+=</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">])</span> <span class="o">+</span> <span class="n">speed_of_sound</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">abs_velocity</span> <span class="o">*=</span> <span class="n">mask_real</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">]</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">min_cell_size</span> <span class="o">/</span> <span class="p">(</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">abs_velocity</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="p">)</span>
+
+        <span class="c1"># VISCOUS CONTRIBUTION</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_physics&quot;</span><span class="p">][</span><span class="s2">&quot;is_viscous_flux&quot;</span><span class="p">]:</span>
+            <span class="n">const</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="mf">14.0</span>
+            <span class="n">kinematic_viscosity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_dynamic_viscosity</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> <span class="o">/</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">kinematic_viscosity</span> <span class="o">=</span> <span class="n">kinematic_viscosity</span> <span class="o">*</span> <span class="n">mask_real</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">]</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">const</span> <span class="o">*</span> <span class="p">(</span> <span class="n">min_cell_size</span> <span class="o">*</span> <span class="n">min_cell_size</span> <span class="p">)</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">kinematic_viscosity</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="c1"># HEAT TRANSFER CONTRIBUTION</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_physics&quot;</span><span class="p">][</span><span class="s2">&quot;is_heat_flux&quot;</span><span class="p">]:</span>
+            <span class="n">const</span> <span class="o">=</span> <span class="mf">0.1</span>
+            <span class="n">thermal_diffusivity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_thermal_conductivity</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> <span class="o">/</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">thermal_diffusivity</span> <span class="o">=</span> <span class="n">thermal_diffusivity</span> <span class="o">*</span> <span class="n">mask_real</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">]</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">const</span> <span class="o">*</span> <span class="p">(</span> <span class="n">min_cell_size</span> <span class="o">*</span> <span class="n">min_cell_size</span> <span class="p">)</span> <span class="o">/</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">thermal_diffusivity</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CFL</span> <span class="o">*</span> <span class="n">dt</span>
+
+        <span class="k">return</span> <span class="n">dt</span></div>
+
+    <span class="k">def</span> <span class="nf">_feed_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes_init</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset_init</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+        <span class="n">t_start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">output_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ml_parameters_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ml_networks_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Advances the initial buffers in time for a fixed amount of steps and returns the</span>
+<span class="sd">        entire trajectory. This function is differentiable and</span>
+<span class="sd">        must therefore be used to end-to-end optimize ML models within the JAX-FLUIDS simulator.</span>
+
+<span class="sd">        :param primes_init: Initial primitive variables buffer</span>
+<span class="sd">        :type primes_init: jnp.DeviceArray</span>
+<span class="sd">        :param levelset_init: Initial levelset buffer</span>
+<span class="sd">        :type levelset_init: jnp.DeviceArray</span>
+<span class="sd">        :param n_steps: Number of time steps</span>
+<span class="sd">        :type n_steps: int</span>
+<span class="sd">        :param timestep_size: Physical time step size</span>
+<span class="sd">        :type timestep_size: float</span>
+<span class="sd">        :param t_start: Physical start time</span>
+<span class="sd">        :type t_start: float</span>
+<span class="sd">        :param output_freq: Frequency in time steps for output, defaults to 1</span>
+<span class="sd">        :type output_freq: int, optional</span>
+<span class="sd">        :param ml_parameters_dict: _description_, defaults to None</span>
+<span class="sd">        :type ml_parameters_dict: Union[Dict, None], optional</span>
+<span class="sd">        :param ml_networks_dict: _description_, defaults to None</span>
+<span class="sd">        :type ml_networks_dict: Union[Dict, None], optional</span>
+<span class="sd">        :return: _description_</span>
+<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># CREATE BUFFER</span>
+        <span class="n">nh</span>               <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_conservatives</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">number_of_cells</span>
+        <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives</span>
+        <span class="n">nhx_</span><span class="p">,</span> <span class="n">nhy_</span><span class="p">,</span> <span class="n">nhz_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_geometry</span>
+
+        <span class="c1"># CREATE BUFFER</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">primes</span>      <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="n">cons</span>        <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="n">levelset</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">primes</span>      <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="n">cons</span>        <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="n">levelset</span>    <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># PRIME &amp; LEVELSET BUFFER</span>
+        <span class="n">primes</span>       <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">primes_init</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">levelset</span>        <span class="o">=</span> <span class="n">levelset</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">levelset_init</span><span class="p">)</span>
+            <span class="n">levelset</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_levelset</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+            <span class="n">levelset</span><span class="p">,</span> <span class="n">_</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">reinitialize</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">levelset</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_levelset</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+            <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_volume_fraction_and_apertures</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">_</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">extend_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">t_start</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">volume_fraction</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">apertures</span>       <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># CONSERVATIVES</span>
+        <span class="n">cons</span> <span class="o">=</span> <span class="n">get_conservatives_from_primitives</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+
+        <span class="c1"># BOUNDARIES</span>
+        <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># TODO FEED FORWARD FOR LEVELSET</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">primes_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">compute_real_buffer</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">])</span>
+            <span class="n">out</span>         <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">primes_real</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">volume_fraction</span><span class="p">[</span><span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">primes_real</span> <span class="o">=</span> <span class="n">primes</span><span class="p">[:,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span>
+            <span class="n">out</span>         <span class="o">=</span> <span class="n">primes_real</span>
+
+        <span class="c1"># INITIAL OUTPUT</span>
+        <span class="n">solution_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="p">]</span>
+        <span class="n">times_list</span>    <span class="o">=</span> <span class="p">[</span><span class="n">t_start</span><span class="p">]</span>
+
+        <span class="n">forcings_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">t_start</span>
+        <span class="n">current_step</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># LOOP OVER STEPS</span>
+        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">reinitialize</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">current_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">interval_reinitialization</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reinitialize</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">material_fields</span><span class="p">,</span> <span class="n">levelset_quantities</span><span class="p">,</span> <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_integration_step</span><span class="p">(</span>
+                <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">,</span> <span class="n">current_time</span><span class="p">,</span> 
+                <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span><span class="p">,</span> <span class="n">reinitialize</span><span class="p">,</span> 
+                <span class="n">forcings_dictionary</span><span class="p">,</span> <span class="n">ml_parameters_dict</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="p">)</span>
+
+            <span class="n">primes</span><span class="p">,</span> <span class="n">cons</span> <span class="o">=</span> <span class="n">material_fields</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">],</span> <span class="n">material_fields</span><span class="p">[</span><span class="s2">&quot;cons&quot;</span><span class="p">]</span>
+            <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span> <span class="o">=</span> <span class="n">levelset_quantities</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">],</span> <span class="n">levelset_quantities</span><span class="p">[</span><span class="s2">&quot;volume_fraction&quot;</span><span class="p">],</span> <span class="n">levelset_quantities</span><span class="p">[</span><span class="s2">&quot;apertures&quot;</span><span class="p">]</span>
+
+            <span class="n">current_time</span> <span class="o">+=</span> <span class="n">timestep_size</span>
+            <span class="n">current_step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># APPEND OUTPUT</span>
+            <span class="k">if</span> <span class="n">current_step</span> <span class="o">%</span> <span class="n">output_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">cons_real</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">compute_real_buffer</span><span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">])</span>
+                    <span class="n">primes_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">compute_real_buffer</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">])</span>
+                    <span class="n">out</span>         <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">primes_real</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">volume_fraction</span><span class="p">[</span><span class="n">nhx_</span><span class="p">,</span><span class="n">nhy_</span><span class="p">,</span><span class="n">nhz_</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">primes_real</span> <span class="o">=</span> <span class="n">primes</span><span class="p">[:,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span>
+                    <span class="n">out</span>         <span class="o">=</span> <span class="n">primes_real</span>
+
+                <span class="n">solution_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+                <span class="n">times_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
+
+        <span class="n">solution_array</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">solution_list</span><span class="p">)</span>
+        <span class="n">times_array</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">times_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">solution_array</span><span class="p">,</span> <span class="n">times_array</span>
+
+<div class="viewcode-block" id="SimulationManager.feed_forward"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.simulation_manager.SimulationManager.feed_forward">[docs]</a>    <span class="k">def</span> <span class="nf">feed_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_primes_init</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">batch_levelset_init</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+        <span class="n">t_start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">output_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ml_parameters_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+        <span class="n">ml_networks_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Vectorized version of the _feed_forward() method.</span>
+
+<span class="sd">        :param batch_primes_init: batch of initial primitive variable buffers</span>
+<span class="sd">        :type batch_primes_init: jnp.DeviceArray</span>
+<span class="sd">        :param batch_levelset_init: batch of initial levelset buffers</span>
+<span class="sd">        :type batch_levelset_init: jnp.DeviceArray</span>
+<span class="sd">        :param n_steps: Number of integration steps</span>
+<span class="sd">        :type n_steps: int</span>
+<span class="sd">        :param timestep: Physical time step size</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :param t_start: Physical start time</span>
+<span class="sd">        :type t_start: float</span>
+<span class="sd">        :param output_freq: Frequency in time steps for output, defaults to 1</span>
+<span class="sd">        :type output_freq: int, optional</span>
+<span class="sd">        :param ml_parameters_dict: NN weights, defaults to None</span>
+<span class="sd">        :type ml_parameters_dict: Union[Dict, None], optional</span>
+<span class="sd">        :param ml_networks_dict: NN architectures, defaults to None</span>
+<span class="sd">        :type ml_networks_dict: Union[Dict, None], optional</span>
+<span class="sd">        :return: _description_</span>
+<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">jax</span><span class="o">.</span><span class="n">vmap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_feed_forward</span><span class="p">,</span> <span class="n">in_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">),</span> <span class="n">out_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,))(</span>
+            <span class="n">batch_primes_init</span><span class="p">,</span> <span class="n">batch_levelset_init</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">,</span> <span class="n">t_start</span><span class="p">,</span> <span class="n">output_freq</span><span class="p">,</span> <span class="n">ml_parameters_dict</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

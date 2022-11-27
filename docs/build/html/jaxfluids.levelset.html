@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.levelset package &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="jaxfluids.materials package" href="jaxfluids.materials.html" />
+    <link rel="prev" title="jaxfluids.io_utils package" href="jaxfluids.io_utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="jaxfluids.html">jaxfluids package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="jaxfluids.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">jaxfluids.levelset package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.geometry_calculator">jaxfluids.levelset.geometry_calculator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.helper_functions">jaxfluids.levelset.helper_functions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.interface_flux_computer">jaxfluids.levelset.interface_flux_computer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.interface_quantity_computer">jaxfluids.levelset.interface_quantity_computer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.levelset_creator">jaxfluids.levelset.levelset_creator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.levelset_handler">jaxfluids.levelset.levelset_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.levelset_reinitializer">jaxfluids.levelset.levelset_reinitializer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset.quantity_extender">jaxfluids.levelset.quantity_extender module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.levelset">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.materials.html">jaxfluids.materials package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.shock_sensor.html">jaxfluids.shock_sensor package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.boundary_condition">jaxfluids.boundary_condition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.domain_information">jaxfluids.domain_information module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.flux_computation">jaxfluids.flux_computation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.initializer">jaxfluids.initializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.input_reader">jaxfluids.input_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.simulation_manager">jaxfluids.simulation_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.space_solver">jaxfluids.space_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.unit_handler">jaxfluids.unit_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.utilities">jaxfluids.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="jaxfluids.html">jaxfluids package</a> &raquo;</li>
+      <li>jaxfluids.levelset package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jaxfluids.levelset.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="jaxfluids-levelset-package">
+<h1>jaxfluids.levelset package<a class="headerlink" href="#jaxfluids-levelset-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.levelset.geometry_calculator">
+<span id="jaxfluids-levelset-geometry-calculator-module"></span><h2>jaxfluids.levelset.geometry_calculator module<a class="headerlink" href="#module-jaxfluids.levelset.geometry_calculator" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.geometry_calculator.</span></span><span class="sig-name descname"><span class="pre">GeometryCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_derivative_stencil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative" title="jaxfluids.stencils.spatial_derivative.SpatialDerivative"><span class="pre">jaxfluids.stencils.spatial_derivative.SpatialDerivative</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_derivative_stencil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative" title="jaxfluids.stencils.spatial_derivative.SpatialDerivative"><span class="pre">jaxfluids.stencils.spatial_derivative.SpatialDerivative</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">subcell_reconstruction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The GeometryCalculator class implements functionality to compute geometrical quantities that
+are required for two-phase simulations, i.e., volume fraction, apertures, interface normal and
+interface curvature. The volume fraction and the apertures are computed by linear interpolation
+of the levelset function. Interface normal and curvature are computed with user specified finite difference
+stencils.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_apertures">
+<span class="sig-name descname"><span class="pre">compute_apertures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corner_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator.compute_apertures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_apertures" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the apertures in axis direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corner_values</strong> (<em>jnp.DeviceArray</em>) – Levelset values at cell corners</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – spatial axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Apertures in axis direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_corner_values">
+<span class="sig-name descname"><span class="pre">compute_corner_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator.compute_corner_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_corner_values" title="Permalink to this definition"></a></dt>
+<dd><p>Linear interpolation of the levelset values at the cell center to the corners of the cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Levelset values at the corners of cells</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_curvature">
+<span class="sig-name descname"><span class="pre">compute_curvature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator.compute_curvature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_curvature" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the curvature with the stencil specified in the numerical setup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Curvature buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_normal">
+<span class="sig-name descname"><span class="pre">compute_normal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator.compute_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_normal" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the normal with the stencil specified in the numerical setup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Normal buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_volume_fraction">
+<span class="sig-name descname"><span class="pre">compute_volume_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corner_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">apertures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator.compute_volume_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.compute_volume_fraction" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the volume fraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corner_values</strong> (<em>jnp.DeviceArray</em>) – Levelset values at cell corners</p></li>
+<li><p><strong>apertures</strong> (<em>List</em>) – Apertures</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Volume fraction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.geometry_calculator.GeometryCalculator.linear_interface_reconstruction">
+<span class="sig-name descname"><span class="pre">linear_interface_reconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/geometry_calculator.html#GeometryCalculator.linear_interface_reconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.geometry_calculator.GeometryCalculator.linear_interface_reconstruction" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the volume fraction and the apertures assuming a linear interface within each cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Leveset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of volume fraction and apertures</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, List]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.helper_functions">
+<span id="jaxfluids-levelset-helper-functions-module"></span><h2>jaxfluids.levelset.helper_functions module<a class="headerlink" href="#module-jaxfluids.levelset.helper_functions" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.levelset.helper_functions.move_source_to_target_ii">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.helper_functions.</span></span><span class="sig-name descname"><span class="pre">move_source_to_target_ii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_sign</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/helper_functions.html#move_source_to_target_ii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.helper_functions.move_source_to_target_ii" title="Permalink to this definition"></a></dt>
+<dd><p>Moves the source array in positive normal direction within the ii plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_array</strong> (<em>jnp.DeviceArray</em>) – Source array buffer</p></li>
+<li><p><strong>normal_sign</strong> (<em>jnp.DeviceArray</em>) – Normal sign buffer</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – axis i</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Moved source array in ii plane</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.levelset.helper_functions.move_source_to_target_ij">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.helper_functions.</span></span><span class="sig-name descname"><span class="pre">move_source_to_target_ij</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_sign</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/helper_functions.html#move_source_to_target_ij"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.helper_functions.move_source_to_target_ij" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.levelset.helper_functions.move_source_to_target_ijk">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.helper_functions.</span></span><span class="sig-name descname"><span class="pre">move_source_to_target_ijk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_sign</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/helper_functions.html#move_source_to_target_ijk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.helper_functions.move_source_to_target_ijk" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.levelset.helper_functions.move_target_to_source_ii">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.helper_functions.</span></span><span class="sig-name descname"><span class="pre">move_target_to_source_ii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_sign</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/helper_functions.html#move_target_to_source_ii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.helper_functions.move_target_to_source_ii" title="Permalink to this definition"></a></dt>
+<dd><p>Moves the target array in negative normal direction in the ii plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_array</strong> (<em>jnp.DeviceArray</em>) – Target array buffer</p></li>
+<li><p><strong>normal_sign</strong> (<em>jnp.DeviceArray</em>) – Normal sign buffer</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – axis i</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Moved target array in ii plane</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.levelset.helper_functions.move_target_to_source_ij">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.helper_functions.</span></span><span class="sig-name descname"><span class="pre">move_target_to_source_ij</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_sign</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/helper_functions.html#move_target_to_source_ij"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.helper_functions.move_target_to_source_ij" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.levelset.helper_functions.move_target_to_source_ijk">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.helper_functions.</span></span><span class="sig-name descname"><span class="pre">move_target_to_source_ijk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal_sign</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/helper_functions.html#move_target_to_source_ijk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.helper_functions.move_target_to_source_ijk" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.interface_flux_computer">
+<span id="jaxfluids-levelset-interface-flux-computer-module"></span><h2>jaxfluids.levelset.interface_flux_computer module<a class="headerlink" href="#module-jaxfluids.levelset.interface_flux_computer" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.interface_flux_computer.InterfaceFluxComputer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.interface_flux_computer.</span></span><span class="sig-name descname"><span class="pre">InterfaceFluxComputer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/interface_flux_computer.html#InterfaceFluxComputer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.interface_flux_computer.InterfaceFluxComputer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The InterfaceFluxComputer computes the two-phase interface fluxes depending on the present interface interaction type
+and active physics. The Interface interaction types are
+1) FLUID-SOLID-STATIC
+2) FLUID-SOLID-DYNAMIC
+3) FLUID-FLUID</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.interface_flux_computer.InterfaceFluxComputer.compute_interface_flux_xi">
+<span class="sig-name descname"><span class="pre">compute_interface_flux_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface_velocity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface_pressure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">apertures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/interface_flux_computer.html#InterfaceFluxComputer.compute_interface_flux_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.interface_flux_computer.InterfaceFluxComputer.compute_interface_flux_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the interface flux in axis direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>interface_velocity</strong> (<em>jnp.DeviceArray</em>) – Interface velocity buffer</p></li>
+<li><p><strong>interface_pressure</strong> (<em>jnp.DeviceArray</em>) – Interface pressure buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+<li><p><strong>apertures</strong> (<em>jnp.DeviceArray</em>) – Aperture buffers</p></li>
+<li><p><strong>normal</strong> (<em>jnp.DeviceArray</em>) – Normal buffer</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – axis direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Interface flux in axis direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.interface_quantity_computer">
+<span id="jaxfluids-levelset-interface-quantity-computer-module"></span><h2>jaxfluids.levelset.interface_quantity_computer module<a class="headerlink" href="#module-jaxfluids.levelset.interface_quantity_computer" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.interface_quantity_computer.</span></span><span class="sig-name descname"><span class="pre">InterfaceQuantityComputer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">solid_interface_velocity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/interface_quantity_computer.html#InterfaceQuantityComputer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The InterfaceQuantityComputer class
+1) solves the two-material Riemann problem, i.e., computes the interface velocity</p>
+<blockquote>
+<div><p>and interface pressure for FLUID-FLUID interface interactions</p>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>computes the solid interface velocity for FLUID-SOLID-DYNAMIC interface interactions</p></li>
+</ol>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer.compute_solid_interface_velocity">
+<span class="sig-name descname"><span class="pre">compute_solid_interface_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/interface_quantity_computer.html#InterfaceQuantityComputer.compute_solid_interface_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer.compute_solid_interface_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the solid interface velocity for FLUID-SOLID-DYNAMIC interface interactions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Solid interface velocity</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer.solve_interface_interaction">
+<span class="sig-name descname"><span class="pre">solve_interface_interaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">curvature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/interface_quantity_computer.html#InterfaceQuantityComputer.solve_interface_interaction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.interface_quantity_computer.InterfaceQuantityComputer.solve_interface_interaction" title="Permalink to this definition"></a></dt>
+<dd><p>Solves the two-material Riemann problem for FLUID-FLUID interface interactions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Primitive variable buffer</p></li>
+<li><p><strong>normal</strong> (<em>jnp.DeviceArray</em>) – Interface normal buffer</p></li>
+<li><p><strong>curvature</strong> (<em>jnp.DeviceArray</em>) – Interface curvature buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Interface velocity and interface pressure</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.levelset_creator">
+<span id="jaxfluids-levelset-levelset-creator-module"></span><h2>jaxfluids.levelset.levelset_creator module<a class="headerlink" href="#module-jaxfluids.levelset.levelset_creator" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_creator.LevelsetCreator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.levelset_creator.</span></span><span class="sig-name descname"><span class="pre">LevelsetCreator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">narrow_band_cutoff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_creator.html#LevelsetCreator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_creator.LevelsetCreator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The LevelsetCreator implements functionality to create initial levelset fields. The initial
+levelset field in one of two ways:
+1) Lambda function via case setup file
+2) List of building blocks. A single building block includes a shape</p>
+<blockquote>
+<div><p>and a lambda function for the bounding domain.</p>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_creator.LevelsetCreator.create_levelset">
+<span class="sig-name descname"><span class="pre">create_levelset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_creator.html#LevelsetCreator.create_levelset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_creator.LevelsetCreator.create_levelset" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the levelset field either from the user defined lambda or from the user defined building blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Levelset buffer</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_creator.LevelsetCreator.get_circle">
+<span class="sig-name descname"><span class="pre">get_circle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_creator.html#LevelsetCreator.get_circle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_creator.LevelsetCreator.get_circle" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the levelset field for a circle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Radius</p></li>
+<li><p><strong>position</strong> (<em>List</em>) – Center position</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Levelset buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_creator.LevelsetCreator.get_rectangle">
+<span class="sig-name descname"><span class="pre">get_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_creator.html#LevelsetCreator.get_rectangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_creator.LevelsetCreator.get_rectangle" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the levelset field for a rectangle. If the radius argument is specified, the rectangle corners will
+be rounded using that radius. If the height argument is not specified, a square will be created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Length</p></li>
+<li><p><strong>position</strong> (<em>List</em>) – Center position</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – Height, defaults to None</p></li>
+<li><p><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – Radius of the corners, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Leveset buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_creator.LevelsetCreator.get_sphere">
+<span class="sig-name descname"><span class="pre">get_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_creator.html#LevelsetCreator.get_sphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_creator.LevelsetCreator.get_sphere" title="Permalink to this definition"></a></dt>
+<dd><p>Creates the levelset field for a sphere.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>radius</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Radius</p></li>
+<li><p><strong>position</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Center position</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.levelset_handler">
+<span id="jaxfluids-levelset-levelset-handler-module"></span><h2>jaxfluids.levelset.levelset_handler module<a class="headerlink" href="#module-jaxfluids.levelset.levelset_handler" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.levelset_handler.</span></span><span class="sig-name descname"><span class="pre">LevelsetHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_setup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">solid_interface_velocity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_condition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition" title="jaxfluids.boundary_condition.BoundaryCondition"><span class="pre">jaxfluids.boundary_condition.BoundaryCondition</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The LevelsetHandler class manages computations to perform two-phase simulations using the levelset method.
+The main functionality includes</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Transformation of the conservative states from volume-averages to actual conserved quantities according to the volume fraction</p></li>
+<li><p>Weighting of the cell face fluxes according to the apertures</p></li>
+<li><p>Computation of the interface fluxes</p></li>
+<li><p>Computation of the levelset advection right-hand-side</p></li>
+<li><p>Extension of the primitive state from the real fluid cells to the ghost fluid cells</p></li>
+<li><p>Mixing of the integrated conservatives</p></li>
+<li><p>Computation of geometrical quantities, i.e., volume fraction, apertures and real fluid/cut cell masks</p></li>
+</ul>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_cut_cell_mask">
+<span class="sig-name descname"><span class="pre">compute_cut_cell_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_cut_cell_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_cut_cell_mask" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the cut cell mask, i.e., cells where the volume fraction is &gt; 0.0 and &lt; 1.0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Cut cell mask</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_flux_xi">
+<span class="sig-name descname"><span class="pre">compute_interface_flux_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface_velocity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface_pressure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">apertures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_interface_flux_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_flux_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the interface flux depending on the present interface interaction type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>interface_velocity</strong> (<em>jnp.DeviceArray</em>) – Interface velocity buffer</p></li>
+<li><p><strong>interface_pressure</strong> (<em>Union</em><em>[</em><em>jnp.DeviceArray</em><em>, </em><em>None</em><em>]</em>) – Interface pressure buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+<li><p><strong>apertures</strong> (<em>jnp.DeviceArray</em>) – Aperture buffer</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Current axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Interface fluxes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_quantities">
+<span class="sig-name descname"><span class="pre">compute_interface_quantities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_interface_quantities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_quantities" title="Permalink to this definition"></a></dt>
+<dd><p>Computes interface velocity and pressure for FLUID-FLUID interface interaction and
+extends the values into the narrow_band_compute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fractio buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of interface velocity, interface pressure and maximum residual of the extension</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_levelset_advection_rhs">
+<span class="sig-name descname"><span class="pre">compute_levelset_advection_rhs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface_velocity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_levelset_advection_rhs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_levelset_advection_rhs" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the right-hand-side of the levelset advection equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>interface_velocity</strong> (<em>jnp.DeviceArray</em>) – Interface velocity buffer</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Current axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>right-hand-side contribution for current axis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_masks">
+<span class="sig-name descname"><span class="pre">compute_masks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_masks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_masks" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the real mask and the cut cell mask</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing the real mask and the cut cell mask</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid">
+<span class="sig-name descname"><span class="pre">compute_primitives_from_conservatives_in_real_fluid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_small_cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the primitive variables from the mixed conservatives within the real fluid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – _description_</p></li>
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – _description_</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – _description_</p></li>
+<li><p><strong>mask_small_cells</strong> (<em>jnp.DeviceArray</em>) – _description_</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_solid_interface_velocity">
+<span class="sig-name descname"><span class="pre">compute_solid_interface_velocity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_solid_interface_velocity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_solid_interface_velocity" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the interface velocity for FLUID-SOLID-DYNAMIC interface interaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Interface velocity buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_volume_fraction_and_apertures">
+<span class="sig-name descname"><span class="pre">compute_volume_fraction_and_apertures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.compute_volume_fraction_and_apertures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_volume_fraction_and_apertures" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the volume fraction and apertures via linear interface reconstruction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing the volume fraction buffer and the aperture buffers</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, List]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.extend_primes">
+<span class="sig-name descname"><span class="pre">extend_primes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_small_cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.extend_primes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.extend_primes" title="Permalink to this definition"></a></dt>
+<dd><p>Extends the primitives from the real fluid cells into the ghost fluid cells within the narrow_band_compute.
+Subsequently, the corresponding conservatives are computed from the extended primitives.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables</p></li>
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+<li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Current physical simulation time</p></li>
+<li><p><strong>mask_small_cells</strong> (<em>jnp.DeviceArray</em><em>, </em><em>optional</em>) – Mask indicating small negative cells, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of primitive and conservative buffer and maximum extension residual</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.mixing">
+<span class="sig-name descname"><span class="pre">mixing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction_new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction_old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.mixing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.mixing" title="Permalink to this definition"></a></dt>
+<dd><p>Performs a mixing procedure on the integrated conservatives enabling stable integration of
+small cut cells with the CFL criterion for full cells. For small cells that are in the process of vanishing
+(becoming ghost cells), this procedure may produce negative mass/energy. To prevent numerical instability,
+we track these cells with the mask_small_cells buffer and perform a prime extension into these cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of integrated conservative variables</p></li>
+<li><p><strong>levelset_new</strong> (<em>jnp.DeviceArray</em>) – Integrated levelset buffer</p></li>
+<li><p><strong>volume_fraction_new</strong> (<em>jnp.DeviceArray</em>) – Integrated volume fraction buffer</p></li>
+<li><p><strong>volume_fraction_old</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer of previous time step (RK stage)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing the mixed conservatives and a mask indicating small cells with negative energy/mass.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.reinitialize">
+<span class="sig-name descname"><span class="pre">reinitialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initializer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.reinitialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.reinitialize" title="Permalink to this definition"></a></dt>
+<dd><p>Reinitializes the levelset buffer and subsequently applies cut off
+to values that lie outside the narrow_band_cutoff. If the initializer flag is True,
+cut cells are always reinitialized. This is required to initialize
+levelset fields that are provided as no signed distance functions, e.g., an ellipse.
+If cut_cell_reinitialization is True (specified in numerical setup), then cut cells are also reinitialized.
+The residual is only computed in the narrow_band_computations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>initializer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><em>bool</em></a>) – Bool indicating if the reinitialization is performed in the
+jaxfluids initializer or the jaxfluids simulation manager</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reinitialized levelset buffer and the corresponding maximum residual</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_conservatives">
+<span class="sig-name descname"><span class="pre">transform_to_conservatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.transform_to_conservatives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_conservatives" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms the volume-averaged conservatives to actual conservatives that can be integrated
+according to the volume fraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of actual conservative variables</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_volume_averages">
+<span class="sig-name descname"><span class="pre">transform_to_volume_averages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.transform_to_volume_averages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_volume_averages" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms the mixed conservatives to volume-averaged conservatives.
+Emtpy cells are filled with eps. Negative small cells (which may occur after mixing) are filled with eps.
+We extend the integrated primitive state into the negative small cells cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of mixed conservative variables</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Volume-averaged conservatives</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_cell_face_flux_xi">
+<span class="sig-name descname"><span class="pre">weight_cell_face_flux_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flux_xi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">apertures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.weight_cell_face_flux_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_cell_face_flux_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Weights the cell face fluxes according to the apertures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>flux_xi</strong> (<em>jnp.DeviceArray</em>) – Cell face flux at xi</p></li>
+<li><p><strong>apertures</strong> (<em>jnp.DeviceArray</em>) – Aperture buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Weighted cell face flux at xi</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_volume_force">
+<span class="sig-name descname"><span class="pre">weight_volume_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume_force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_handler.html#LevelsetHandler.weight_volume_force"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_volume_force" title="Permalink to this definition"></a></dt>
+<dd><p>Weights the volume forces according to the volume fraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume_force</strong> (<em>jnp.DeviceArray</em>) – Volume force buffer</p></li>
+<li><p><strong>volume_fraction</strong> (<em>jnp.DeviceArray</em>) – Volume fraction buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Weighted volume force</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.levelset_reinitializer">
+<span id="jaxfluids-levelset-levelset-reinitializer-module"></span><h2>jaxfluids.levelset.levelset_reinitializer module<a class="headerlink" href="#module-jaxfluids.levelset.levelset_reinitializer" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.levelset_reinitializer.</span></span><span class="sig-name descname"><span class="pre">LevelsetReinitializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_condition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition" title="jaxfluids.boundary_condition.BoundaryCondition"><span class="pre">jaxfluids.boundary_condition.BoundaryCondition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator" title="jaxfluids.time_integration.time_integrator.TimeIntegrator"><span class="pre">jaxfluids.time_integration.time_integrator.TimeIntegrator</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivative_stencil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative" title="jaxfluids.stencils.spatial_derivative.SpatialDerivative"><span class="pre">jaxfluids.stencils.spatial_derivative.SpatialDerivative</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_reinitializer.html#LevelsetReinitializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The LevelsetReinitializer class implements functionality to reinitialize the levelset buffer.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.compute_rhs">
+<span class="sig-name descname"><span class="pre">compute_rhs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_reinitializer.html#LevelsetReinitializer.compute_rhs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.compute_rhs" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the right-hand-side of the levelset reinitialization equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>levelset_0</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer at fictitious time = 0.0</p></li>
+<li><p><strong>mask</strong> (<em>jnp.DeviceArray</em>) – Mask for right-hand-side</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple of right-hand-side and signed distance residual</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.do_integration_step">
+<span class="sig-name descname"><span class="pre">do_integration_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_reinitializer.html#LevelsetReinitializer.do_integration_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.do_integration_step" title="Permalink to this definition"></a></dt>
+<dd><p>Performs an integration step of the levelset reinitialization equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>levelset_0</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer at fictitious time = 0.0</p></li>
+<li><p><strong>mask</strong> (<em>jnp.DeviceArray</em>) – Mask for right-hand-side</p></li>
+<li><p><strong>timestep_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Timestep size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Tuple containing integrated levelset buffer and signed distance residual</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.reinitialize">
+<span class="sig-name descname"><span class="pre">reinitialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levelset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_reinitialize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_residual</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">CFL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/levelset_reinitializer.html#LevelsetReinitializer.reinitialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.reinitialize" title="Permalink to this definition"></a></dt>
+<dd><p>Reinitializes the levelset buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>levelset</strong> (<em>jnp.DeviceArray</em>) – Levelset buffer</p></li>
+<li><p><strong>mask_reinitialize</strong> (<em>jnp.DeviceArray</em>) – Mask indicating which cells to reinitialize</p></li>
+<li><p><strong>mask_residual</strong> (<em>jnp.DeviceArray</em>) – Mask indicating where to compute the maximum residual of the reinitialization equation</p></li>
+<li><p><strong>CFL</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – CFL number</p></li>
+<li><p><strong>steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of integration steps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reinitialized levelset buffer and maximum residual of the reinitialization equation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset.quantity_extender">
+<span id="jaxfluids-levelset-quantity-extender-module"></span><h2>jaxfluids.levelset.quantity_extender module<a class="headerlink" href="#module-jaxfluids.levelset.quantity_extender" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.levelset.quantity_extender.QuantityExtender">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.levelset.quantity_extender.</span></span><span class="sig-name descname"><span class="pre">QuantityExtender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_condition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition" title="jaxfluids.boundary_condition.BoundaryCondition"><span class="pre">jaxfluids.boundary_condition.BoundaryCondition</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_integrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator" title="jaxfluids.time_integration.time_integrator.TimeIntegrator"><span class="pre">jaxfluids.time_integration.time_integrator.TimeIntegrator</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_stencil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative" title="jaxfluids.stencils.spatial_derivative.SpatialDerivative"><span class="pre">jaxfluids.stencils.spatial_derivative.SpatialDerivative</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_interface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/levelset/quantity_extender.html#QuantityExtender"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.quantity_extender.QuantityExtender" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The QuantiyExtender performs a zero-gradient extension in interface normal direction of an arbitrary quantity.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.quantity_extender.QuantityExtender.compute_rhs">
+<span class="sig-name descname"><span class="pre">compute_rhs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/quantity_extender.html#QuantityExtender.compute_rhs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.quantity_extender.QuantityExtender.compute_rhs" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the right-hand-side of the exension equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantity</strong> (<em>jnp.DeviceArray</em>) – Quantity buffer</p></li>
+<li><p><strong>normal</strong> (<em>jnp.DeviceArray</em>) – Normal buffer</p></li>
+<li><p><strong>mask</strong> (<em>jnp.DeviceArray</em>) – Mask indiciating where to extend</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Right-hand-side of the extension equation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.quantity_extender.QuantityExtender.do_integration_step">
+<span class="sig-name descname"><span class="pre">do_integration_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/quantity_extender.html#QuantityExtender.do_integration_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.quantity_extender.QuantityExtender.do_integration_step" title="Permalink to this definition"></a></dt>
+<dd><p>Performs an integration step of the extension equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantity</strong> (<em>jnp.DeviceArray</em>) – Quantity buffer</p></li>
+<li><p><strong>normal</strong> (<em>jnp.DeviceArray</em>) – Normal buffer</p></li>
+<li><p><strong>mask</strong> (<em>jnp.DeviceArray</em>) – Mask indicating where to extend</p></li>
+<li><p><strong>timestep_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Fictitious time step size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Integrated quantity buffer and corresponding right-hand-side buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.levelset.quantity_extender.QuantityExtender.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">CFL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/levelset/quantity_extender.html#QuantityExtender.extend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.levelset.quantity_extender.QuantityExtender.extend" title="Permalink to this definition"></a></dt>
+<dd><p>Extends the quantity in normal direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantity</strong> (<em>jnp.DeviceArray</em>) – Quantity buffer</p></li>
+<li><p><strong>normal</strong> (<em>jnp.DeviceArray</em>) – Normal buffer</p></li>
+<li><p><strong>mask</strong> (<em>jnp.DeviceArray</em>) – Mask indicating where to extend</p></li>
+<li><p><strong>CFL</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – CFL number</p></li>
+<li><p><strong>steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Number of integration steps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Extended quantity buffer and corresponding residual</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.levelset">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-jaxfluids.levelset" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="jaxfluids.io_utils.html" class="btn btn-neutral float-left" title="jaxfluids.io_utils package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jaxfluids.materials.html" class="btn btn-neutral float-right" title="jaxfluids.materials package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

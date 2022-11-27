@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.shock_sensor package &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="jaxfluids.solvers package" href="jaxfluids.solvers.html" />
+    <link rel="prev" title="jaxfluids.post_process package" href="jaxfluids.post_process.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="jaxfluids.html">jaxfluids package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="jaxfluids.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.levelset.html">jaxfluids.levelset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.materials.html">jaxfluids.materials package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">jaxfluids.shock_sensor package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.shock_sensor.ducros">jaxfluids.shock_sensor.ducros module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.shock_sensor.shock_sensor">jaxfluids.shock_sensor.shock_sensor module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.shock_sensor">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.boundary_condition">jaxfluids.boundary_condition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.domain_information">jaxfluids.domain_information module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.flux_computation">jaxfluids.flux_computation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.initializer">jaxfluids.initializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.input_reader">jaxfluids.input_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.simulation_manager">jaxfluids.simulation_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.space_solver">jaxfluids.space_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.unit_handler">jaxfluids.unit_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.utilities">jaxfluids.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="jaxfluids.html">jaxfluids package</a> &raquo;</li>
+      <li>jaxfluids.shock_sensor package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jaxfluids.shock_sensor.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="jaxfluids-shock-sensor-package">
+<h1>jaxfluids.shock_sensor package<a class="headerlink" href="#jaxfluids-shock-sensor-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.shock_sensor.ducros">
+<span id="jaxfluids-shock-sensor-ducros-module"></span><h2>jaxfluids.shock_sensor.ducros module<a class="headerlink" href="#module-jaxfluids.shock_sensor.ducros" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.shock_sensor.ducros.Ducros">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.shock_sensor.ducros.</span></span><span class="sig-name descname"><span class="pre">Ducros</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/shock_sensor/ducros.html#Ducros"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.shock_sensor.ducros.Ducros" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.shock_sensor.shock_sensor.ShockSensor" title="jaxfluids.shock_sensor.shock_sensor.ShockSensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.shock_sensor.shock_sensor.ShockSensor</span></code></a></p>
+<p>Ducros Shock Sensor</p>
+<p>fs = jnp.where(div / (div + curl + self.epsilon_s) &gt;= 0.95, 1, 0)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.shock_sensor.ducros.Ducros.compute_sensor_function">
+<span class="sig-name descname"><span class="pre">compute_sensor_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/shock_sensor/ducros.html#Ducros.compute_sensor_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.shock_sensor.ducros.Ducros.compute_sensor_function" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the sensor function which is a marker (0/1)
+indicating the presence of shock discontinuities.</p>
+<p>Implementation in child classes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.shock_sensor.ducros.Ducros.compute_velocity_derivatives">
+<span class="sig-name descname"><span class="pre">compute_velocity_derivatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/shock_sensor/ducros.html#Ducros.compute_velocity_derivatives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.shock_sensor.ducros.Ducros.compute_velocity_derivatives" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the velocity gradient.
+Note that velocity gradients and especially curl and divergence
+are often used to determine the presence of shocks.</p>
+<dl class="simple">
+<dt>vel_grad = [ du/dx dv/dx dw/dx</dt><dd><p>du/dy dv/dy dw/dy
+du/dz dv/dz dw/dz ]</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vels</strong> (<em>jnp.DeviceArray</em>) – Buffer of velocities.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of the velocity gradient.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.shock_sensor.shock_sensor">
+<span id="jaxfluids-shock-sensor-shock-sensor-module"></span><h2>jaxfluids.shock_sensor.shock_sensor module<a class="headerlink" href="#module-jaxfluids.shock_sensor.shock_sensor" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.shock_sensor.shock_sensor.ShockSensor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.shock_sensor.shock_sensor.</span></span><span class="sig-name descname"><span class="pre">ShockSensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/shock_sensor/shock_sensor.html#ShockSensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.shock_sensor.shock_sensor.ShockSensor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract Class for shock sensors. Shock sensors indicate
+the presence of discontinuities by a marker.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.shock_sensor.shock_sensor.ShockSensor.compute_sensor_function">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_sensor_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/shock_sensor/shock_sensor.html#ShockSensor.compute_sensor_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.shock_sensor.shock_sensor.ShockSensor.compute_sensor_function" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the sensor function which is a marker (0/1)
+indicating the presence of shock discontinuities.</p>
+<p>Implementation in child classes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.shock_sensor">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-jaxfluids.shock_sensor" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="jaxfluids.post_process.html" class="btn btn-neutral float-left" title="jaxfluids.post_process package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jaxfluids.solvers.html" class="btn btn-neutral float-right" title="jaxfluids.solvers package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.materials package &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="jaxfluids.post_process package" href="jaxfluids.post_process.html" />
+    <link rel="prev" title="jaxfluids.levelset package" href="jaxfluids.levelset.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="jaxfluids.html">jaxfluids package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="jaxfluids.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.levelset.html">jaxfluids.levelset package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">jaxfluids.materials package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials.ideal_gas">jaxfluids.materials.ideal_gas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials.material">jaxfluids.materials.material module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials.material_manager">jaxfluids.materials.material_manager module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials.safe_ideal_gas">jaxfluids.materials.safe_ideal_gas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials.stiffened_gas">jaxfluids.materials.stiffened_gas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials.tait">jaxfluids.materials.tait module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-jaxfluids.materials">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.shock_sensor.html">jaxfluids.shock_sensor package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.boundary_condition">jaxfluids.boundary_condition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.domain_information">jaxfluids.domain_information module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.flux_computation">jaxfluids.flux_computation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.initializer">jaxfluids.initializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.input_reader">jaxfluids.input_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.simulation_manager">jaxfluids.simulation_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.space_solver">jaxfluids.space_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.unit_handler">jaxfluids.unit_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.utilities">jaxfluids.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="jaxfluids.html">jaxfluids package</a> &raquo;</li>
+      <li>jaxfluids.materials package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jaxfluids.materials.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="jaxfluids-materials-package">
+<h1>jaxfluids.materials package<a class="headerlink" href="#jaxfluids-materials-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.materials.ideal_gas">
+<span id="jaxfluids-materials-ideal-gas-module"></span><h2>jaxfluids.materials.ideal_gas module<a class="headerlink" href="#module-jaxfluids.materials.ideal_gas" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.materials.ideal_gas.</span></span><span class="sig-name descname"><span class="pre">IdealGas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sutherland_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermal_conductivity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prandtl_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_heat_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_gas_constant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.materials.material.Material" title="jaxfluids.materials.material.Material"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.materials.material.Material</span></code></a></p>
+<p>Implements the ideal gas law.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_energy">
+<span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_energy" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_grueneisen">
+<span class="sig-name descname"><span class="pre">get_grueneisen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_grueneisen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_grueneisen" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_pressure">
+<span class="sig-name descname"><span class="pre">get_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_pressure" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_psi">
+<span class="sig-name descname"><span class="pre">get_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_psi" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_speed_of_sound">
+<span class="sig-name descname"><span class="pre">get_speed_of_sound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_speed_of_sound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_speed_of_sound" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_temperature">
+<span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_total_energy">
+<span class="sig-name descname"><span class="pre">get_total_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_total_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_total_energy" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.ideal_gas.IdealGas.get_total_enthalpy">
+<span class="sig-name descname"><span class="pre">get_total_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/ideal_gas.html#IdealGas.get_total_enthalpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.ideal_gas.IdealGas.get_total_enthalpy" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.materials.material">
+<span id="jaxfluids-materials-material-module"></span><h2>jaxfluids.materials.material module<a class="headerlink" href="#module-jaxfluids.materials.material" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.materials.material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sutherland_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermal_conductivity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prandtl_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>The Material class implements an abstract class for a material, i.e., the computation of
+the dynamic viscosity, bulk viscosity and the thermal conductivity. The equation of states are
+implemented in the corresonding child classes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.materials.material.Material.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_energy">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes specific internal energy
+e = e(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Specific internal energy buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_grueneisen">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_grueneisen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_grueneisen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_grueneisen" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the Grueneisen coefficient from density.
+Gamma = p_e / rho; p_e is partial derivative of pressure wrt internal specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grueneisen</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_pressure">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_pressure" title="Permalink to this definition"></a></dt>
+<dd><p>Computes pressure from internal energy and density.
+p = p(e, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<em>jnp.DeviceArray</em>) – Specific internal energy buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pressue buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_psi">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_psi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes psi from pressure and density.
+psi = p_rho; p_rho is partial derivative of pressure wrt density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Psi</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_speed_of_sound">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_speed_of_sound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_speed_of_sound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_speed_of_sound" title="Permalink to this definition"></a></dt>
+<dd><p>Computes speed of sound from pressure and density.
+c = c(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Speed of sound buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_temperature">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>Computes temperature from pressure and density.
+T = T(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Temperature buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_total_energy">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_total_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_total_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_total_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes total energy per unit volume from pressure, density, and velocities.
+E = E(p, rho, velX, velY, velZ)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+<li><p><strong>u</strong> (<em>jnp.DeviceArray</em>) – Velocity in x direction</p></li>
+<li><p><strong>v</strong> (<em>jnp.DeviceArray</em>) – Velocity in y direction</p></li>
+<li><p><strong>w</strong> (<em>jnp.DeviceArray</em>) – Velocity in z direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total energy per unit volume</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material.Material.get_total_enthalpy">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_total_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material.html#Material.get_total_enthalpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material.Material.get_total_enthalpy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes total specific enthalpy from pressure, density, and velocities.
+H = H(p, rho, velX, velY, velZ)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+<li><p><strong>u</strong> (<em>jnp.DeviceArray</em>) – Velocity in x direction</p></li>
+<li><p><strong>v</strong> (<em>jnp.DeviceArray</em>) – Velocity in y direction</p></li>
+<li><p><strong>w</strong> (<em>jnp.DeviceArray</em>) – Velocity in z direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total specific enthalpy buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.materials.material_manager">
+<span id="jaxfluids-materials-material-manager-module"></span><h2>jaxfluids.materials.material_manager module<a class="headerlink" href="#module-jaxfluids.materials.material_manager" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.materials.material_manager.</span></span><span class="sig-name descname"><span class="pre">MaterialManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">levelset_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The MaterialManager class is a wrapper class that holds the materials. The main purpose of this class is to enable
+the computation of material parameters for two-phase flows, i.e., the presence of two (different) materials.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_dynamic_viscosity">
+<span class="sig-name descname"><span class="pre">get_dynamic_viscosity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_dynamic_viscosity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_dynamic_viscosity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_energy">
+<span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_energy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_grueneisen">
+<span class="sig-name descname"><span class="pre">get_grueneisen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_grueneisen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_grueneisen" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_pressure">
+<span class="sig-name descname"><span class="pre">get_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_pressure" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_psi">
+<span class="sig-name descname"><span class="pre">get_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_psi" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_speed_of_sound">
+<span class="sig-name descname"><span class="pre">get_speed_of_sound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_speed_of_sound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_speed_of_sound" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_temperature">
+<span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_temperature" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_thermal_conductivity">
+<span class="sig-name descname"><span class="pre">get_thermal_conductivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_thermal_conductivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_thermal_conductivity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_total_energy">
+<span class="sig-name descname"><span class="pre">get_total_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_total_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_total_energy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.material_manager.MaterialManager.get_total_enthalpy">
+<span class="sig-name descname"><span class="pre">get_total_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/material_manager.html#MaterialManager.get_total_enthalpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.material_manager.MaterialManager.get_total_enthalpy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.materials.safe_ideal_gas">
+<span id="jaxfluids-materials-safe-ideal-gas-module"></span><h2>jaxfluids.materials.safe_ideal_gas module<a class="headerlink" href="#module-jaxfluids.materials.safe_ideal_gas" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.materials.safe_ideal_gas.</span></span><span class="sig-name descname"><span class="pre">SafeIdealGas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sutherland_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermal_conductivity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prandtl_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_heat_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_gas_constant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.materials.material.Material" title="jaxfluids.materials.material.Material"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.materials.material.Material</span></code></a></p>
+<p>Implements the safe ideal gas law, i.e., prevents division by zero and negative square roots</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_energy">
+<span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_energy" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_grueneisen">
+<span class="sig-name descname"><span class="pre">get_grueneisen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_grueneisen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_grueneisen" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_pressure">
+<span class="sig-name descname"><span class="pre">get_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_pressure" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_psi">
+<span class="sig-name descname"><span class="pre">get_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_psi" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_speed_of_sound">
+<span class="sig-name descname"><span class="pre">get_speed_of_sound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_speed_of_sound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_speed_of_sound" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_temperature">
+<span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_total_energy">
+<span class="sig-name descname"><span class="pre">get_total_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_total_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_total_energy" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_total_enthalpy">
+<span class="sig-name descname"><span class="pre">get_total_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/safe_ideal_gas.html#SafeIdealGas.get_total_enthalpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.safe_ideal_gas.SafeIdealGas.get_total_enthalpy" title="Permalink to this definition"></a></dt>
+<dd><p>See base class.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.materials.stiffened_gas">
+<span id="jaxfluids-materials-stiffened-gas-module"></span><h2>jaxfluids.materials.stiffened_gas module<a class="headerlink" href="#module-jaxfluids.materials.stiffened_gas" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.materials.stiffened_gas.</span></span><span class="sig-name descname"><span class="pre">StiffenedGas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sutherland_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermal_conductivity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prandtl_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_heat_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_gas_constant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">background_pressure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.materials.material.Material" title="jaxfluids.materials.material.Material"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.materials.material.Material</span></code></a></p>
+<p>Implements the stiffened gas equation of state.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_energy">
+<span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes specific internal energy
+e = e(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Specific internal energy buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_grueneisen">
+<span class="sig-name descname"><span class="pre">get_grueneisen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_grueneisen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_grueneisen" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the Grueneisen coefficient from density.
+Gamma = p_e / rho; p_e is partial derivative of pressure wrt internal specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grueneisen</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_pressure">
+<span class="sig-name descname"><span class="pre">get_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_pressure" title="Permalink to this definition"></a></dt>
+<dd><p>Computes pressure from internal energy and density.
+p = p(e, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<em>jnp.DeviceArray</em>) – Specific internal energy buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pressue buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_psi">
+<span class="sig-name descname"><span class="pre">get_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_psi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes psi from pressure and density.
+psi = p_rho; p_rho is partial derivative of pressure wrt density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Psi</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_speed_of_sound">
+<span class="sig-name descname"><span class="pre">get_speed_of_sound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_speed_of_sound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_speed_of_sound" title="Permalink to this definition"></a></dt>
+<dd><p>Computes speed of sound from pressure and density.
+c = c(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Speed of sound buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_temperature">
+<span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>Computes temperature from pressure and density.
+T = T(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Temperature buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_total_energy">
+<span class="sig-name descname"><span class="pre">get_total_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_total_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_total_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes total energy per unit volume from pressure, density, and velocities.
+E = E(p, rho, velX, velY, velZ)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+<li><p><strong>u</strong> (<em>jnp.DeviceArray</em>) – Velocity in x direction</p></li>
+<li><p><strong>v</strong> (<em>jnp.DeviceArray</em>) – Velocity in y direction</p></li>
+<li><p><strong>w</strong> (<em>jnp.DeviceArray</em>) – Velocity in z direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total energy per unit volume</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.stiffened_gas.StiffenedGas.get_total_enthalpy">
+<span class="sig-name descname"><span class="pre">get_total_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/stiffened_gas.html#StiffenedGas.get_total_enthalpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.stiffened_gas.StiffenedGas.get_total_enthalpy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes total specific enthalpy from pressure, density, and velocities.
+H = H(p, rho, velX, velY, velZ)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+<li><p><strong>u</strong> (<em>jnp.DeviceArray</em>) – Velocity in x direction</p></li>
+<li><p><strong>v</strong> (<em>jnp.DeviceArray</em>) – Velocity in y direction</p></li>
+<li><p><strong>w</strong> (<em>jnp.DeviceArray</em>) – Velocity in z direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total specific enthalpy buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.materials.tait">
+<span id="jaxfluids-materials-tait-module"></span><h2>jaxfluids.materials.tait module<a class="headerlink" href="#module-jaxfluids.materials.tait" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.materials.tait.</span></span><span class="sig-name descname"><span class="pre">Tait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit_handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.unit_handler.UnitHandler" title="jaxfluids.unit_handler.UnitHandler"><span class="pre">jaxfluids.unit_handler.UnitHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sutherland_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_viscosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermal_conductivity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">function</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prandtl_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_gas_constant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_heat_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B_param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">331000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.materials.material.Material" title="jaxfluids.materials.material.Material"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.materials.material.Material</span></code></a></p>
+<p>Implements the tait equation of state.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_energy">
+<span class="sig-name descname"><span class="pre">get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes specific internal energy
+e = e(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Specific internal energy buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_grueneisen">
+<span class="sig-name descname"><span class="pre">get_grueneisen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_grueneisen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_grueneisen" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the Grueneisen coefficient from density.
+Gamma = p_e / rho; p_e is partial derivative of pressure wrt internal specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Grueneisen</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_pressure">
+<span class="sig-name descname"><span class="pre">get_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_pressure" title="Permalink to this definition"></a></dt>
+<dd><p>Computes pressure from internal energy and density.
+p = p(e, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e</strong> (<em>jnp.DeviceArray</em>) – Specific internal energy buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pressue buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_psi">
+<span class="sig-name descname"><span class="pre">get_psi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_psi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_psi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes psi from pressure and density.
+psi = p_rho; p_rho is partial derivative of pressure wrt density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Psi</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_speed_of_sound">
+<span class="sig-name descname"><span class="pre">get_speed_of_sound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_speed_of_sound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_speed_of_sound" title="Permalink to this definition"></a></dt>
+<dd><p>Computes speed of sound from pressure and density.
+c = c(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Speed of sound buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_temperature">
+<span class="sig-name descname"><span class="pre">get_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_temperature" title="Permalink to this definition"></a></dt>
+<dd><p>Computes temperature from pressure and density.
+T = T(p, rho)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Temperature buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_total_energy">
+<span class="sig-name descname"><span class="pre">get_total_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_total_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_total_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes total energy per unit volume from pressure, density, and velocities.
+E = E(p, rho, velX, velY, velZ)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+<li><p><strong>u</strong> (<em>jnp.DeviceArray</em>) – Velocity in x direction</p></li>
+<li><p><strong>v</strong> (<em>jnp.DeviceArray</em>) – Velocity in y direction</p></li>
+<li><p><strong>w</strong> (<em>jnp.DeviceArray</em>) – Velocity in z direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total energy per unit volume</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.materials.tait.Tait.get_total_enthalpy">
+<span class="sig-name descname"><span class="pre">get_total_enthalpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/materials/tait.html#Tait.get_total_enthalpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.materials.tait.Tait.get_total_enthalpy" title="Permalink to this definition"></a></dt>
+<dd><p>Computes total specific enthalpy from pressure, density, and velocities.
+H = H(p, rho, velX, velY, velZ)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>jnp.DeviceArray</em>) – Pressure buffer</p></li>
+<li><p><strong>rho</strong> (<em>jnp.DeviceArray</em>) – Density buffer</p></li>
+<li><p><strong>u</strong> (<em>jnp.DeviceArray</em>) – Velocity in x direction</p></li>
+<li><p><strong>v</strong> (<em>jnp.DeviceArray</em>) – Velocity in y direction</p></li>
+<li><p><strong>w</strong> (<em>jnp.DeviceArray</em>) – Velocity in z direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Total specific enthalpy buffer</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.materials">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-jaxfluids.materials" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="jaxfluids.levelset.html" class="btn btn-neutral float-left" title="jaxfluids.levelset package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jaxfluids.post_process.html" class="btn btn-neutral float-right" title="jaxfluids.post_process package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

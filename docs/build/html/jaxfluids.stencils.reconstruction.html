@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.stencils.reconstruction package &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="jaxfluids.time_integration package" href="jaxfluids.time_integration.html" />
+    <link rel="prev" title="jaxfluids.stencils.levelset package" href="jaxfluids.stencils.levelset.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="jaxfluids.html">jaxfluids package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="jaxfluids.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.levelset.html">jaxfluids.levelset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.materials.html">jaxfluids.materials package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.shock_sensor.html">jaxfluids.shock_sensor package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="jaxfluids.stencils.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.html#module-jaxfluids.stencils.spatial_derivative">jaxfluids.stencils.spatial_derivative module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.html#module-jaxfluids.stencils.spatial_reconstruction">jaxfluids.stencils.spatial_reconstruction module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.stencils.html#module-jaxfluids.stencils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.boundary_condition">jaxfluids.boundary_condition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.domain_information">jaxfluids.domain_information module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.flux_computation">jaxfluids.flux_computation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.initializer">jaxfluids.initializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.input_reader">jaxfluids.input_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.simulation_manager">jaxfluids.simulation_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.space_solver">jaxfluids.space_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.unit_handler">jaxfluids.unit_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.utilities">jaxfluids.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="jaxfluids.html">jaxfluids package</a> &raquo;</li>
+          <li><a href="jaxfluids.stencils.html">jaxfluids.stencils package</a> &raquo;</li>
+      <li>jaxfluids.stencils.reconstruction package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jaxfluids.stencils.reconstruction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="jaxfluids-stencils-reconstruction-package">
+<h1>jaxfluids.stencils.reconstruction package<a class="headerlink" href="#jaxfluids-stencils-reconstruction-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.central_fourth_order">
+<span id="jaxfluids-stencils-reconstruction-central-fourth-order-module"></span><h2>jaxfluids.stencils.reconstruction.central_fourth_order module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.central_fourth_order" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.central_fourth_order.CentralFourthOrderReconstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.central_fourth_order.</span></span><span class="sig-name descname"><span class="pre">CentralFourthOrderReconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/central_fourth_order.html#CentralFourthOrderReconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.central_fourth_order.CentralFourthOrderReconstruction" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<dl class="simple">
+<dt>4th order stencil for reconstruction at the cell face</dt><dd><p>x</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line-block">
+<div class="line">|   |     |     |</div>
+</div>
+<div class="line">i-1 | i | i+1 | i+2 |</div>
+<div class="line-block">
+<div class="line">|   |     |     |</div>
+</div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.central_fourth_order.CentralFourthOrderReconstruction.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/central_fourth_order.html#CentralFourthOrderReconstruction.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.central_fourth_order.CentralFourthOrderReconstruction.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.central_second_order">
+<span id="jaxfluids-stencils-reconstruction-central-second-order-module"></span><h2>jaxfluids.stencils.reconstruction.central_second_order module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.central_second_order" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.central_second_order.CentralSecondOrderReconstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.central_second_order.</span></span><span class="sig-name descname"><span class="pre">CentralSecondOrderReconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/central_second_order.html#CentralSecondOrderReconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.central_second_order.CentralSecondOrderReconstruction" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<dl class="simple">
+<dt>2nd order stencil for reconstruction at the cell face</dt><dd><p>x</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line-block">
+<div class="line">|     |</div>
+</div>
+<div class="line">i | i+1 |</div>
+<div class="line-block">
+<div class="line">|     |</div>
+</div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.central_second_order.CentralSecondOrderReconstruction.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/central_second_order.html#CentralSecondOrderReconstruction.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.central_second_order.CentralSecondOrderReconstruction.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.teno5">
+<span id="jaxfluids-stencils-reconstruction-teno5-module"></span><h2>jaxfluids.stencils.reconstruction.teno5 module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.teno5" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.teno5.TENO5">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.teno5.</span></span><span class="sig-name descname"><span class="pre">TENO5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/teno5.html#TENO5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.teno5.TENO5" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Fu et al. - 2016 -  A family of high-order targeted ENO schemes for compressible-fluid simulations</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.teno5.TENO5.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/teno5.html#TENO5.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.teno5.TENO5.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.teno5.TENO5.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/teno5.html#TENO5.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.teno5.TENO5.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno1_js">
+<span id="jaxfluids-stencils-reconstruction-weno1-js-module"></span><h2>jaxfluids.stencils.reconstruction.weno1_js module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno1_js" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno1_js.WENO1">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno1_js.</span></span><span class="sig-name descname"><span class="pre">WENO1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno1_js.html#WENO1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno1_js.WENO1" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno1_js.WENO1.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno1_js.html#WENO1.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno1_js.WENO1.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno1_js.WENO1.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno1_js.html#WENO1.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno1_js.WENO1.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno3_fp">
+<span id="jaxfluids-stencils-reconstruction-weno3-fp-module"></span><h2>jaxfluids.stencils.reconstruction.weno3_fp module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno3_fp" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_fp.WENO3FP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno3_fp.</span></span><span class="sig-name descname"><span class="pre">WENO3FP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_fp.html#WENO3FP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_fp.WENO3FP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Gande et al. - 2020 - Modified third and fifth order WENO schemes for inviscid compressible flows</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_fp.WENO3FP.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_fp.html#WENO3FP.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_fp.WENO3FP.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_fp.WENO3FP.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_fp.html#WENO3FP.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_fp.WENO3FP.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno3_js">
+<span id="jaxfluids-stencils-reconstruction-weno3-js-module"></span><h2>jaxfluids.stencils.reconstruction.weno3_js module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno3_js" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_js.WENO3">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno3_js.</span></span><span class="sig-name descname"><span class="pre">WENO3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_js.html#WENO3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_js.WENO3" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>WENO3-JS</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_js.WENO3.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_js.html#WENO3.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_js.WENO3.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_js.WENO3.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_js.html#WENO3.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_js.WENO3.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno3_n">
+<span id="jaxfluids-stencils-reconstruction-weno3-n-module"></span><h2>jaxfluids.stencils.reconstruction.weno3_n module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno3_n" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_n.WENO3N">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno3_n.</span></span><span class="sig-name descname"><span class="pre">WENO3N</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_n.html#WENO3N"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_n.WENO3N" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>WENO3N [summary]</p>
+<p>Xiaoshuai et al. - 2015 - A high-resolution hybrid scheme for hyperbolic conservation laws</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_n.WENO3N.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_n.html#WENO3N.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_n.WENO3N.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_n.WENO3N.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_n.html#WENO3N.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_n.WENO3N.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno3_nn_opt1">
+<span id="jaxfluids-stencils-reconstruction-weno3-nn-opt1-module"></span><h2>jaxfluids.stencils.reconstruction.weno3_nn_opt1 module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno3_nn_opt1" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_nn_opt1.WENO3NNOPT1">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno3_nn_opt1.</span></span><span class="sig-name descname"><span class="pre">WENO3NNOPT1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_nn_opt1.html#WENO3NNOPT1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_nn_opt1.WENO3NNOPT1" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Bezgin et al. - 2021 -</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_nn_opt1.WENO3NNOPT1.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_nn_opt1.html#WENO3NNOPT1.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_nn_opt1.WENO3NNOPT1.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_nn_opt1.WENO3NNOPT1.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_nn_opt1.html#WENO3NNOPT1.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_nn_opt1.WENO3NNOPT1.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno3_nn_opt2">
+<span id="jaxfluids-stencils-reconstruction-weno3-nn-opt2-module"></span><h2>jaxfluids.stencils.reconstruction.weno3_nn_opt2 module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno3_nn_opt2" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_nn_opt2.WENO3NNOPT2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno3_nn_opt2.</span></span><span class="sig-name descname"><span class="pre">WENO3NNOPT2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_nn_opt2.html#WENO3NNOPT2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_nn_opt2.WENO3NNOPT2" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_nn_opt2.WENO3NNOPT2.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_nn_opt2.html#WENO3NNOPT2.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_nn_opt2.WENO3NNOPT2.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_nn_opt2.WENO3NNOPT2.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_nn_opt2.html#WENO3NNOPT2.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_nn_opt2.WENO3NNOPT2.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno3_z">
+<span id="jaxfluids-stencils-reconstruction-weno3-z-module"></span><h2>jaxfluids.stencils.reconstruction.weno3_z module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno3_z" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_z.WENO3Z">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno3_z.</span></span><span class="sig-name descname"><span class="pre">WENO3Z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_z.html#WENO3Z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_z.WENO3Z" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Don and Borges - 2013 - Accuracy of the WENO conservative FD schemes</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_z.WENO3Z.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_z.html#WENO3Z.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_z.WENO3Z.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno3_z.WENO3Z.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno3_z.html#WENO3Z.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno3_z.WENO3Z.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno5_js">
+<span id="jaxfluids-stencils-reconstruction-weno5-js-module"></span><h2>jaxfluids.stencils.reconstruction.weno5_js module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno5_js" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno5_js.WENO5">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno5_js.</span></span><span class="sig-name descname"><span class="pre">WENO5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno5_js.html#WENO5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno5_js.WENO5" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno5_js.WENO5.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno5_js.html#WENO5.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno5_js.WENO5.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno5_js.WENO5.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno5_js.html#WENO5.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno5_js.WENO5.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno5_z">
+<span id="jaxfluids-stencils-reconstruction-weno5-z-module"></span><h2>jaxfluids.stencils.reconstruction.weno5_z module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno5_z" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno5_z.WENO5Z">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno5_z.</span></span><span class="sig-name descname"><span class="pre">WENO5Z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno5_z.html#WENO5Z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno5_z.WENO5Z" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Borges et al. - 2008 - An improved WENO scheme for hyperbolic conservation laws</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno5_z.WENO5Z.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno5_z.html#WENO5Z.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno5_z.WENO5Z.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno5_z.WENO5Z.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno5_z.html#WENO5Z.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno5_z.WENO5Z.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno6_cu">
+<span id="jaxfluids-stencils-reconstruction-weno6-cu-module"></span><h2>jaxfluids.stencils.reconstruction.weno6_cu module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno6_cu" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cu.WENO6CU">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno6_cu.</span></span><span class="sig-name descname"><span class="pre">WENO6CU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cu.html#WENO6CU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cu.WENO6CU" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Hu et al. - 2010 - An adaptive central-upwind WENO scheme</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cu.WENO6CU.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cu.html#WENO6CU.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cu.WENO6CU.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cu.WENO6CU.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cu.html#WENO6CU.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cu.WENO6CU.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno6_cum1">
+<span id="jaxfluids-stencils-reconstruction-weno6-cum1-module"></span><h2>jaxfluids.stencils.reconstruction.weno6_cum1 module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno6_cum1" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cum1.WENO6CUM1">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno6_cum1.</span></span><span class="sig-name descname"><span class="pre">WENO6CUM1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cum1.html#WENO6CUM1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cum1.WENO6CUM1" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Hu et al. - 2011 - Scale separation for implicit large eddy simulation</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cum1.WENO6CUM1.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cum1.html#WENO6CUM1.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cum1.WENO6CUM1.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cum1.WENO6CUM1.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cum1.html#WENO6CUM1.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cum1.WENO6CUM1.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno6_cum2">
+<span id="jaxfluids-stencils-reconstruction-weno6-cum2-module"></span><h2>jaxfluids.stencils.reconstruction.weno6_cum2 module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno6_cum2" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cum2.WENO6CUM2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno6_cum2.</span></span><span class="sig-name descname"><span class="pre">WENO6CUM2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cum2.html#WENO6CUM2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cum2.WENO6CUM2" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Hu et al. - 2011 - Scale separation for implicit large eddy simulation</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cum2.WENO6CUM2.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cum2.html#WENO6CUM2.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cum2.WENO6CUM2.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cum2.WENO6CUM2.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cum2.html#WENO6CUM2.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cum2.WENO6CUM2.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno6_cumd">
+<span id="jaxfluids-stencils-reconstruction-weno6-cumd-module"></span><h2>jaxfluids.stencils.reconstruction.weno6_cumd module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno6_cumd" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cumd.WENO6CUMD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno6_cumd.</span></span><span class="sig-name descname"><span class="pre">WENO6CUMD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cumd.html#WENO6CUMD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cumd.WENO6CUMD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Hu et al. - 2010 - An adaptive central-upwind WENO scheme</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cumd.WENO6CUMD.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cumd.html#WENO6CUMD.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cumd.WENO6CUMD.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno6_cumd.WENO6CUMD.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno6_cumd.html#WENO6CUMD.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno6_cumd.WENO6CUMD.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno7_js">
+<span id="jaxfluids-stencils-reconstruction-weno7-js-module"></span><h2>jaxfluids.stencils.reconstruction.weno7_js module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno7_js" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno7_js.WENO7">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno7_js.</span></span><span class="sig-name descname"><span class="pre">WENO7</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno7_js.html#WENO7"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno7_js.WENO7" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Balsara &amp; Shu - 2000 -</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno7_js.WENO7.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno7_js.html#WENO7.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno7_js.WENO7.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno7_js.WENO7.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno7_js.html#WENO7.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno7_js.WENO7.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction.weno9_js">
+<span id="jaxfluids-stencils-reconstruction-weno9-js-module"></span><h2>jaxfluids.stencils.reconstruction.weno9_js module<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction.weno9_js" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno9_js.WENO9">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.stencils.reconstruction.weno9_js.</span></span><span class="sig-name descname"><span class="pre">WENO9</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inactive_axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.11)"><span class="pre">List</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno9_js.html#WENO9"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno9_js.WENO9" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="jaxfluids.stencils.html#jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction" title="jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.stencils.spatial_reconstruction.SpatialReconstruction</span></code></a></p>
+<p>Balsara &amp; Shu - 2000 -</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno9_js.WENO9.reconstruct_xi">
+<span class="sig-name descname"><span class="pre">reconstruct_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno9_js.html#WENO9.reconstruct_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno9_js.WENO9.reconstruct_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstruction of buffer quantity along axis specified by axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buffer</strong> (<em>jnp.DeviceArray</em>) – Buffer that will be reconstructed</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial axis along which values are reconstructed</p></li>
+<li><p><strong>j</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
+of an interface</p></li>
+<li><p><strong>dx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>, </em><em>optional</em>) – cell size, defaults to None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with cell face reconstructed values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.stencils.reconstruction.weno9_js.WENO9.set_slices_stencil">
+<span class="sig-name descname"><span class="pre">set_slices_stencil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/stencils/reconstruction/weno9_js.html#WENO9.set_slices_stencil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.stencils.reconstruction.weno9_js.WENO9.set_slices_stencil" title="Permalink to this definition"></a></dt>
+<dd><p>Sets slice objects used in eigendecomposition for flux-splitting scheme.
+In the flux-splitting scheme, each n-point stencil has to be separately
+accessible as each stencil is transformed into characteristic space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.stencils.reconstruction">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-jaxfluids.stencils.reconstruction" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="jaxfluids.stencils.levelset.html" class="btn btn-neutral float-left" title="jaxfluids.stencils.levelset package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jaxfluids.time_integration.html" class="btn btn-neutral float-right" title="jaxfluids.time_integration package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.flux_computation &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.flux_computation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.flux_computation</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.domain_information</span> <span class="kn">import</span> <span class="n">DomainInformation</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.iles.ALDM</span> <span class="kn">import</span> <span class="n">ALDM</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.solvers.riemann_solvers</span> <span class="kn">import</span> <span class="n">DICT_RIEMANN_SOLVER</span><span class="p">,</span> <span class="n">DICT_SIGNAL_SPEEDS</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.solvers.high_order_godunov</span> <span class="kn">import</span> <span class="n">HighOrderGodunov</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.solvers.flux_splitting_scheme</span> <span class="kn">import</span> <span class="n">FluxSplittingScheme</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.stencils</span> <span class="kn">import</span> <span class="n">DICT_SPATIAL_RECONSTRUCTION</span>
+
+<div class="viewcode-block" id="FluxComputer"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.flux_computation.FluxComputer">[docs]</a><span class="k">class</span> <span class="nc">FluxComputer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;The Flux Computer sets up the user-specified flux function</span>
+<span class="sd">    for the calculation of the convective terms. The flux calculation</span>
+<span class="sd">    is called in the space solver by compute_convective_flux_xi().</span>
+
+<span class="sd">    There are three general options for the convective flux function.</span>
+<span class="sd">    1) High-order Godunov Scheme</span>
+<span class="sd">    2) Flux-splitting Scheme</span>
+<span class="sd">    3) ALDM Scheme</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numerical_setup</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">material_manager</span><span class="p">:</span> <span class="n">MaterialManager</span><span class="p">,</span> <span class="n">domain_information</span><span class="p">:</span> <span class="n">DomainInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">convective_solver</span> <span class="o">=</span> <span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;convective_solver&quot;</span><span class="p">]</span> 
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">convective_solver</span> <span class="o">==</span> <span class="s2">&quot;GODUNOV&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flux_computer</span> <span class="o">=</span> <span class="n">HighOrderGodunov</span><span class="p">(</span>
+                <span class="n">material_manager</span>        <span class="o">=</span> <span class="n">material_manager</span><span class="p">,</span> 
+                <span class="n">domain_information</span>      <span class="o">=</span> <span class="n">domain_information</span><span class="p">,</span> 
+                <span class="n">riemann_solver</span>          <span class="o">=</span> <span class="n">DICT_RIEMANN_SOLVER</span><span class="p">[</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;riemann_solver&quot;</span><span class="p">]](</span><span class="n">material_manager</span><span class="o">=</span><span class="n">material_manager</span><span class="p">,</span> <span class="n">signal_speed</span><span class="o">=</span><span class="n">DICT_SIGNAL_SPEEDS</span><span class="p">[</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;signal_speed&quot;</span><span class="p">]]),</span> 
+                <span class="n">reconstruction_stencil</span>  <span class="o">=</span> <span class="n">DICT_SPATIAL_RECONSTRUCTION</span><span class="p">[</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;spatial_reconstructor&quot;</span><span class="p">]](</span><span class="n">nh</span><span class="o">=</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_conservatives</span><span class="p">,</span> <span class="n">inactive_axis</span><span class="o">=</span><span class="n">domain_information</span><span class="o">.</span><span class="n">inactive_axis</span><span class="p">),</span> 
+                <span class="n">reconstruction_var</span>      <span class="o">=</span> <span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;reconstruction_var&quot;</span><span class="p">],</span> 
+                <span class="n">is_safe_reconstruction</span>  <span class="o">=</span> <span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;is_safe_reconstruction&quot;</span><span class="p">]</span>
+                <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">convective_solver</span> <span class="o">==</span> <span class="s2">&quot;FLUX-SPLITTING&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flux_computer</span> <span class="o">=</span> <span class="n">FluxSplittingScheme</span><span class="p">(</span>
+                <span class="n">material_manager</span>        <span class="o">=</span> <span class="n">material_manager</span><span class="p">,</span> 
+                <span class="n">domain_information</span>      <span class="o">=</span> <span class="n">domain_information</span><span class="p">,</span> 
+                <span class="n">flux_splitting</span>          <span class="o">=</span> <span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;flux_splitting&quot;</span><span class="p">],</span> 
+                <span class="n">reconstruction_stencil</span>  <span class="o">=</span> <span class="n">DICT_SPATIAL_RECONSTRUCTION</span><span class="p">[</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;convective_fluxes&quot;</span><span class="p">][</span><span class="s2">&quot;spatial_reconstructor&quot;</span><span class="p">]](</span><span class="n">nh</span><span class="o">=</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_conservatives</span><span class="p">,</span> <span class="n">inactive_axis</span><span class="o">=</span><span class="n">domain_information</span><span class="o">.</span><span class="n">inactive_axis</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">convective_solver</span> <span class="o">==</span> <span class="s2">&quot;ALDM&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flux_computer</span> <span class="o">=</span> <span class="n">ALDM</span><span class="p">(</span>
+                <span class="n">domain_information</span>  <span class="o">=</span> <span class="n">domain_information</span><span class="p">,</span> 
+                <span class="n">material_manager</span>    <span class="o">=</span> <span class="n">material_manager</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="FluxComputer.compute_convective_flux_xi"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.flux_computation.FluxComputer.compute_convective_flux_xi">[docs]</a>    <span class="k">def</span> <span class="nf">compute_convective_flux_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">ml_parameters_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the convective fluxes. </span>
+
+<span class="sd">        :param primes: Primitive variable buffer</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param cons: Conservative variable buffer</span>
+<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :param axis: Spatial direction</span>
+<span class="sd">        :type axis: int</span>
+<span class="sd">        :param ml_parameters_dict: Dictionary of neural network weights, defaults to None</span>
+<span class="sd">        :type ml_parameters_dict: Union[Dict, None], optional</span>
+<span class="sd">        :param ml_networks_dict: Dictionary of neural network architectures, defaults to None</span>
+<span class="sd">        :type ml_networks_dict: Union[Dict, None], optional</span>
+<span class="sd">        :return: Convective fluxes in axis direction</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">fluxes_xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flux_computer</span><span class="o">.</span><span class="n">compute_fluxes_xi</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">cons</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> 
+            <span class="n">ml_parameters_dict</span><span class="o">=</span><span class="n">ml_parameters_dict</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="o">=</span><span class="n">ml_networks_dict</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">fluxes_xi</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

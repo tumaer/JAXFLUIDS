@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.turb.turb_utils &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.turb.turb_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.turb.turb_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1">################################################################################</span>
+
+<span class="c1"># BASICS FOR FFT/IFFT</span>
+
+<div class="viewcode-block" id="is_power_of_two"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.is_power_of_two">[docs]</a><span class="k">def</span> <span class="nf">is_power_of_two</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">is_integer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="velocity_rfftn"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.velocity_rfftn">[docs]</a><span class="k">def</span> <span class="nf">velocity_rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    RFFTN </span>
+<span class="sd">    velocity : (3, Nx, Ny, Nz)</span>
+<span class="sd">    velocity_hat: (3, Nfx, Ny, Nz)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">is_power_of_two</span><span class="p">(</span><span class="n">Nx</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_power_of_two</span><span class="p">(</span><span class="n">Ny</span><span class="p">)</span> <span class="ow">and</span> <span class="n">is_power_of_two</span><span class="p">(</span><span class="n">Nz</span><span class="p">))</span>
+    
+    <span class="n">Nxf</span> <span class="o">=</span> <span class="n">Nx</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">Nxf</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">velocity_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">velocity_hat</span></div>
+
+<div class="viewcode-block" id="get_real_wavenumber_grid"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.get_real_wavenumber_grid">[docs]</a><span class="k">def</span> <span class="nf">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">N</span><span class="p">)</span> <span class="c1"># for y and z direction</span>
+    <span class="n">kx</span> <span class="o">=</span> <span class="n">k</span><span class="p">[:</span><span class="n">Nf</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">kx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">k_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">k_field</span><span class="p">,</span> <span class="n">k</span> </div>
+
+<span class="c1">################################################################################</span>
+
+<span class="c1"># FLOW FIELD DATA</span>
+
+<div class="viewcode-block" id="calculate_vorticity_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_vorticity_spectral">[docs]</a><span class="k">def</span> <span class="nf">calculate_vorticity_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">k_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="n">Nxf</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">velocity_hat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">Nx</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">Nxf</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="c1"># omega = (du3/dx2 - du2/dx3, du1/dx3 - du3/dx1, du2/dx1 - du1/dx2)</span>
+    <span class="n">omega</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">omega</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">omega</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">omega</span> </div>
+
+<div class="viewcode-block" id="calculate_vorticity"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_vorticity">[docs]</a><span class="k">def</span> <span class="nf">calculate_vorticity</span><span class="p">(</span><span class="n">velocity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates vorticity in spectral space</span>
+<span class="sd">    velocity: (3, Nx, Ny, Nz)</span>
+
+<span class="sd">    omega: (3, Nx, Ny, Nz)</span>
+<span class="sd">    omega = [   du3/dx2 - du2/dx3</span>
+<span class="sd">                du1/dx3 - du3/dx1</span>
+<span class="sd">                du2/dx1 - du1/dx2]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">_</span>   <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">velocity_rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">calculate_vorticity_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">,</span> <span class="n">k_field</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="calculate_sheartensor_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_sheartensor_spectral">[docs]</a><span class="k">def</span> <span class="nf">calculate_sheartensor_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">k_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="n">Nxf</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">velocity_hat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">Nx</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">Nxf</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># dui/dxj = IFFT ( 1j * k_j * u_i_hat  )</span>
+    <span class="n">duidj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">duidj</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">k_field</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">duidj</span></div>
+
+<div class="viewcode-block" id="calculate_sheartensor"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_sheartensor">[docs]</a><span class="k">def</span> <span class="nf">calculate_sheartensor</span><span class="p">(</span><span class="n">velocity</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates shear tensor in spectral space </span>
+
+<span class="sd">    velocity: (3, Nx, Ny, Nz) array</span>
+
+<span class="sd">    duidj: (3, 3, Nx, Ny, Nz) array</span>
+<span class="sd">    duidj = [</span>
+<span class="sd">        du1/dx1 du1/dx2 du1/dx3</span>
+<span class="sd">        du2/dx1 du2/dx2 du2/dx3</span>
+<span class="sd">        du3/dx1 du3/dx2 du3/dx3</span>
+<span class="sd">    ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">_</span>   <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">velocity_rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">calculate_sheartensor_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">,</span> <span class="n">k_field</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="calculate_dilatation_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_dilatation_spectral">[docs]</a><span class="k">def</span> <span class="nf">calculate_dilatation_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">k_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="n">dilatation_spectral</span> <span class="o">=</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">dilatation_real</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">dilatation_spectral</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">dilatation_real</span></div>
+
+<div class="viewcode-block" id="calculate_dilatation"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_dilatation">[docs]</a><span class="k">def</span> <span class="nf">calculate_dilatation</span><span class="p">(</span><span class="n">velocity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates dilatation in spectral space </span>
+
+<span class="sd">    velocity: (3, Nx, Ny, Nz) array</span>
+
+<span class="sd">    dilatation: (Nx, Ny, Nz) array</span>
+<span class="sd">    dilatation = du1/dx1 + du2/dx2 + du3/dx3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">velocity</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">_</span>   <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">velocity_rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">calculate_dilatation_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">,</span> <span class="n">k_field</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="calculate_strain"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_utils.calculate_strain">[docs]</a><span class="k">def</span> <span class="nf">calculate_strain</span><span class="p">(</span><span class="n">duidj</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; duidj: (3,3,Nx,Ny,Nz) &quot;&quot;&quot;</span>
+    <span class="n">S_ij</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span> <span class="n">duidj</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">duidj</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">S_ij</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.post_process.post_process_utils &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.post_process.post_process_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.post_process.post_process_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">from</span> <span class="nn">matplotlib.animation</span> <span class="kn">import</span> <span class="n">FuncAnimation</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="kn">import</span> <span class="n">make_axes_locatable</span>
+
+<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quantities</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
+
+    <span class="sd">&quot;&quot;&quot;Loads .h5 result files generated by a jaxfluids simulation.</span>
+
+<span class="sd">    :param path: Path to the folder containing the .h5 files for the time snapshots</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param quantities: Quantities to load</span>
+<span class="sd">    :type quantities: List</span>
+<span class="sd">    :param start: Starting time snapshot to load, defaults to 0</span>
+<span class="sd">    :type start: int, optional</span>
+<span class="sd">    :param end: Ending time snapshot to load, defaults to None</span>
+<span class="sd">    :type end: int, optional</span>
+<span class="sd">    :param N: Interval of time snapshots to load, defaults to 1</span>
+<span class="sd">    :type N: int, optional</span>
+<span class="sd">    :return: Cell centers coordinates, cell sizes, times and dictionary of buffers</span>
+<span class="sd">    :rtype: Tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># SANITY CHECK</span>
+    <span class="n">available_quantities</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;primes&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;velocityX&quot;</span><span class="p">,</span> <span class="s2">&quot;velocityY&quot;</span><span class="p">,</span> <span class="s2">&quot;velocityZ&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;cons&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">,</span> <span class="s2">&quot;momentumX&quot;</span><span class="p">,</span> <span class="s2">&quot;momentumY&quot;</span><span class="p">,</span> <span class="s2">&quot;momentumZ&quot;</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;levelset&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">,</span> <span class="s2">&quot;volume_fraction&quot;</span><span class="p">,</span> <span class="s2">&quot;mask_real&quot;</span><span class="p">,</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;interface_pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;interface_velocity&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;real_fluid&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="s2">&quot;real_density&quot;</span><span class="p">,</span> <span class="s2">&quot;real_velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;real_velocityX&quot;</span><span class="p">,</span> <span class="s2">&quot;real_velocityY&quot;</span><span class="p">,</span> <span class="s2">&quot;real_velocityZ&quot;</span><span class="p">,</span> <span class="s2">&quot;real_pressure&quot;</span><span class="p">,</span> <span class="s2">&quot;real_temperature&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;real_mass&quot;</span><span class="p">,</span> <span class="s2">&quot;real_momentum&quot;</span><span class="p">,</span> <span class="s2">&quot;real_momentumX&quot;</span><span class="p">,</span> <span class="s2">&quot;real_momentumY&quot;</span><span class="p">,</span> <span class="s2">&quot;real_momentumZ&quot;</span><span class="p">,</span> <span class="s2">&quot;real_energy&quot;</span> <span class="p">],</span>
+        <span class="s2">&quot;miscellaneous&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mach_number&quot;</span><span class="p">,</span> <span class="s2">&quot;schlieren&quot;</span><span class="p">,</span> <span class="s2">&quot;absolute_velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">,</span> <span class="s2">&quot;absolute_vorticity&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">assert</span> <span class="n">flag</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> not available.&quot;</span> <span class="o">%</span> <span class="n">quant</span>
+
+    <span class="c1"># SEARCH DIRECTORY FOR FILES</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h5&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;nan&quot;</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">continue</span> 
+            <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">5</span><span class="p">:]))</span>
+    <span class="n">indices</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">times</span><span class="p">))</span>
+    <span class="n">times</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">times</span><span class="p">)[</span><span class="n">indices</span><span class="p">][</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">:</span><span class="n">N</span><span class="p">]</span>
+    <span class="n">files</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">files</span><span class="p">)[</span><span class="n">indices</span><span class="p">][</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">:</span><span class="n">N</span><span class="p">]</span>
+    <span class="n">no_times</span>    <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+
+
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+
+        <span class="c1"># DOMAIN INFORMATION</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/gridX&quot;</span><span class="p">][:]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/gridY&quot;</span><span class="p">][:]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/gridZ&quot;</span><span class="p">][:]</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/cellsizeX&quot;</span><span class="p">][()]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/cellsizeY&quot;</span><span class="p">][()]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/cellsizeZ&quot;</span><span class="p">][()]</span>
+
+        <span class="n">cell_centers</span>    <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span>
+        <span class="n">cell_sizes</span>      <span class="o">=</span> <span class="p">[</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">]</span>
+
+        <span class="n">nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">ny</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">nz</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+        <span class="c1"># CHECK IF PRESENT H5FILES CONTAIN FLUID-FLUID RESULTS</span>
+        <span class="n">fluid_fluid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s2">&quot;real_fluid&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">fluid_fluid</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="s2">&quot;primes&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">first_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">first_key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+                <span class="n">fluid_fluid</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="s2">&quot;cons&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">first_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;cons&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">first_key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+                <span class="n">fluid_fluid</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># CREATE BUFFERS</span>
+    <span class="n">data_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                <span class="n">quantity_type</span> <span class="o">=</span> <span class="n">key</span>
+                <span class="k">break</span>
+
+        <span class="c1"># PRIMITIVES</span>
+        <span class="k">if</span> <span class="n">quantity_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">,</span> <span class="s2">&quot;cons&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">fluid_fluid</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">]:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">]:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+
+        <span class="c1"># REAL FLUID</span>
+        <span class="k">elif</span> <span class="n">quantity_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">,</span> <span class="s2">&quot;real_fluid&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;real_velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;real_momentum&quot;</span><span class="p">]:</span>
+                <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">quant</span> <span class="o">==</span> <span class="s2">&quot;interface_pressure&quot;</span><span class="p">:</span>
+                <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+
+        <span class="c1"># MISCELLANEOUS</span>
+        <span class="k">elif</span> <span class="n">quantity_type</span> <span class="o">==</span> <span class="s2">&quot;miscellaneous&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">quant</span> <span class="o">==</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">:</span>
+                <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">no_times</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">))</span>
+
+        <span class="c1"># MASS FLOW FORCING</span>
+        <span class="k">elif</span> <span class="n">quant</span> <span class="o">==</span> <span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">:</span>
+            <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">no_times</span><span class="p">)</span>
+
+    <span class="c1"># FILL BUFFERS</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading time snapshot </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+
+            <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+                
+                <span class="c1"># LEVELSET</span>
+                <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">]:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;levelset/&quot;</span> <span class="o">+</span> <span class="n">quant</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="c1"># PRIMITIVES</span>
+                <span class="k">elif</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">fluid_fluid</span> <span class="k">else</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">quant_name_h5</span> <span class="o">=</span> <span class="n">quant</span> <span class="o">+</span> <span class="s2">&quot;_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">j</span> <span class="k">if</span> <span class="n">fluid_fluid</span> <span class="k">else</span> <span class="n">quant</span>
+                        <span class="n">s_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">fluid_fluid</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][</span><span class="n">s_1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/&quot;</span> <span class="o">+</span> <span class="n">quant_name_h5</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="c1"># CONSERVATIVES</span>
+                <span class="k">elif</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="s2">&quot;cons&quot;</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="k">if</span> <span class="n">fluid_fluid</span> <span class="k">else</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">quant_name_h5</span> <span class="o">=</span> <span class="n">quant</span> <span class="o">+</span> <span class="s2">&quot;_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">j</span> <span class="k">if</span> <span class="n">fluid_fluid</span> <span class="k">else</span> <span class="n">quant</span>
+                        <span class="n">s_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">fluid_fluid</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][</span><span class="n">s_1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;cons/&quot;</span> <span class="o">+</span> <span class="n">quant_name_h5</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="c1"># REAL FLUID</span>
+                <span class="k">elif</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="s2">&quot;real_fluid&quot;</span><span class="p">]:</span>
+                    <span class="n">quant_name_h5</span> <span class="o">=</span> <span class="n">quant</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;real_fluid/&quot;</span> <span class="o">+</span> <span class="n">quant_name_h5</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="c1"># MISCELLANEOUS</span>
+                <span class="k">elif</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">available_quantities</span><span class="p">[</span><span class="s2">&quot;miscellaneous&quot;</span><span class="p">]:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;miscellaneous/&quot;</span> <span class="o">+</span> <span class="n">quant</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span>                    
+
+                <span class="c1"># MASS FLOW FORCING</span>
+                <span class="k">elif</span> <span class="n">quant</span> <span class="o">==</span> <span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">:</span>
+                    <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing/scalar_value&quot;</span><span class="p">][()]</span>
+
+    <span class="k">return</span> <span class="n">cell_centers</span><span class="p">,</span> <span class="n">cell_sizes</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">data_dictionary</span></div>
+
+
+<div class="viewcode-block" id="create_contourplot"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_contourplot">[docs]</a><span class="k">def</span> <span class="nf">create_contourplot</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plane</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;xy&quot;</span><span class="p">,</span>
+        <span class="n">plane_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">static_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_anim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a subplot of 2D pcolormesh plots and subsequently creates an animation.</span>
+<span class="sd">    If the levelset argument is provided, the interface</span>
+<span class="sd">    will be visualized as an isoline. If the static_time argument is provided, no animation is created,</span>
+<span class="sd">    but a plot at this time will be shown.</span>
+
+<span class="sd">    :param data_dictionary: Data buffers</span>
+<span class="sd">    :type data_dictionary: Dict</span>
+<span class="sd">    :param cell_centers: Cell center coordinates</span>
+<span class="sd">    :type cell_centers: List</span>
+<span class="sd">    :param times: Times</span>
+<span class="sd">    :type times: np.ndarray</span>
+<span class="sd">    :param levelset: Levelset buffer, defaults to None</span>
+<span class="sd">    :type levelset: np.ndarray, optional</span>
+<span class="sd">    :param nrows_ncols: Shape of the subplot, defaults to None</span>
+<span class="sd">    :type nrows_ncols: Tuple, optional</span>
+<span class="sd">    :param plane: Plane to slice, defaults to &quot;xy&quot;</span>
+<span class="sd">    :type plane: str, optional</span>
+<span class="sd">    :param plane_value: Value of remaining axis to slice, defaults to 0.0</span>
+<span class="sd">    :type plane_value: float, optional</span>
+<span class="sd">    :param static_time: Static time to plot, defaults to None</span>
+<span class="sd">    :type static_time: float, optional</span>
+<span class="sd">    :param save_fig: Path to save the static time figure, defaults to None</span>
+<span class="sd">    :type save_fig: str, optional</span>
+<span class="sd">    :param save_anim: Path to save the animation, defaults to None</span>
+<span class="sd">    :type save_anim: str, optional</span>
+<span class="sd">    :param interval: Interval in ms for the animation, defaults to 50</span>
+<span class="sd">    :type interval: int, optional</span>
+<span class="sd">    :param dpi: Resolution in dpi, defaults to 100</span>
+<span class="sd">    :type dpi: int, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># CELL CENTERS</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">cell_centers</span>
+    
+    <span class="c1"># ROWS AND COLUMNS</span>
+    <span class="n">nrows_ncols</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="k">if</span> <span class="n">nrows_ncols</span> <span class="o">==</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">nrows_ncols</span>
+
+    <span class="c1"># SLICE PLANE</span>
+    <span class="k">if</span> <span class="n">plane</span> <span class="o">==</span> <span class="s2">&quot;xy&quot;</span><span class="p">:</span>
+        <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">plane_value</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][:,:,:,</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">]</span>
+        <span class="n">levelset</span> <span class="o">=</span> <span class="n">levelset</span><span class="p">[:,:,:,</span><span class="n">index</span><span class="p">]</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">plane</span> <span class="o">==</span> <span class="s2">&quot;xz&quot;</span><span class="p">:</span>
+        <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">plane_value</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][:,:,</span><span class="n">index</span><span class="p">,:]</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">]</span>
+        <span class="n">levelset</span> <span class="o">=</span> <span class="n">levelset</span><span class="p">[:,:,</span><span class="n">index</span><span class="p">,:]</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">plane</span> <span class="o">==</span> <span class="s2">&quot;yz&quot;</span><span class="p">:</span>
+        <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">plane_value</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][:,</span><span class="n">index</span><span class="p">,:,:]</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">]</span>
+        <span class="n">levelset</span> <span class="o">=</span> <span class="n">levelset</span><span class="p">[:,</span><span class="n">index</span><span class="p">,:,:]</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;plane does not exist&quot;</span>
+
+    <span class="c1"># TITLES</span>
+    <span class="n">titles</span> <span class="o">=</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="c1"># MINMAX VALUES</span>
+    <span class="n">minmax</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">minmax</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">])</span>
+
+    <span class="c1"># STATIC PLOT</span>
+    <span class="k">if</span> <span class="n">static_time</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">index_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">static_time</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">index_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># CREATE SUBPLOTS</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">,</span> <span class="n">pciset_list</span> <span class="o">=</span> <span class="n">create_figure_2D</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">levelset</span><span class="p">,</span>
+        <span class="n">nrows_ncols</span><span class="p">,</span> <span class="n">titles</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">minmax</span><span class="p">,</span> <span class="n">index_time</span><span class="p">)</span>
+
+    <span class="c1"># SAVE STATIC PLOT</span>
+    <span class="k">if</span> <span class="n">save_fig</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span> <span class="o">%</span> <span class="n">save_fig</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">static_time</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="c1"># CREATE ANIMATION</span>
+    <span class="n">ani</span> <span class="o">=</span> <span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">update_2D</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">fargs</span><span class="o">=</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">,</span> <span class="n">pciset_list</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_anim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">save_anim</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.avi&quot;</span><span class="p">,</span> <span class="s2">&quot;.mp4&quot;</span><span class="p">)):</span>
+            <span class="n">ani</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_anim</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ani</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.gif&quot;</span> <span class="o">%</span> <span class="n">save_anim</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="create_lineplot"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_lineplot">[docs]</a><span class="k">def</span> <span class="nf">create_lineplot</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span>
+        <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">static_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_anim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates a subplot of 1D line plots. If the levelset argument is provided, the interface</span>
+<span class="sd">    will be visualized as an isoline. If the static_time argument is provided, no animation is created,</span>
+<span class="sd">    but a plot at this time will be shown.</span>
+
+<span class="sd">    :param data_dictionary: Data buffers</span>
+<span class="sd">    :type data_dictionary: List</span>
+<span class="sd">    :param cell_centers: Cell center coordinates</span>
+<span class="sd">    :type cell_centers: List</span>
+<span class="sd">    :param times: Time buffer</span>
+<span class="sd">    :type times: np.ndarray</span>
+<span class="sd">    :param nrows_ncols: Shape of subplots</span>
+<span class="sd">    :type nrows_ncols: Tuple</span>
+<span class="sd">    :param axis: Axis to slice, defaults to &quot;x&quot;</span>
+<span class="sd">    :type axis: str, optional</span>
+<span class="sd">    :param values: Values of remaining axis to slice, defaults to [0.0,0.0]</span>
+<span class="sd">    :type values: List, optional</span>
+<span class="sd">    :param static_time: Static time, defaults to None</span>
+<span class="sd">    :type static_time: float, optional</span>
+<span class="sd">    :param save_fig: Path to save static plot, defaults to None</span>
+<span class="sd">    :type save_fig: str, optional</span>
+<span class="sd">    :param save_anim: Path to save animation, defaults to None</span>
+<span class="sd">    :type save_anim: str, optional</span>
+<span class="sd">    :param interval: Interval in ms for animation, defaults to 50</span>
+<span class="sd">    :type interval: int, optional</span>
+<span class="sd">    :param dpi: Resolution in dpi, defaults to 100</span>
+<span class="sd">    :type dpi: int, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># SLICE AXIS</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">cell_centers</span>
+    <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span>
+        <span class="n">coord</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">index1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">index2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][:,:,</span><span class="n">index1</span><span class="p">,</span><span class="n">index2</span><span class="p">]</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">]</span>
+    <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+        <span class="n">coord</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="n">index1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">index2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][:,</span><span class="n">index1</span><span class="p">,:,</span><span class="n">index2</span><span class="p">]</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">]</span>
+    <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span>
+        <span class="n">coord</span> <span class="o">=</span> <span class="n">z</span>
+        <span class="n">index1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">index2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">][:,</span><span class="n">index1</span><span class="p">,</span><span class="n">index2</span><span class="p">,:]</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;axis does not exist&quot;</span>
+
+    <span class="c1"># STATIC TIME INDEX</span>
+    <span class="k">if</span> <span class="n">static_time</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">index_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">times</span> <span class="o">-</span> <span class="n">static_time</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">index_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># CREATE SUBPLOT</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes</span><span class="p">]</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span><span class="mi">8</span><span class="p">])</span>
+
+    <span class="c1"># PLOT DATA</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">quant</span><span class="p">,</span> <span class="n">ax</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">axes</span><span class="p">)):</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index_time</span><span class="p">],</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">quant</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">quant</span><span class="p">)</span>
+    
+    <span class="c1"># SAVE STATIC PLOT</span>
+    <span class="k">if</span> <span class="n">save_fig</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span> <span class="o">%</span> <span class="n">save_fig</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">static_time</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="c1"># CREATE/SAVE ANIMATION</span>
+    <span class="n">ani</span> <span class="o">=</span> <span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">update_1D</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">),</span> <span class="n">fargs</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">lines</span><span class="p">),</span> <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">save_anim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">save_anim</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.avi&quot;</span><span class="p">,</span> <span class="s2">&quot;.mp4&quot;</span><span class="p">)):</span>
+            <span class="n">ani</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_anim</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ani</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.gif&quot;</span> <span class="o">%</span> <span class="n">save_anim</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="update_2D"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.update_2D">[docs]</a><span class="k">def</span> <span class="nf">update_2D</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">axes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">pciset_list</span><span class="p">:</span><span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Update function for FuncAnimation for the create_contourplot() function.</span>
+
+<span class="sd">    :param i: Time snapshot index</span>
+<span class="sd">    :type i: int</span>
+<span class="sd">    :param X: X meshgrid</span>
+<span class="sd">    :type X: np.ndarray</span>
+<span class="sd">    :param Y: Y Meshgrid</span>
+<span class="sd">    :type Y: np.ndarray</span>
+<span class="sd">    :param data: Data buffers</span>
+<span class="sd">    :type data: List</span>
+<span class="sd">    :param levelset: Levelet buffer</span>
+<span class="sd">    :type levelset: np.ndarray</span>
+<span class="sd">    :param axes: Axes</span>
+<span class="sd">    :type axes: np.ndarray</span>
+<span class="sd">    :param quadmesh_list: Quadmesh objects returned by pcolormesh()</span>
+<span class="sd">    :type quadmesh_list: List</span>
+<span class="sd">    :param pciset_list: Pciset objects return by contour()</span>
+<span class="sd">    :type pciset_list: List</span>
+<span class="sd">    :return: List of collections</span>
+<span class="sd">    :rtype: List</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">list_of_collections</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">z</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">quadmesh</span><span class="p">,</span> <span class="n">pciset</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">,</span> <span class="n">pciset_list</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">pciset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">tp</span> <span class="ow">in</span> <span class="n">pciset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">collections</span><span class="p">:</span>
+                <span class="n">tp</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+            <span class="n">pciset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">levelset</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]),</span> <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            <span class="n">list_of_collections</span> <span class="o">+=</span> <span class="n">pciset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">collections</span>
+
+        <span class="n">quadmesh</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+        <span class="n">list_of_collections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quadmesh</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">list_of_collections</span></div>
+
+<div class="viewcode-block" id="update_1D"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.update_1D">[docs]</a><span class="k">def</span> <span class="nf">update_1D</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Update function for FuncAnimation for the create_lineplot() function.</span>
+
+<span class="sd">    :param i: Time snapshot index</span>
+<span class="sd">    :type i: int</span>
+<span class="sd">    :param data: Data buffers</span>
+<span class="sd">    :type data: List</span>
+<span class="sd">    :param lines: Line objects</span>
+<span class="sd">    :type lines: List</span>
+<span class="sd">    :return: List of collections</span>
+<span class="sd">    :rtype: List</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">list_of_collections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="n">line</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+        <span class="n">list_of_collections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">list_of_collections</span></div>
+
+<div class="viewcode-block" id="create_figure_2D"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_figure_2D">[docs]</a><span class="k">def</span> <span class="nf">create_figure_2D</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">titles</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">minmax</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+
+    <span class="c1"># CREATE SUBFIGURE</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ncols</span><span class="o">=</span><span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># KEYWORD ARGUMENTS FOR PCOLORMESH - SCHLIEREN ARE ALWAYS PLOTTED USING A LOG SCALE</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">titles</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;schlieren&quot;</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="mf">1e10</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">minmax</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">vmax</span><span class="o">=</span><span class="n">minmax</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;seismic&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">minmax</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">vmax</span><span class="o">=</span><span class="n">minmax</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">quadmesh_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pciset_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">titles</span><span class="p">):</span>
+
+        <span class="c1"># PCOLORMESH</span>
+        <span class="n">quadmesh</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">z</span><span class="p">[</span><span class="n">index</span><span class="p">,:,:],</span> <span class="o">**</span><span class="n">kw</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+        <span class="n">quadmesh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quadmesh</span><span class="p">)</span>
+
+        <span class="c1"># ZERO LEVELSET</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">pciset</span> <span class="o">=</span> <span class="p">[</span><span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">levelset</span><span class="p">[</span><span class="n">index</span><span class="p">,:,:]),</span> <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">4</span><span class="p">)]</span>
+            <span class="n">pciset_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pciset</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pciset_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">])</span>
+
+        <span class="c1"># AXIS TICKS</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelbottom</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">,</span> <span class="n">pciset_list</span></div>
+
+
+<div class="viewcode-block" id="generate_png"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.generate_png">[docs]</a><span class="k">def</span> <span class="nf">generate_png</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Generates a subplot of pcolormesh and saves it as png. If the levelset argument is provided,</span>
+<span class="sd">    the interface is plotted as an isoline. </span>
+
+<span class="sd">    :param X: X meshgrid</span>
+<span class="sd">    :type X: np.ndarray</span>
+<span class="sd">    :param Y: Y meshgrid</span>
+<span class="sd">    :type Y: np.ndarray</span>
+<span class="sd">    :param data_dictionary: Data buffer</span>
+<span class="sd">    :type data_dictionary: Dict[str, np.ndarray]</span>
+<span class="sd">    :param save_path: Save path</span>
+<span class="sd">    :type save_path: str</span>
+<span class="sd">    :param levelset: Levelset buffer, defaults to None</span>
+<span class="sd">    :type levelset: np.ndarray, optional</span>
+<span class="sd">    :param nrows_ncols: Shape of the subplot, defaults to None</span>
+<span class="sd">    :type nrows_ncols: Tuple, optional</span>
+<span class="sd">    :param dpi: Resolution in dpi, defaults to 200</span>
+<span class="sd">    :type dpi: int, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">quantities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_dictionary</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="n">no_timesnapshots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">[</span><span class="n">quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+    
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">quant</span> <span class="o">==</span> <span class="s2">&quot;schlieren&quot;</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span><span class="s2">&quot;cmap&quot;</span><span class="p">:</span> <span class="s2">&quot;binary&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]))}</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span><span class="s2">&quot;cmap&quot;</span><span class="p">:</span> <span class="s2">&quot;seismic&quot;</span><span class="p">,</span> <span class="s2">&quot;vmin&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">]),</span> <span class="s2">&quot;vmax&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">[</span><span class="n">quant</span><span class="p">])}</span> <span class="p">)</span>
+
+    <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">20</span>
+
+    <span class="n">nrows_ncols</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">quantities</span><span class="p">))</span> <span class="k">if</span> <span class="n">nrows_ncols</span> <span class="o">==</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">nrows_ncols</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">nrows_ncols</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantities</span><span class="p">),</span> <span class="s2">&quot;Amount of requested axes and available quantities do not match.&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_timesnapshots</span><span class="p">):</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;image_</span><span class="si">%04d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span><span class="n">nrows_ncols</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">kw</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+
+            <span class="n">pcolormesh</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">[</span><span class="n">quantity</span><span class="p">][</span><span class="n">i</span><span class="p">,:,:,</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kw</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">levelset</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+            <span class="c1"># AXIS TICKS</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">quantity</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelbottom</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
+
+<div class="viewcode-block" id="create_xdmf_from_h5"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_xdmf_from_h5">[docs]</a><span class="k">def</span> <span class="nf">create_xdmf_from_h5</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates .xdmf files from .h5 files for Paraview visualization.</span>
+
+<span class="sd">    :param path: Path to .h5 files.</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># SEARCH DIRECTORY FOR FILES</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;h5&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;nan&quot;</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">continue</span> 
+            <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file</span><span class="p">))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">5</span><span class="p">:]))</span>
+    <span class="n">indices</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">times</span><span class="p">))</span>
+    <span class="n">times</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">times</span><span class="p">)[</span><span class="n">indices</span><span class="p">]</span>
+    <span class="n">files</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">files</span><span class="p">)[</span><span class="n">indices</span><span class="p">]</span>
+    <span class="n">no_times</span>    <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+
+    <span class="c1"># DOMAIN INFORMATION</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/gridX&quot;</span><span class="p">][:]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/gridY&quot;</span><span class="p">][:]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/gridZ&quot;</span><span class="p">][:]</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/cellsizeX&quot;</span><span class="p">][()]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/cellsizeY&quot;</span><span class="p">][()]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mesh/cellsizeZ&quot;</span><span class="p">][()]</span>
+        <span class="n">cell_centers</span>    <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span>
+        <span class="n">cell_sizes</span>      <span class="o">=</span> <span class="p">[</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">]</span>
+        <span class="n">number_of_cells</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)]</span>
+        <span class="n">cell_faces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">xi</span><span class="p">,</span> <span class="n">dxi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cell_centers</span><span class="p">,</span> <span class="n">cell_sizes</span><span class="p">):</span>
+            <span class="n">cell_faces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dxi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">xi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dxi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">times</span><span class="p">)):</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;data_</span><span class="si">%.6f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">time</span>
+
+        <span class="n">h5file_name</span>   <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
+        <span class="n">xdmffile_path</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.xdmf&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Writing file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">xdmffile_path</span><span class="p">)</span>
+        <span class="n">xdmffile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">xdmffile_path</span><span class="p">)</span>
+
+        <span class="c1"># XDMF QUANTITIES</span>
+        <span class="n">xdmf_quants</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+
+            <span class="c1"># CONSERVATIVES AND PRIMITIVES </span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cons&quot;</span><span class="p">,</span> <span class="s2">&quot;primes&quot;</span><span class="p">,</span> <span class="s2">&quot;real_fluid&quot;</span><span class="p">,</span> <span class="s2">&quot;miscellaneous&quot;</span><span class="p">,</span> <span class="s2">&quot;levelset&quot;</span><span class="p">]:</span> 
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                        <span class="n">xdmf_quants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_xdmf</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="o">*</span><span class="n">number_of_cells</span><span class="p">))</span>
+
+        <span class="c1"># XDMF START</span>
+        <span class="n">xdmf_str_start</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;?xml version=&quot;1.0&quot; ?&gt;</span>
+<span class="s1">        &lt;!DOCTYPE Xdmf SYSTEM &quot;Xdmf.dtd&quot; []&gt;</span>
+<span class="s1">        &lt;Xdmf Version=&quot;3.0&quot;&gt;</span>
+<span class="s1">        &lt;Domain&gt;</span>
+<span class="s1">            &lt;Grid Name=&quot;Cube&quot;&gt;</span>
+<span class="s1">                &lt;Geometry Type=&quot;VXVYVZ&quot;&gt;</span>
+<span class="s1">                    &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:mesh/gridFX&lt;/DataItem&gt;</span>
+<span class="s1">                    &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:mesh/gridFY&lt;/DataItem&gt;</span>
+<span class="s1">                    &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:mesh/gridFZ&lt;/DataItem&gt;</span>
+<span class="s1">                &lt;/Geometry&gt;</span>
+<span class="s1">                &lt;Topology Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot; Type=&quot;3DRectMesh&quot;/&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span> <span class="c1"># 1 512 128</span>
+                    <span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">h5file_name</span><span class="p">,</span> 
+                    <span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">h5file_name</span><span class="p">,</span> 
+                    <span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">h5file_name</span><span class="p">,</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+        <span class="c1"># XDMF END</span>
+        <span class="n">xdmf_str_end</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;&lt;/Grid&gt;</span>
+<span class="s1">        &lt;/Domain&gt;</span>
+<span class="s1">        &lt;/Xdmf&gt;&#39;&#39;&#39;</span>
+
+        <span class="c1"># JOIN FINAL XDMF STR AND WRITE TO FILE</span>
+        <span class="n">xdmf_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xdmf_str_start</span><span class="p">]</span> <span class="o">+</span> <span class="n">xdmf_quants</span> <span class="o">+</span> <span class="p">[</span><span class="n">xdmf_str_end</span><span class="p">])</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xdmffile_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">xdmf_file</span><span class="p">:</span>
+            <span class="n">xdmf_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xdmf_str</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="get_xdmf"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.get_xdmf">[docs]</a><span class="k">def</span> <span class="nf">get_xdmf</span><span class="p">(</span><span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Nx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Ny</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Nz</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">,</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">,</span> <span class="s2">&quot;normal&quot;</span><span class="p">]:</span>
+        <span class="n">xdmf</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;Attribute Name=&quot;</span><span class="si">%s</span><span class="s1">&quot; AttributeType=&quot;Vector&quot; Center=&quot;Cell&quot;&gt;</span>
+<span class="s1">        &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&lt;/DataItem&gt;</span>
+<span class="s1">        &lt;/Attribute&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">quant</span><span class="p">,</span> <span class="mi">8</span> <span class="p">,</span> <span class="n">Nz</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">quant</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xdmf</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;Attribute Name=&quot;</span><span class="si">%s</span><span class="s1">&quot; AttributeType=&quot;Scalar&quot; Center=&quot;Cell&quot;&gt;</span>
+<span class="s1">            &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&lt;/DataItem&gt;</span>
+<span class="s1">        &lt;/Attribute&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">quant</span><span class="p">,</span> <span class="mi">8</span> <span class="p">,</span> <span class="n">Nz</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">quant</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xdmf</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

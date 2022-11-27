@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.forcing.forcing &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.forcing.forcing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.forcing.forcing</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">import</span> <span class="nn">types</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">from</span> <span class="nn">jaxfluids</span> <span class="kn">import</span> <span class="n">levelset</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.forcing.pid_control</span> <span class="kn">import</span> <span class="n">PIDControl</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.domain_information</span> <span class="kn">import</span> <span class="n">DomainInformation</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.unit_handler</span> <span class="kn">import</span> <span class="n">UnitHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.io_utils.logger</span> <span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_handler</span> <span class="kn">import</span> <span class="n">LevelsetHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.turb.turb_stats_manager</span> <span class="kn">import</span> <span class="n">TurbStatsManager</span>
+
+<div class="viewcode-block" id="Forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing">[docs]</a><span class="k">class</span> <span class="nc">Forcing</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class that manages the computation of external forcing terms.</span>
+
+<span class="sd">    Currently implemented are:</span>
+<span class="sd">    1) Mass flow rate forcing</span>
+<span class="sd">    2) Temperature forcing</span>
+<span class="sd">    3) Homogeneous isotropic turbulence forcing </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_information</span><span class="p">:</span> <span class="n">DomainInformation</span><span class="p">,</span> <span class="n">material_manager</span><span class="p">:</span> <span class="n">MaterialManager</span><span class="p">,</span> <span class="n">unit_handler</span><span class="p">:</span> <span class="n">UnitHandler</span><span class="p">,</span>
+        <span class="n">levelset_handler</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">LevelsetHandler</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">levelset_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_mass_flow_forcing</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">is_temperature_forcing</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">is_turb_hit_forcing</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">mass_flow_target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">],</span> <span class="n">flow_direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">temperature_target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># BOOLS FORCINGS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mass_flow_forcing</span>   <span class="o">=</span> <span class="n">is_mass_flow_forcing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_temperature_forcing</span> <span class="o">=</span> <span class="n">is_temperature_forcing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_turb_hit_forcing</span>    <span class="o">=</span> <span class="n">is_turb_hit_forcing</span>
+
+        <span class="c1"># MATERIAL AND UNIT HANDLER</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span>   <span class="o">=</span> <span class="n">material_manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span>       <span class="o">=</span> <span class="n">unit_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span>   <span class="o">=</span> <span class="n">levelset_handler</span>
+        <span class="k">if</span> <span class="n">is_turb_hit_forcing</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span> <span class="o">=</span> <span class="n">TurbStatsManager</span><span class="p">(</span><span class="n">domain_information</span><span class="p">,</span> <span class="n">material_manager</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k_mag_vec</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">k_mag_vec</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">k_field</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">one_k2_field</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">one_k2_field</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shell</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">shell</span>
+        
+        <span class="c1"># LEVELSET INTERFACE INTERACTION TYPE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">=</span> <span class="n">levelset_type</span>
+
+        <span class="c1"># DOMAIN INFORMATION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inactive_axis_indices</span>      <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}[</span><span class="n">axis</span><span class="p">]</span> <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">inactive_axis</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span>    <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span> <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_geometry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nz</span>       <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">number_of_cells</span>
+        <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span>                      <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">cell_sizes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span>                        <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell_centers</span>               <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">cell_centers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span>        <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">active_axis_indices</span>
+
+        <span class="c1"># BOOLS FORCINGS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mass_flow_forcing</span>   <span class="o">=</span> <span class="n">is_mass_flow_forcing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_temperature_forcing</span> <span class="o">=</span> <span class="n">is_temperature_forcing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_turb_hit_forcing</span>    <span class="o">=</span> <span class="n">is_turb_hit_forcing</span>
+
+        <span class="c1"># MASS FLOW FORCING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass_flow_target</span>       <span class="o">=</span> <span class="n">mass_flow_target</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">PID_mass_flow_forcing</span>  <span class="o">=</span> <span class="n">PIDControl</span><span class="p">(</span><span class="n">K_P</span> <span class="o">=</span> <span class="mf">5e-1</span><span class="p">,</span> <span class="n">K_I</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">K_D</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">T_N</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">T_V</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">flow_direction</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vec</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">int_ax</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index</span>  <span class="o">=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dA</span>     <span class="o">=</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dz</span>
+        <span class="k">elif</span> <span class="n">flow_direction</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vec</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">int_ax</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index</span>  <span class="o">=</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dA</span>     <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dz</span>
+        <span class="k">elif</span> <span class="n">flow_direction</span> <span class="o">==</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vec</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">int_ax</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index</span>  <span class="o">=</span> <span class="mi">3</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dA</span>     <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dy</span>
+
+        <span class="c1"># TEMPERATURE FORCING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature_target</span> <span class="o">=</span> <span class="n">temperature_target</span>
+    
+<div class="viewcode-block" id="Forcing.compute_forcings"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_forcings">[docs]</a>    <span class="k">def</span> <span class="nf">compute_forcings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        
+        <span class="sd">&quot;&quot;&quot;Computes forcings for temperature, mass flow and turbulence kinetic energy.</span>
+
+<span class="sd">        :param primes: buffer of primitive variables</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param primes_dash: buffer of primitive variables for next time step without forcing</span>
+<span class="sd">        :type primes_dash: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :param cons: buffer of conservative variables</span>
+<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :param volume_fraction: buffer of volume fractions</span>
+<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :param mask_real: mask indicating the real fluid</span>
+<span class="sd">        :type mask_real: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :param current_time: current physical simulation time</span>
+<span class="sd">        :type current_time: float</span>
+<span class="sd">        :param timestep_size: current physical time step size</span>
+<span class="sd">        :type timestep_size: float</span>
+<span class="sd">        :param PID_e_new: Error of previous timestep for PID controller </span>
+<span class="sd">        :type PID_e_new: float</span>
+<span class="sd">        :param PID_e_int: Accumalated error for PID controller</span>
+<span class="sd">        :type PID_e_int: float</span>
+<span class="sd">        :param logger: Logger for terminal output</span>
+<span class="sd">        :type logger: Logger</span>
+<span class="sd">        :return: Dictionary containing buffers of forcings</span>
+<span class="sd">        :rtype: Dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">forcings_dictionary</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mass_flow_forcing</span><span class="p">:</span>
+            <span class="n">mass_flow_forcing</span><span class="p">,</span> <span class="n">mass_flow_current</span><span class="p">,</span> <span class="n">mass_flow_target</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="n">PID_e_int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_mass_flow_forcing</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">current_time</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">)</span>
+            <span class="n">forcings_dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;mass_flow&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;force&quot;</span><span class="p">:</span> <span class="n">mass_flow_forcing</span><span class="p">,</span>
+                    <span class="s2">&quot;PID_e_new&quot;</span><span class="p">:</span> <span class="n">PID_e_new</span><span class="p">,</span>
+                    <span class="s2">&quot;PID_e_int&quot;</span><span class="p">:</span> <span class="n">PID_e_int</span>
+                <span class="p">},</span>
+            <span class="p">})</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">log_start_time_step</span><span class="p">([</span>
+                <span class="s1">&#39;PID CONTROL&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;MASS FLOW TARGET   = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">mass_flow_target</span><span class="p">),</span>
+                <span class="s1">&#39;MASS FLOW CURRENT  = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">mass_flow_current</span><span class="p">),</span>
+            <span class="p">])</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_temperature_forcing</span><span class="p">:</span>
+            <span class="n">temperature_forcing</span><span class="p">,</span> <span class="n">temperature_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_temperature_forcing</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">current_time</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">)</span>
+            <span class="n">forcings_dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;force&quot;</span><span class="p">:</span> <span class="n">temperature_forcing</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">})</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">log_start_time_step</span><span class="p">([</span>
+                <span class="s1">&#39;TEMPERATURE CONTROL&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;TEMPERATURE ERROR  = </span><span class="si">%4.4e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">temperature_error</span><span class="p">,</span>
+            <span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_turb_hit_forcing</span><span class="p">:</span>
+            <span class="n">turb_hit_forcing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_turb_hit_forcing</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">)</span>
+            <span class="n">forcings_dictionary</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;turbulence&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;force&quot;</span><span class="p">:</span> <span class="n">turb_hit_forcing</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">forcings_dictionary</span></div>
+        
+<div class="viewcode-block" id="Forcing.compute_temperature_forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_temperature_forcing">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_temperature_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+            <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Computes temperature forcing.</span>
+
+<span class="sd">        :param primes: Buffer of primitive variables.</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param levelset: Buffer of level-set field.</span>
+<span class="sd">        :type levelset: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :param volume_fraction: Buffer of volume fraction field.</span>
+<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :param current_time: Current simulation time.</span>
+<span class="sd">        :type current_time: float</span>
+<span class="sd">        :param timestep_size: Current integration time step.</span>
+<span class="sd">        :type timestep_size: float</span>
+<span class="sd">        :return: Buffer of the forcing vector and the mean absolute error wrt the temperature target.</span>
+<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+       
+        <span class="c1"># COMPUTE TEMPERATURE</span>
+        <span class="n">temperature</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_temperature</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">])</span>
+
+        <span class="c1"># COMPUTE LAMBDA INPUTS</span>
+        <span class="n">mesh_grid</span> <span class="o">=</span> <span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mesh_grid</span><span class="p">)):</span>
+            <span class="n">mesh_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">mesh_grid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">)</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+        <span class="c1"># COMPUTE TEMPERATURE TARGET</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature_target</span><span class="p">)</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">:</span>
+            <span class="n">temperature_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature_target</span><span class="p">(</span><span class="o">*</span><span class="n">mesh_grid</span><span class="p">,</span> <span class="n">current_time</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inactive_axis_indices</span><span class="p">:</span>
+                <span class="n">temperature_target</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">temperature_target</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temperature_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature_target</span>
+        <span class="n">temperature_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">temperature_target</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
+
+        <span class="c1"># COMPUTE REAL FLUID MASK</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask_real</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_masks</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+
+        <span class="c1"># COMPUTE TEMPERATURE FORCING</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">rho</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        <span class="n">temperature_error</span>   <span class="o">=</span> <span class="p">(</span><span class="n">temperature_target</span> <span class="o">-</span> <span class="n">temperature</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask_real</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">temperature_target</span> <span class="o">-</span> <span class="n">temperature</span>
+        <span class="n">forcing</span>             <span class="o">=</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">gamma</span><span class="o">/</span><span class="p">(</span><span class="n">gamma</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">temperature_error</span><span class="p">)</span> <span class="o">/</span> <span class="n">timestep_size</span>
+        <span class="n">mean_absolute_error</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">temperature_error</span><span class="p">))</span>
+        <span class="n">forcing</span>             <span class="o">=</span> <span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">forcing</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span> <span class="o">+</span> <span class="p">[</span><span class="n">forcing</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">forcing</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">mean_absolute_error</span></div>
+
+<div class="viewcode-block" id="Forcing.compute_mass_flow_forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_mass_flow_forcing">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_mass_flow_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> 
+        <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Computes mass flow forcing</span>
+
+<span class="sd">        :param cons: Buffer of the conservative variables.</span>
+<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :param primes: Buffer of the primitive variables.</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param volume_fraction: Buffer of the volume fraction in two-phase flows.</span>
+<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :param current_time: Current simulation time.</span>
+<span class="sd">        :type current_time: float</span>
+<span class="sd">        :param timestep_size: Current time step.</span>
+<span class="sd">        :type timestep_size: float</span>
+<span class="sd">        :param PID_e_new: Current PID error </span>
+<span class="sd">        :type PID_e_new: float</span>
+<span class="sd">        :param PID_e_int: Current PID integral error</span>
+<span class="sd">        :type PID_e_int: float</span>
+<span class="sd">        :return: Buffer of the body force, current mass flow, mass flow target, PID error, PID integral error</span>
+<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float, float]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># COMPUTE MASS FLOW TARGET</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_flow_target</span><span class="p">)</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">:</span>
+            <span class="n">mass_flow_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass_flow_target</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mass_flow_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass_flow_target</span>
+        <span class="n">mass_flow_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">mass_flow_target</span><span class="p">,</span> <span class="s2">&quot;mass_flow&quot;</span><span class="p">)</span>
+
+        <span class="c1"># COMPUTE CURRENT MASS FLOW</span>
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">cons</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span> <span class="o">*</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cons</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        <span class="n">mass_flow_current</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dA</span> <span class="o">*</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">int_ax</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mass_flow_current</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mass_flow_current</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="k">else</span> <span class="n">mass_flow_current</span>
+
+        <span class="c1"># COMPUTE MASS FLOW FORCING</span>
+        <span class="n">mass_flow_forcing_scalar</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="n">PID_e_int</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PID_mass_flow_forcing</span><span class="o">.</span><span class="n">compute_output</span><span class="p">(</span><span class="n">mass_flow_current</span><span class="p">,</span> <span class="n">mass_flow_target</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">)</span>
+        <span class="n">mass_flow_forcing</span> <span class="o">=</span> <span class="n">mass_flow_forcing_scalar</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">vec</span>
+
+        <span class="n">density</span> <span class="o">=</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        <span class="n">vels</span>    <span class="o">=</span> <span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        
+        <span class="n">body_force_momentum</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij..., jk...-&gt;ik...&quot;</span><span class="p">,</span> <span class="n">mass_flow_forcing</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="n">body_force_energy</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ij..., jk...-&gt;ik...&quot;</span><span class="p">,</span> <span class="n">mass_flow_forcing</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">vels</span><span class="p">)</span>
+
+        <span class="n">body_force</span>          <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">body_force_energy</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">body_force_momentum</span><span class="p">,</span> <span class="n">body_force_energy</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">body_force</span><span class="p">,</span> <span class="n">mass_flow_current</span><span class="p">,</span> <span class="n">mass_flow_target</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="n">PID_e_int</span></div>
+
+<div class="viewcode-block" id="Forcing.compute_turb_hit_forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_turb_hit_forcing">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_turb_hit_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes forcing for HIT </span>
+
+<span class="sd">        :param primes: Buffer of primitive variables.</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param primes_dash: Buffer of intermediate primitive variables which are obtained</span>
+<span class="sd">            by integrating primes without forcing term.</span>
+<span class="sd">        :type primes_dash: jnp.DeviceArray</span>
+<span class="sd">        :param timestep: Current time step.</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: Buffer of the forcing vector.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">primes</span>      <span class="o">=</span> <span class="n">primes</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        <span class="n">primes_dash</span> <span class="o">=</span> <span class="n">primes_dash</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+
+        <span class="c1"># TODO MAKE eta_s user-specified parameter</span>
+        <span class="n">eta_s</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">Tbar</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_temperature</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rho</span><span class="o">=</span><span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="n">s_0</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">s_1</span><span class="p">,</span> <span class="n">s_2</span><span class="p">,</span> <span class="n">s_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_velocity_forcing_vector</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">primes_dash</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">eta_s</span><span class="p">,</span> <span class="n">timestep</span><span class="p">)</span>
+        <span class="n">s_4</span> <span class="o">=</span> <span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_1</span> <span class="o">+</span> <span class="n">primes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_2</span> <span class="o">+</span> <span class="n">primes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_3</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature_target</span> <span class="o">-</span> <span class="n">Tbar</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">R</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">gamma</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">force</span> <span class="o">=</span> <span class="p">[</span><span class="n">s_0</span><span class="p">,</span> <span class="n">s_1</span><span class="p">,</span> <span class="n">s_2</span><span class="p">,</span> <span class="n">s_3</span><span class="p">,</span> <span class="n">s_4</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">force</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Forcing.calculate_velocity_forcing_vector"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.calculate_velocity_forcing_vector">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_velocity_forcing_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vels</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">vels_dash</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">eta_s</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Calculates the velocity forcing vector for HIT forcing.</span>
+
+<span class="sd">        :param vels: Buffer of velocities.</span>
+<span class="sd">        :type vels: jnp.DeviceArray</span>
+<span class="sd">        :param vels_dash: Buffer of intermediate velocities which are obtained</span>
+<span class="sd">            by integrating primes without forcing term.</span>
+<span class="sd">        :type vels_dash: jnp.DeviceArray</span>
+<span class="sd">        :param eta_s: Cut-off wavenumber up to which forcing is applied.</span>
+<span class="sd">        :type eta_s: int</span>
+<span class="sd">        :param timestep: Current time step.</span>
+<span class="sd">        :type timestep: float</span>
+<span class="sd">        :return: Buffer of the velocity forcing vector.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vels_hat</span>      <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">vels</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+        <span class="n">vels_dash_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">vels_dash</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+
+        <span class="n">ek</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">energy_spectrum_spectral</span><span class="p">(</span><span class="n">vels_hat</span><span class="p">)</span>
+        <span class="n">ek_dash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_stats_manager</span><span class="o">.</span><span class="n">energy_spectrum_spectral</span><span class="p">(</span><span class="n">vels_dash_hat</span><span class="p">)</span>
+
+        <span class="n">Cs_eta</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="p">(</span><span class="n">ek_dash</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">ek_dash</span> <span class="o">-</span> <span class="n">ek</span><span class="p">)</span> <span class="o">/</span> <span class="n">timestep</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_mag_vec</span> <span class="o">&lt;=</span> <span class="n">eta_s</span><span class="p">)</span>
+        <span class="n">div_u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">vels_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">vels_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">vels_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">Cs</span> <span class="o">=</span> <span class="n">Cs_eta</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shell</span><span class="p">]</span>
+
+        <span class="n">s_hat</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="o">-</span><span class="n">Cs</span> <span class="o">*</span> <span class="p">(</span><span class="n">vels_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_k2_field</span> <span class="o">*</span> <span class="n">div_u</span><span class="p">),</span>
+            <span class="o">-</span><span class="n">Cs</span> <span class="o">*</span> <span class="p">(</span><span class="n">vels_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_k2_field</span> <span class="o">*</span> <span class="n">div_u</span><span class="p">),</span>
+            <span class="o">-</span><span class="n">Cs</span> <span class="o">*</span> <span class="p">(</span><span class="n">vels_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_k2_field</span> <span class="o">*</span> <span class="n">div_u</span><span class="p">),</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">s_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

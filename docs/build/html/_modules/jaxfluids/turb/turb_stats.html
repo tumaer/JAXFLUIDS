@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.turb.turb_stats &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.turb.turb_stats</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.turb.turb_stats</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.turb.turb_utils</span> <span class="kn">import</span> <span class="n">velocity_rfftn</span><span class="p">,</span> <span class="n">get_real_wavenumber_grid</span><span class="p">,</span> <span class="n">calculate_sheartensor</span><span class="p">,</span> <span class="n">calculate_dilatation</span><span class="p">,</span> <span class="n">calculate_vorticity</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+
+<div class="viewcode-block" id="get_energy_spectrum"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.get_energy_spectrum">[docs]</a><span class="k">def</span> <span class="nf">get_energy_spectrum</span><span class="p">(</span><span class="n">vel</span><span class="p">):</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">vel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">Nx</span> <span class="o">==</span> <span class="n">Ny</span> <span class="ow">and</span> <span class="n">Ny</span> <span class="o">==</span> <span class="n">Nz</span><span class="p">)</span>
+    
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Nx</span>
+    <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">k_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span>
+
+    <span class="n">shell</span> <span class="o">=</span> <span class="p">(</span><span class="n">k_mag</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">fact</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Fourier transform </span>
+    <span class="n">vel_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">vel</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
+
+    <span class="n">ek</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">uu</span> <span class="o">=</span> <span class="n">fact</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">uu</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samples</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ek</span></div>
+
+<div class="viewcode-block" id="get_energy_spectrum_np"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.get_energy_spectrum_np">[docs]</a><span class="k">def</span> <span class="nf">get_energy_spectrum_np</span><span class="p">(</span><span class="n">vel</span><span class="p">):</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">vel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">Nx</span> <span class="o">==</span> <span class="n">Ny</span> <span class="ow">and</span> <span class="n">Ny</span> <span class="o">==</span> <span class="n">Nz</span><span class="p">)</span>
+    
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Nx</span>
+    <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">k_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span>
+
+    <span class="n">shell</span> <span class="o">=</span> <span class="p">(</span><span class="n">k_mag</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">fact</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Fourier transform </span>
+    <span class="n">vel_hat</span> <span class="o">=</span> <span class="n">velocity_rfftn</span><span class="p">(</span><span class="n">vel</span><span class="p">)</span>
+
+    <span class="n">ek</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">uu</span> <span class="o">=</span> <span class="n">fact</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">uu</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">fact</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samples</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">energy_phys</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">vel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vel</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vel</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">N</span><span class="o">**</span><span class="mi">3</span>
+    <span class="n">energy_spec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">uu</span><span class="p">)</span> <span class="o">/</span> <span class="n">N</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">N</span><span class="o">**</span><span class="mi">3</span>
+    <span class="n">energy_ek</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ek</span><span class="p">)</span>
+
+    <span class="c1"># print(&quot;ENERGY PHYS: %4.3e, ENERGY SPEC: %4.3e, ENERGY EK: %4.3e&quot; %(energy_phys, energy_spec, energy_ek))</span>
+    <span class="k">return</span> <span class="n">ek</span><span class="p">,</span> <span class="n">k</span></div>
+
+<div class="viewcode-block" id="get_scalar_energy_spectrum"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.get_scalar_energy_spectrum">[docs]</a><span class="k">def</span> <span class="nf">get_scalar_energy_spectrum</span><span class="p">(</span><span class="n">vel</span><span class="p">):</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">vel</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">Nx</span> <span class="o">==</span> <span class="n">Ny</span> <span class="ow">and</span> <span class="n">Ny</span> <span class="o">==</span> <span class="n">Nz</span><span class="p">)</span>
+    
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Nx</span>
+    <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+    <span class="n">k_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span>
+
+    <span class="n">shell</span> <span class="o">=</span> <span class="p">(</span><span class="n">k_mag</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">fact</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Fourier transform </span>
+    <span class="n">vel_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">vel</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">ek</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">uu</span> <span class="o">=</span> <span class="n">fact</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span> <span class="o">*</span> <span class="n">vel_hat</span><span class="p">)</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">uu</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">fact</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samples</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ek</span></div>
+
+<div class="viewcode-block" id="get_stats_hit"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.get_stats_hit">[docs]</a><span class="k">def</span> <span class="nf">get_stats_hit</span><span class="p">(</span><span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">velocityX</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">pressure</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">material_manager</span><span class="p">:</span> <span class="n">MaterialManager</span><span class="p">):</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">rho</span><span class="o">.</span><span class="n">shape</span>
+    
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">])</span>
+    
+    <span class="n">temperature</span> <span class="o">=</span> <span class="n">material_manager</span><span class="o">.</span><span class="n">get_temperature</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">pressure</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">)</span>
+    
+    <span class="n">rho_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+    <span class="n">rho_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+    
+    <span class="n">p_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">p_rms</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+
+    <span class="n">T_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> 
+    <span class="n">T_rms</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> 
+
+    <span class="n">speed_of_sound</span>        <span class="o">=</span> <span class="n">material_manager</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">pressure</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">)</span>
+    <span class="n">speed_of_sound_mean_1</span> <span class="o">=</span> <span class="n">material_manager</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">p_mean</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="n">rho_mean</span><span class="p">)</span>
+    <span class="n">speed_of_sound_mean_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">speed_of_sound</span><span class="p">)</span>
+
+    <span class="n">mu</span>      <span class="o">=</span> <span class="n">material_manager</span><span class="o">.</span><span class="n">get_dynamic_viscosity</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> 
+    <span class="n">mu_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+    <span class="n">nu</span>      <span class="o">=</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">rho</span>
+    <span class="n">nu_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
+
+    <span class="n">u_rms</span> <span class="o">=</span> <span class="n">u_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">velocityX</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityY</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityZ</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">q_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">velocityX</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityY</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityZ</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">)</span>
+
+    <span class="n">Ma_t</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">velocityX</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityY</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityZ</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">)</span> <span class="o">/</span> <span class="n">speed_of_sound_mean_1</span>
+    <span class="n">Ma_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="p">(</span><span class="n">velocityX</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityY</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityZ</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">speed_of_sound</span> <span class="p">)</span> <span class="p">)</span>
+
+    <span class="n">tke</span>   <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rho</span> <span class="o">*</span> <span class="p">(</span><span class="n">velocityX</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityY</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">velocityZ</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="n">duidj</span> <span class="o">=</span> <span class="n">calculate_sheartensor</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="n">S_ij</span>  <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span> <span class="n">duidj</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">duidj</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="p">)</span>
+    <span class="n">SijSij_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">S_ij</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu_mean</span> <span class="o">/</span> <span class="n">rho_mean</span> <span class="o">*</span> <span class="n">SijSij_bar</span> 
+
+    <span class="n">vorticity</span>       <span class="o">=</span> <span class="n">calculate_vorticity</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="n">vorticity_rms</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vorticity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">enstrophy_mean</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vorticity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">dil</span> <span class="o">=</span> <span class="n">calculate_dilatation</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="n">dilatation_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">dil</span><span class="p">)</span>
+    <span class="n">divergence_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">duidj</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">duidj</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="p">))</span>
+
+    <span class="n">ek</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">get_energy_spectrum_np</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+
+    <span class="c1"># LENGTH SCALES </span>
+    <span class="c1"># Integral length scale</span>
+    <span class="n">int_Ek</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">ek</span><span class="p">)</span>
+    <span class="n">int_Ek_over_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">ek</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">))</span>
+    <span class="n">L_I</span> <span class="o">=</span> <span class="mf">0.75</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">int_Ek_over_k</span> <span class="o">/</span> <span class="n">int_Ek</span>
+
+    <span class="c1"># Longitudinal and lateral Taylor length scale</span>
+    <span class="n">lambda_</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">u_rms</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">lambda_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u_rms</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">lambda_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u_rms</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="c1"># Kolmogorov</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="p">(</span><span class="n">nu_mean</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span><span class="o">**</span><span class="mf">0.25</span>
+    <span class="n">kmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">Nx</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="n">eta_kmax</span> <span class="o">=</span> <span class="n">eta</span> <span class="o">*</span> <span class="n">kmax</span>
+
+    <span class="c1"># TIME SCALES</span>
+    <span class="n">tau_LI</span> <span class="o">=</span> <span class="n">L_I</span> <span class="o">/</span> <span class="n">u_rms</span>                <span class="c1"># Large-eddy-turnover time</span>
+    <span class="n">tau_lambda</span> <span class="o">=</span> <span class="n">lambda_f</span> <span class="o">/</span> <span class="n">u_rms</span>       <span class="c1"># Eddy turnover time</span>
+
+    <span class="c1"># REYNOLDS NUMBER</span>
+    <span class="n">Re_turb</span>     <span class="o">=</span> <span class="n">rho_mean</span> <span class="o">*</span> <span class="n">q_rms</span><span class="o">**</span><span class="mi">4</span> <span class="o">/</span> <span class="n">eps</span> <span class="o">/</span> <span class="n">mu_mean</span>
+    <span class="n">Re_lambda</span>   <span class="o">=</span> <span class="n">lambda_f</span> <span class="o">*</span> <span class="n">u_rms</span> <span class="o">*</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">mu_mean</span>
+    <span class="n">Re_lambda_2</span> <span class="o">=</span> <span class="n">u_rms</span> <span class="o">*</span> <span class="n">lambda_</span> <span class="o">*</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">mu_mean</span>
+    <span class="n">Re_int</span>      <span class="o">=</span> <span class="n">u_rms</span> <span class="o">*</span> <span class="n">L_I</span> <span class="o">*</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">mu_mean</span>
+
+    <span class="n">turb_stats_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;FlowState&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;p_mean&quot;</span><span class="p">:</span> <span class="n">p_mean</span><span class="p">,</span> <span class="s2">&quot;p_rms&quot;</span><span class="p">:</span> <span class="n">p_rms</span><span class="p">,</span>
+            <span class="s2">&quot;rho_mean&quot;</span><span class="p">:</span> <span class="n">rho_mean</span><span class="p">,</span> <span class="s2">&quot;rho_rms&quot;</span><span class="p">:</span> <span class="n">rho_rms</span><span class="p">,</span>
+            <span class="s2">&quot;T_mean&quot;</span><span class="p">:</span> <span class="n">T_mean</span><span class="p">,</span> <span class="s2">&quot;T_rms&quot;</span><span class="p">:</span> <span class="n">T_rms</span><span class="p">,</span>
+            <span class="s2">&quot;c_mean&quot;</span><span class="p">:</span> <span class="n">speed_of_sound_mean_1</span><span class="p">,</span>
+            <span class="s2">&quot;mu_mean&quot;</span><span class="p">:</span> <span class="n">mu_mean</span><span class="p">,</span> 
+            <span class="s2">&quot;Ma_t&quot;</span><span class="p">:</span> <span class="n">Ma_t</span><span class="p">,</span> <span class="s2">&quot;Ma_rms&quot;</span><span class="p">:</span> <span class="n">Ma_rms</span><span class="p">,</span>
+            <span class="s2">&quot;U_rms&quot;</span><span class="p">:</span> <span class="n">u_rms</span><span class="p">,</span>
+            <span class="s2">&quot;TKE&quot;</span><span class="p">:</span> <span class="n">tke</span><span class="p">,</span>
+            <span class="s2">&quot;Enstrophy_mean&quot;</span><span class="p">:</span> <span class="n">enstrophy_mean</span><span class="p">,</span>
+            <span class="s2">&quot;Dilatation_rms&quot;</span><span class="p">:</span> <span class="n">dilatation_rms</span><span class="p">,</span> <span class="s2">&quot;Divergence_rms&quot;</span><span class="p">:</span> <span class="n">divergence_rms</span><span class="p">,</span>
+        <span class="p">},</span>
+
+        <span class="s2">&quot;ReynoldsNumbers&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;Re_lambda&quot;</span><span class="p">:</span> <span class="n">Re_lambda</span><span class="p">,</span> 
+            <span class="s2">&quot;Re_lambda_2&quot;</span><span class="p">:</span> <span class="n">Re_lambda_2</span><span class="p">,</span>
+            <span class="s2">&quot;Re_int&quot;</span><span class="p">:</span> <span class="n">Re_int</span><span class="p">,</span>
+            <span class="s2">&quot;Re_turb&quot;</span><span class="p">:</span> <span class="n">Re_turb</span><span class="p">,</span>
+        <span class="p">},</span>
+
+        <span class="s2">&quot;LengthScales&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;Integral length&quot;</span><span class="p">:</span> <span class="n">L_I</span><span class="p">,</span> 
+            <span class="s2">&quot;Taylor microscale&quot;</span><span class="p">:</span> <span class="n">lambda_</span><span class="p">,</span> 
+            <span class="s2">&quot;Longitudinal TM&quot;</span><span class="p">:</span> <span class="n">lambda_g</span><span class="p">,</span> 
+            <span class="s2">&quot;Lateral TM&quot;</span><span class="p">:</span> <span class="n">lambda_f</span><span class="p">,</span>
+            <span class="s2">&quot;Kolmogorov&quot;</span><span class="p">:</span> <span class="n">eta</span><span class="p">,</span> 
+            <span class="s2">&quot;Kolmogorov resolution&quot;</span><span class="p">:</span> <span class="n">eta_kmax</span><span class="p">,</span>
+        <span class="p">},</span>
+
+        <span class="s2">&quot;TimeScales&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;Large-eddy-turnover time&quot;</span><span class="p">:</span> <span class="n">tau_LI</span><span class="p">,</span>
+            <span class="s2">&quot;Eddy-turnover time&quot;</span><span class="p">:</span> <span class="n">tau_lambda</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">turb_stats_dict</span></div>
+
+
+<div class="viewcode-block" id="get_quick_stats_hit"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.get_quick_stats_hit">[docs]</a><span class="k">def</span> <span class="nf">get_quick_stats_hit</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">,</span> <span class="n">pressure</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.4</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">********************</span><span class="se">\n</span><span class="s2">TURB STATS HIT&quot;</span><span class="p">)</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">])</span>
+
+    <span class="n">rho_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+    <span class="n">rho_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
+    
+    <span class="n">p_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+    <span class="n">p_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">pressure</span><span class="p">)</span>
+
+    <span class="c1"># TODO make function of material?</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">pressure</span> <span class="o">/</span> <span class="n">rho</span><span class="p">)</span>
+
+    <span class="n">c_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">p_mean</span> <span class="o">/</span> <span class="n">rho_mean</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;p_mean = </span><span class="si">%4.3f</span><span class="s2">, p_rms = </span><span class="si">%4.3f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">p_mean</span><span class="p">,</span> <span class="n">p_rms</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rho_mean = </span><span class="si">%4.3f</span><span class="s2">, rho_rms = </span><span class="si">%4.3f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">rho_mean</span><span class="p">,</span> <span class="n">rho_rms</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;c_mean = </span><span class="si">%4.3f</span><span class="s2">, c_mean_2 = </span><span class="si">%4.3f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">c_mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span>
+
+    <span class="n">Ma_t</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span> <span class="p">)</span> <span class="o">/</span> <span class="n">c_mean</span>
+    <span class="n">Ma_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="p">(</span><span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">c</span> <span class="p">)</span> <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ma_t = </span><span class="si">%4.3f</span><span class="s2">, Ma_rms = </span><span class="si">%4.3f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Ma_t</span><span class="p">,</span> <span class="n">Ma_rms</span><span class="p">))</span>
+
+    <span class="n">u_rms</span> <span class="o">=</span> <span class="n">u_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">tke</span>   <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rho</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">q_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">u_rms</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;REFERENCE VALUES: U_RMS=&quot;</span><span class="p">,</span> <span class="n">u_rms</span><span class="p">)</span>
+
+    <span class="n">duidj</span> <span class="o">=</span> <span class="n">calculate_sheartensor</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="n">S_ij</span>  <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span> <span class="n">duidj</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">duidj</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="p">)</span>
+    <span class="n">SijSij_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">S_ij</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">rho_mean</span> <span class="o">*</span> <span class="n">SijSij_bar</span> 
+    <span class="n">Re_turb</span>   <span class="o">=</span> <span class="n">rho_mean</span> <span class="o">*</span> <span class="n">q_rms</span><span class="o">**</span><span class="mi">4</span> <span class="o">/</span> <span class="n">eps</span> <span class="o">/</span> <span class="n">mu</span>
+
+    <span class="n">vorticity</span> <span class="o">=</span> <span class="n">calculate_vorticity</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="n">enstrophy</span> <span class="o">=</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vorticity</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">enstrophy_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">enstrophy</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;AVERAGED ENSTROPHY:&quot;</span><span class="p">,</span> <span class="n">enstrophy_mean</span><span class="p">)</span>
+
+    <span class="n">dil</span> <span class="o">=</span> <span class="n">calculate_dilatation</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+    <span class="n">divergence_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span> <span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">duidj</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">duidj</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMS DILATATION:&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">dil</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RMS DIVERGENCE:&quot;</span><span class="p">,</span> <span class="n">divergence_rms</span><span class="p">)</span>
+
+    <span class="n">ek</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">get_energy_spectrum_np</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+
+    <span class="c1"># Integral length scale</span>
+    <span class="n">int_Ek</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">ek</span><span class="p">)</span>
+    <span class="n">int_Ek_over_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">ek</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">))</span>
+    <span class="n">L_I</span> <span class="o">=</span> <span class="mf">0.75</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">int_Ek_over_k</span> <span class="o">/</span> <span class="n">int_Ek</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INTEGRAL LENGTH SCALE = </span><span class="si">%4.3f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">L_I</span><span class="p">))</span>
+
+    <span class="c1"># Longitudinal and lateral Taylor length scale</span>
+    <span class="n">lambda_</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">u_prime</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">lambda_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u_prime</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">lambda_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u_prime</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">duidj</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Taylor microscale = </span><span class="si">%4.3e</span><span class="s2"> </span><span class="se">\n</span><span class="s2">Longitudinal Taylor microscale = </span><span class="si">%4.3e</span><span class="s2"> </span><span class="se">\n</span><span class="s2">Lateral Taylor microscale = </span><span class="si">%4.3e</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">lambda_</span><span class="p">,</span> <span class="n">lambda_g</span><span class="p">,</span> <span class="n">lambda_f</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tau_re = &quot;</span><span class="p">,</span> <span class="n">lambda_f</span> <span class="o">/</span> <span class="n">u_rms</span><span class="p">)</span>
+
+    <span class="c1"># Kolmogorov</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="p">((</span><span class="n">mu</span> <span class="o">/</span> <span class="n">rho_mean</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="n">eps</span><span class="p">)</span><span class="o">**</span><span class="mf">0.25</span>
+    <span class="c1"># kmax = np.sqrt(3) * Nf</span>
+    <span class="c1"># eta_kmax = eta * kmax</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kolmogorov = </span><span class="si">%4.3e</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">eta</span><span class="p">))</span>
+
+    <span class="c1"># Large-eddy-turnover time</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">L_I</span> <span class="o">/</span> <span class="n">u_rms</span> 
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LARGE-EDDY-TURNOVER TIME:&quot;</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span>
+
+    <span class="n">Re_lambda</span>   <span class="o">=</span> <span class="n">lambda_f</span> <span class="o">*</span> <span class="n">u_rms</span> <span class="o">*</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">mu</span>
+    <span class="n">Re_lambda_2</span> <span class="o">=</span> <span class="n">u_rms</span> <span class="o">*</span> <span class="n">lambda_</span> <span class="o">*</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">mu</span>
+    <span class="n">Re_int</span>      <span class="o">=</span> <span class="n">u_rms</span> <span class="o">*</span> <span class="n">L_I</span> <span class="o">*</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">mu</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Re_lambda = </span><span class="si">%3.2f</span><span class="s2">, Re_lambda_2 = </span><span class="si">%3.2f</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Re_lambda</span><span class="p">,</span> <span class="n">Re_lambda_2</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Re_int = </span><span class="si">%3.2e</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">Re_int</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;RE_turb = &quot;</span><span class="p">,</span> <span class="n">Re_turb</span><span class="p">,</span> <span class="s2">&quot;mu = &quot;</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tau_re = &quot;</span><span class="p">,</span> <span class="n">lambda_f</span> <span class="o">/</span> <span class="n">u_prime</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tau_eddy = &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">15</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">rho_mean</span> <span class="o">/</span> <span class="n">eps</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TKE_0 = &quot;</span><span class="p">,</span> <span class="n">tke</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calculate_sheartensor_OLD"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.calculate_sheartensor_OLD">[docs]</a><span class="k">def</span> <span class="nf">calculate_sheartensor_OLD</span><span class="p">(</span><span class="n">U_field</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate shear tensor in spectral space </span>
+
+<span class="sd">    U_field: (3, Nx, Ny, Nz) array</span>
+
+<span class="sd">    duidj = [</span>
+<span class="sd">        du1/dx1 du1/dx2 du1/dx3</span>
+<span class="sd">        du2/dx1 du2/dx2 du2/dx3</span>
+<span class="sd">        du3/dx1 du3/dx2 du3/dx3</span>
+<span class="sd">    ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">U_field</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">Nx</span> <span class="o">==</span> <span class="n">Ny</span> <span class="ow">and</span> <span class="n">Ny</span> <span class="o">==</span> <span class="n">Nz</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Nx</span>
+    <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">k_field</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">get_real_wavenumber_grid</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="n">Nx</span><span class="p">)</span>
+
+    <span class="n">U_hat</span> <span class="o">=</span> <span class="n">velocity_rfftn</span><span class="p">(</span><span class="n">U_field</span><span class="p">)</span>
+
+    <span class="c1"># dui/dxj = IFFT ( 1j * k_j * u_i_hat  )</span>
+    <span class="n">duidj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">duidj</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span><span class="n">jj</span><span class="p">]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">k_field</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">*</span> <span class="n">U_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">duidj</span></div>
+
+<div class="viewcode-block" id="get_energy_spectrum_np_OLD"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats.get_energy_spectrum_np_OLD">[docs]</a><span class="k">def</span> <span class="nf">get_energy_spectrum_np_OLD</span><span class="p">(</span><span class="n">vel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SHOWS equality of energy in physical and spectral space</span>
+<span class="sd">    and also via integration of energy spectrum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nz</span> <span class="o">=</span> <span class="n">vel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">Nx</span> <span class="o">==</span> <span class="n">Ny</span> <span class="ow">and</span> <span class="n">Ny</span> <span class="o">==</span> <span class="n">Nz</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Nx</span>
+    <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">N</span><span class="p">)</span> <span class="c1"># for y and z direction</span>
+    <span class="n">kx</span> <span class="o">=</span> <span class="n">k</span><span class="p">[:</span><span class="n">Nf</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">kx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">k_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">k2_field</span> <span class="o">=</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">k_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">k2_field</span><span class="p">)</span>
+    <span class="c1"># one_k2_field = 1.0 / (k2_field + 1e-10)</span>
+
+    <span class="n">shell</span> <span class="o">=</span> <span class="p">(</span><span class="n">k_mag</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">fact</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Fourier transform </span>
+    <span class="n">vel_hat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">Nf</span><span class="p">,</span><span class="n">Ny</span><span class="p">,</span><span class="n">Nz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+       <span class="n">vel_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">vel</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">ek</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">uu</span> <span class="o">=</span> <span class="n">fact</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">uu</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">shell</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">fact</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samples</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">ek</span> <span class="o">*=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">energy_phys</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vel</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">vel</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">vel_hat_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">Nx</span><span class="p">,</span><span class="n">Ny</span><span class="p">,</span><span class="n">Nz</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+       <span class="n">vel_hat_2</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftn</span><span class="p">(</span><span class="n">vel</span><span class="p">[</span><span class="n">ii</span><span class="p">])</span>
+    <span class="n">energy_spec</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">/</span> <span class="n">N</span><span class="o">**</span><span class="mi">3</span>
+    
+    <span class="n">k_field_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">k_mag_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">k_field_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">k_field_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">k_field_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">k_field_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">k_field_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span>
+    <span class="n">shell_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">k_mag_2</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">ek_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">n_samples_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">uu_2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">vel_hat_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">ek_2</span><span class="p">,</span> <span class="n">shell_2</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">uu_2</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">n_samples_2</span><span class="p">,</span> <span class="n">shell_2</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ek_2</span> <span class="o">*=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">k</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samples_2</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">ek_2</span> <span class="o">*=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">N</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="n">ek</span><span class="p">[:</span><span class="n">Nf</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="n">ek_2</span><span class="p">[:</span><span class="n">Nf</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="mf">0.013</span> <span class="o">*</span> <span class="n">kx</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">kx</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">4</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">energy_ek</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ek</span><span class="p">)</span>
+    <span class="n">energy_ek_2</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">ek_2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ENERGY PHYS:&quot;</span><span class="p">,</span> <span class="n">energy_phys</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ENERGY SPEC:&quot;</span><span class="p">,</span> <span class="n">energy_spec</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ENERGY EK:&quot;</span><span class="p">,</span> <span class="n">energy_ek</span><span class="p">,</span> <span class="n">energy_ek_2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ek</span><span class="p">,</span> <span class="n">k</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

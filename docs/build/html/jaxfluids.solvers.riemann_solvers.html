@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.solvers.riemann_solvers package &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="jaxfluids.stencils package" href="jaxfluids.stencils.html" />
+    <link rel="prev" title="jaxfluids.solvers package" href="jaxfluids.solvers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="jaxfluids.html">jaxfluids package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="jaxfluids.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.forcing.html">jaxfluids.forcing package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.iles.html">jaxfluids.iles package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.io_utils.html">jaxfluids.io_utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.levelset.html">jaxfluids.levelset package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.materials.html">jaxfluids.materials package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.post_process.html">jaxfluids.post_process package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.shock_sensor.html">jaxfluids.shock_sensor package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="jaxfluids.solvers.html">jaxfluids.solvers package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="jaxfluids.solvers.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers.flux_splitting_scheme">jaxfluids.solvers.flux_splitting_scheme module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers.high_order_godunov">jaxfluids.solvers.high_order_godunov module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers.source_term_solver">jaxfluids.solvers.source_term_solver module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="jaxfluids.solvers.html#module-jaxfluids.solvers">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.stencils.html">jaxfluids.stencils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.time_integration.html">jaxfluids.time_integration package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="jaxfluids.turb.html">jaxfluids.turb package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.boundary_condition">jaxfluids.boundary_condition module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.domain_information">jaxfluids.domain_information module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.flux_computation">jaxfluids.flux_computation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.initializer">jaxfluids.initializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.input_reader">jaxfluids.input_reader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.simulation_manager">jaxfluids.simulation_manager module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.space_solver">jaxfluids.space_solver module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.unit_handler">jaxfluids.unit_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids.utilities">jaxfluids.utilities module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jaxfluids.html#module-jaxfluids">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="jaxfluids.html">jaxfluids package</a> &raquo;</li>
+          <li><a href="jaxfluids.solvers.html">jaxfluids.solvers package</a> &raquo;</li>
+      <li>jaxfluids.solvers.riemann_solvers package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jaxfluids.solvers.riemann_solvers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="jaxfluids-solvers-riemann-solvers-package">
+<h1>jaxfluids.solvers.riemann_solvers package<a class="headerlink" href="#jaxfluids-solvers-riemann-solvers-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.AUSMP">
+<span id="jaxfluids-solvers-riemann-solvers-ausmp-module"></span><h2>jaxfluids.solvers.riemann_solvers.AUSMP module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.AUSMP" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.AUSMP.AUSMP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.AUSMP.</span></span><span class="sig-name descname"><span class="pre">AUSMP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/AUSMP.html#AUSMP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.AUSMP.AUSMP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<p>AUSM+ Scheme - M Liou - 1996
+Advetion-Upstream Method Plus according to Liou.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.AUSMP.AUSMP.get_phi">
+<span class="sig-name descname"><span class="pre">get_phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/AUSMP.html#AUSMP.get_phi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.AUSMP.AUSMP.get_phi" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the phi vector from primitive and conservative variables
+in which energy is replaced by enthalpy.
+phi = [rho, rho * velX, rho * velY, rho * velZ, H]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables.</p></li>
+<li><p><strong>cons</strong> (<em>jnp.DeviceArray</em>) – Buffer of conservative variables.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of phi variable.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.AUSMP.AUSMP.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/AUSMP.html#AUSMP.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.AUSMP.AUSMP.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.HLL">
+<span id="jaxfluids-solvers-riemann-solvers-hll-module"></span><h2>jaxfluids.solvers.riemann_solvers.HLL module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.HLL" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.HLL.HLL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.HLL.</span></span><span class="sig-name descname"><span class="pre">HLL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/HLL.html#HLL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.HLL.HLL" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<p>HLL Riemann Solver by Harten, Lax and van Leer
+Harten et al. 1983</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.HLL.HLL.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/HLL.html#HLL.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.HLL.HLL.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.HLLC">
+<span id="jaxfluids-solvers-riemann-solvers-hllc-module"></span><h2>jaxfluids.solvers.riemann_solvers.HLLC module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.HLLC" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.HLLC.HLLC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.HLLC.</span></span><span class="sig-name descname"><span class="pre">HLLC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/HLLC.html#HLLC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.HLLC.HLLC" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<p>HLLC Riemann Solver
+Toro et al. 1994</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.HLLC.HLLC.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/HLLC.html#HLLC.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.HLLC.HLLC.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.HLLCLM">
+<span id="jaxfluids-solvers-riemann-solvers-hllclm-module"></span><h2>jaxfluids.solvers.riemann_solvers.HLLCLM module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.HLLCLM" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.HLLCLM.HLLCLM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.HLLCLM.</span></span><span class="sig-name descname"><span class="pre">HLLCLM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/HLLCLM.html#HLLCLM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.HLLCLM.HLLCLM" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<p>HLLCLM Riemann Solver
+Fleischmann et al. 2020</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.HLLCLM.HLLCLM.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_state_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_state_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">conservative_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">conservative_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/HLLCLM.html#HLLCLM.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.HLLCLM.HLLCLM.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="jaxfluids-solvers-riemann-solvers-laxfriedrichs-module">
+<h2>jaxfluids.solvers.riemann_solvers.LaxFriedrichs module<a class="headerlink" href="#jaxfluids-solvers-riemann-solvers-laxfriedrichs-module" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.RiemannNN">
+<span id="jaxfluids-solvers-riemann-solvers-riemannnn-module"></span><h2>jaxfluids.solvers.riemann_solvers.RiemannNN module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.RiemannNN" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.RiemannNN.RiemannNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.RiemannNN.</span></span><span class="sig-name descname"><span class="pre">RiemannNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/RiemannNN.html#RiemannNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.RiemannNN.RiemannNN" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.RiemannNN.RiemannNN.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_params_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_networks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/RiemannNN.html#RiemannNN.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.RiemannNN.RiemannNN.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.Rusanov">
+<span id="jaxfluids-solvers-riemann-solvers-rusanov-module"></span><h2>jaxfluids.solvers.riemann_solvers.Rusanov module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.Rusanov" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.Rusanov.Rusanov">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.Rusanov.</span></span><span class="sig-name descname"><span class="pre">Rusanov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/Rusanov.html#Rusanov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.Rusanov.Rusanov" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<p>Rusanov (Local Lax-Friedrichs) Riemann Solver</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.Rusanov.Rusanov.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/Rusanov.html#Rusanov.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.Rusanov.Rusanov.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.RusanovNN">
+<span id="jaxfluids-solvers-riemann-solvers-rusanovnn-module"></span><h2>jaxfluids.solvers.riemann_solvers.RusanovNN module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.RusanovNN" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.RusanovNN.RusanovNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.RusanovNN.</span></span><span class="sig-name descname"><span class="pre">RusanovNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/RusanovNN.html#RusanovNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.RusanovNN.RusanovNN" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver</span></code></a></p>
+<p>RusanovNN Riemann Solver which is optimied in the JAX-FLUIDS paper.
+The dissipation is calculated by a neural network. See details in
+Bezgin et al. 2022.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.RusanovNN.RusanovNN.solve_riemann_problem_xi">
+<span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_parameters_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ml_networks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.11)"><span class="pre">Dict</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/RusanovNN.html#RusanovNN.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.RusanovNN.RusanovNN.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.eigendecomposition">
+<span id="jaxfluids-solvers-riemann-solvers-eigendecomposition-module"></span><h2>jaxfluids.solvers.riemann_solvers.eigendecomposition module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.eigendecomposition" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.eigendecomposition.</span></span><span class="sig-name descname"><span class="pre">Eigendecomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stencil_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.html#jaxfluids.domain_information.DomainInformation" title="jaxfluids.domain_information.DomainInformation"><span class="pre">jaxfluids.domain_information.DomainInformation</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">flux_splitting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The Eigendecomposition class implements functionality for
+eigendecomposition of the Jacobian matrix. Eigendecomposition
+can be done based on primitive or conservative variables. The
+frozen state can be calculated from arithmetic or Roe averages.</p>
+<p>eigendecomp_prim only returns left and right eigenvectors,
+while eigendecomp_cons additionally returns eigenvalues according
+to a user-specified flux-splitting.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.compute_frozen_state">
+<span class="sig-name descname"><span class="pre">compute_frozen_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.compute_frozen_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.compute_frozen_state" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.compute_roe_cons">
+<span class="sig-name descname"><span class="pre">compute_roe_cons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prime_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">prime_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.compute_roe_cons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.compute_roe_cons" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the Roe averaged conservative state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prime_L</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables left of a cell face.</p></li>
+<li><p><strong>prime_R</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables right of a cell face.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of Roe averaged quantities at the cell face.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.eigendecomp_cons">
+<span class="sig-name descname"><span class="pre">eigendecomp_cons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.11)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.eigendecomp_cons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.eigendecomp_cons" title="Permalink to this definition"></a></dt>
+<dd><p>Computes eigendecomposition of the Jacobian matrix for conservative variables.
+Formulation for a general equation of state. Implementation according to Fedkiv et al.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Direction of the cell face at which the eigendecomposition is to be performed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of left, right eigenvectors and the eigenvalues.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Union[Tuple[jnp.DeviceArray, jnp.DeviceArray], Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.eigendecomp_prim">
+<span class="sig-name descname"><span class="pre">eigendecomp_prim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.eigendecomp_prim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.eigendecomp_prim" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the eigendecomposition of the Jacobian matrix wrt primitive variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes</strong> (<em>jnp.DeviceArray</em>) – Buffer of primitive variables.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Direction of the cell face at which the eigendecomposition is to be performed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer of left and right eigenvectors.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.get_stencil_window">
+<span class="sig-name descname"><span class="pre">get_stencil_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.get_stencil_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.get_stencil_window" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.transformtochar">
+<span class="sig-name descname"><span class="pre">transformtochar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stencil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_eig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.transformtochar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.transformtochar" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms the stencil from physical to characteristic space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stencil</strong> (<em>jnp.DeviceArray</em>) – Buffer with variables in physical space.</p></li>
+<li><p><strong>left_eig</strong> (<em>jnp.DeviceArray</em>) – Buffer of left eigenvalues.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which transformation has to be performed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with variables in characteristic space.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.transformtophysical">
+<span class="sig-name descname"><span class="pre">transformtophysical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stencil</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_eig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/eigendecomposition.html#Eigendecomposition.transformtophysical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.eigendecomposition.Eigendecomposition.transformtophysical" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms the stencil from characteristic to physical space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stencil</strong> (<em>jnp.DeviceArray</em>) – Buffer with variables in characteristic space.</p></li>
+<li><p><strong>right_eig</strong> (<em>jnp.DeviceArray</em>) – Buffer of right eigenvalues.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffer with variables in physical space.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.riemann_solver">
+<span id="jaxfluids-solvers-riemann-solvers-riemann-solver-module"></span><h2>jaxfluids.solvers.riemann_solvers.riemann_solver module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.riemann_solver" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.riemann_solver.</span></span><span class="sig-name descname"><span class="pre">RiemannSolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material_manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager" title="jaxfluids.materials.material_manager.MaterialManager"><span class="pre">jaxfluids.materials.material_manager.MaterialManager</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.11)"><span class="pre">Callable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/riemann_solver.html#RiemannSolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract base class for Riemann solvers.</p>
+<p>RiemannSolver has two fundamental attributes: a material manager and a signal speed.
+The solve_riemann_problem_xi method solves the one-dimensional Riemann problem.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.220446049250313e-16</span></em><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver.eps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver.solve_riemann_problem_xi">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">solve_riemann_problem_xi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">primes_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">primes_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cons_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/riemann_solver.html#RiemannSolver.solve_riemann_problem_xi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.riemann_solver.RiemannSolver.solve_riemann_problem_xi" title="Permalink to this definition"></a></dt>
+<dd><p>Solves one-dimensional Riemann problem in the direction as specified
+by the axis argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>primes_L</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer left of cell face</p></li>
+<li><p><strong>primes_R</strong> (<em>jnp.DeviceArray</em>) – primtive variable buffer right of cell face</p></li>
+<li><p><strong>cons_L</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer left of cell face</p></li>
+<li><p><strong>cons_R</strong> (<em>jnp.DeviceArray</em>) – conservative variable buffer right of cell face</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – Spatial direction along which Riemann problem is solved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>buffer of fluxes in xi direction</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers.signal_speeds">
+<span id="jaxfluids-solvers-riemann-solvers-signal-speeds-module"></span><h2>jaxfluids.solvers.riemann_solvers.signal_speeds module<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers.signal_speeds" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.compute_sstar">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">compute_sstar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">S_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">S_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#compute_sstar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.compute_sstar" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the speed of the intermediate wave in a Riemann problem.</p>
+<p>See Toro Eq. (10.70)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>p_L</strong> (<em>jnp.DeviceArray</em>) – Pressure of left neighboring cell.</p></li>
+<li><p><strong>p_R</strong> (<em>jnp.DeviceArray</em>) – Pressure of right neighboring cells.</p></li>
+<li><p><strong>rho_L</strong> (<em>jnp.DeviceArray</em>) – Density of left neighboring cell.</p></li>
+<li><p><strong>rho_R</strong> (<em>jnp.DeviceArray</em>) – Density of right neighboring cell.</p></li>
+<li><p><strong>S_L</strong> (<em>jnp.DeviceArray</em>) – Wave speed estimate left-going wave.</p></li>
+<li><p><strong>S_R</strong> (<em>jnp.DeviceArray</em>) – Wave speed estimate right-going wave.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Speed of the intermediate wave in the Riemann problem.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.estimate_pressure">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">estimate_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#estimate_pressure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.estimate_pressure" title="Permalink to this definition"></a></dt>
+<dd><p>Estimates the pressure in the star region based on a
+linearised solution in terms of primitive variables.</p>
+<p>See Toro Eq. (9.28) or (10.67)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+<li><p><strong>rho_L</strong> (<em>jnp.DeviceArray</em>) – Densities of left neighboring cells.</p></li>
+<li><p><strong>rho_R</strong> (<em>jnp.DeviceArray</em>) – Densities of right neighboring cells.</p></li>
+<li><p><strong>p_L</strong> (<em>jnp.DeviceArray</em>) – Pressure of left neighboring cell.</p></li>
+<li><p><strong>p_R</strong> (<em>jnp.DeviceArray</em>) – Pressure of right neighboring cells.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Pressure in the star region.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>jnp.DeviceArray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Arithmetic">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">signal_speed_Arithmetic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#signal_speed_Arithmetic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Arithmetic" title="Permalink to this definition"></a></dt>
+<dd><p>Arithmetic signal speed estimate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffers of left and right going wave speed estimates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">signal_speed_Davis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#signal_speed_Davis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis" title="Permalink to this definition"></a></dt>
+<dd><p>Davis signal speed estimate
+See Toro Eq. (10.48)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffers of left and right going wave speed estimates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis_2">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">signal_speed_Davis_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">H_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">H_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#signal_speed_Davis_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis_2" title="Permalink to this definition"></a></dt>
+<dd><p>Signal speed estimate according to Davis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+<li><p><strong>rho_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with densitites in left neighboring cell.</p></li>
+<li><p><strong>rho_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with densitites in right neighboring cell.</p></li>
+<li><p><strong>H_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with total enthalpies in left neighboring cell.</p></li>
+<li><p><strong>H_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with enthalpies in right neighboring cell.</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – Ratio of specific heats.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffers of left and right going wave speed estimates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Einfeldt">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">signal_speed_Einfeldt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#signal_speed_Einfeldt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Einfeldt" title="Permalink to this definition"></a></dt>
+<dd><p>Einfeldt signal speed estimate
+See Toro Eqs. (10.52) - (10.54)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffers of left and right going wave speed estimates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Rusanov">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">signal_speed_Rusanov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#signal_speed_Rusanov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Rusanov" title="Permalink to this definition"></a></dt>
+<dd><p>Rusanov type signal speed estimate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Buffers of left and right going wave speed estimates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Toro">
+<span class="sig-prename descclassname"><span class="pre">jaxfluids.solvers.riemann_solvers.signal_speeds.</span></span><span class="sig-name descname"><span class="pre">signal_speed_Toro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.11)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.numpy.html#jaxlib.xla_extension.DeviceArrayBase" title="(in JAX)"><span class="pre">jaxlib.xla_extension.DeviceArrayBase</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/jaxfluids/solvers/riemann_solvers/signal_speeds.html#signal_speed_Toro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Toro" title="Permalink to this definition"></a></dt>
+<dd><p>Toro signal speed estimate
+See Toro Eqs. (10.59) - (10.60)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in left neighboring cell.</p></li>
+<li><p><strong>u_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with normal velocity in right neighboring cell.</p></li>
+<li><p><strong>a_L</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in left neighboring cell.</p></li>
+<li><p><strong>a_R</strong> (<em>jnp.DeviceArray</em>) – Buffer with speed of sound in right neighboring cell.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[jnp.DeviceArray, jnp.DeviceArray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-jaxfluids.solvers.riemann_solvers">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-jaxfluids.solvers.riemann_solvers" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="jaxfluids.solvers.html" class="btn btn-neutral float-left" title="jaxfluids.solvers package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jaxfluids.stencils.html" class="btn btn-neutral float-right" title="jaxfluids.stencils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

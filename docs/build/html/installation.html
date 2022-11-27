@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Run Simulation" href="runsimulation.html" />
+    <link rel="prev" title="Welcome to the documentation of JAX-Fluids!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cpu-only-support">CPU-only support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu-and-cpu-support">GPU and CPU support</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<ul class="simple">
+<li><p>It is recommended to use a conda virtual environment for this project. Conda can be installed following these <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">instructions</a>. After successfully installing conda, the environment for this project can be created and activated:</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda create --name venv_jaxfluids <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
+<span class="gp">$ </span>conda activate venv_jaxfluids
+</pre></div>
+</div>
+<section id="cpu-only-support">
+<h2>CPU-only support<a class="headerlink" href="#cpu-only-support" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>To install the CPU-only version of JAX-Fluids, you can run</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/tumaer/JAXFLUIDS.git <span class="c1"># For ssh</span>
+<span class="gp">$ </span>git clone https://github.com/tumaer/JAXFLUIDS.git <span class="c1"># For https</span>
+<span class="gp">$ </span><span class="nb">cd</span> JAXFLUIDS
+<span class="gp">$ </span>pip install .
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>This clones the JAX-Fluids repository and installs the package via pip. If you want to install JAX-Fluids in editable mode, e.g., for code development on your local machine, run</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install --editable .
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to use <code class="docutils literal notranslate"><span class="pre">jaxlib</span></code> on a Mac with M1 chip, check the discussion <a class="reference external" href="https://github.com/google/jax/issues/5501">here</a>.</p>
+</div>
+</section>
+<section id="gpu-and-cpu-support">
+<h2>GPU and CPU support<a class="headerlink" href="#gpu-and-cpu-support" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>If you want to install JAX-Fluids with CPU and GPU support, you must first install <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">CUDA</a> - we have tested JAX-Fluids with CUDA 11.1 or newer. After installing CUDA, run the following</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/tumaer/JAXFLUIDS.git
+<span class="gp">$ </span><span class="nb">cd</span> JAXFLUIDS
+<span class="gp">$ </span>pip install .<span class="o">[</span>cuda<span class="o">]</span> -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>In case a GPU is available, <code class="docutils literal notranslate"><span class="pre">jaxfluids</span></code> uses it automatically. Nevertheless, it is possible to switch to CPU mode, or to select a specific GPU. This can be done using the following commands:</p></li>
+</ul>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span> <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;&quot;</span> <span class="c1"># For CPU mode</span>
+<span class="gp">$ </span><span class="nb">export</span> <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;number&quot;</span> <span class="c1"># For GPU mode, where number is the ID of the GPU that should be used</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">jax-fluids</span></code> will throw a warning if it falls back to GPU usage if no GPU is found.
+If you intend to run on a GPU, you can check the GPU utilization by running <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">nvidia-smi</span></code>
+in your terminal.</p>
+</div>
+<ul class="simple">
+<li><p>With the successfully installed package, the [example cases](cases) are a good starting point.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to the documentation of JAX-Fluids!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="runsimulation.html" class="btn btn-neutral float-right" title="Run Simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

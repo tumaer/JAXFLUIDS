@@ -7,9 +7,9 @@ tensorboard/
 *.dat
 *.tex
 *.mp4
-build
+#build
 dist
-jaxfluids*.rst
+#jaxfluids*.rst
 .DS_Store
 .ipynb_checkpoints
 .vscode

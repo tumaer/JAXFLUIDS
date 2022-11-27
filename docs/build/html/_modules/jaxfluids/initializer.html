@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.initializer &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.initializer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.initializer</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">from</span> <span class="nn">jax</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.boundary_condition</span> <span class="kn">import</span> <span class="n">BoundaryCondition</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.domain_information</span> <span class="kn">import</span> <span class="n">DomainInformation</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.input_reader</span> <span class="kn">import</span> <span class="n">InputReader</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_handler</span> <span class="kn">import</span> <span class="n">LevelsetHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_creator</span> <span class="kn">import</span> <span class="n">LevelsetCreator</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.unit_handler</span> <span class="kn">import</span> <span class="n">UnitHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.utilities</span> <span class="kn">import</span> <span class="n">get_conservatives_from_primitives</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.turb.turb_init_cond</span> <span class="kn">import</span> <span class="n">TurbInitManager</span>
+
+<div class="viewcode-block" id="Initializer"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.initializer.Initializer">[docs]</a><span class="k">class</span> <span class="nc">Initializer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;The Initializer class implements functionality to create a dictionary of initial buffers that is </span>
+<span class="sd">    passed to the simulate() method of the SimulationManager class. The initialization() method returns this</span>
+<span class="sd">    dictionary. The initial buffers are created in one of the following ways: </span>
+<span class="sd">    1) From a restart file that is specified in the case setup.</span>
+<span class="sd">    2) From turbulent initial condition parameters that are specified in the case setup</span>
+<span class="sd">    3) From the initial primitive buffer that is passed to the initialization() method</span>
+<span class="sd">    4) From the initial conditions for primitive variables specified in case setup</span>
+<span class="sd">    Note that if multiple of the above are provided, the priority is 1) - 4).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_reader</span><span class="p">:</span> <span class="n">InputReader</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span>       <span class="o">=</span> <span class="n">input_reader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">numerical_setup</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="s2">&quot;jax_enable_x64&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;is_double_precision_compute&quot;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;is_double_precision_compute&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span> <span class="o">=</span> <span class="n">UnitHandler</span><span class="p">(</span> <span class="o">**</span><span class="n">input_reader</span><span class="o">.</span><span class="n">nondimensionalization_parameters</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span> <span class="o">=</span> <span class="n">DomainInformation</span><span class="p">(</span>
+                    <span class="n">dim</span>                 <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span>
+                    <span class="n">nx</span>                  <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span>
+                    <span class="n">ny</span>                  <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span>
+                    <span class="n">nz</span>                  <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">nz</span><span class="p">,</span>
+                    <span class="n">nh_conservatives</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;conservatives&quot;</span><span class="p">][</span><span class="s2">&quot;halo_cells&quot;</span><span class="p">],</span>
+                    <span class="n">nh_geometry</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">][</span><span class="s2">&quot;halo_cells&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">domain_size</span>         <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize_domain_size</span><span class="p">(</span><span class="n">input_reader</span><span class="o">.</span><span class="n">domain_size</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span> <span class="o">=</span> <span class="n">MaterialManager</span><span class="p">(</span>
+            <span class="n">unit_handler</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+            <span class="n">material_properties</span> <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">material_properties</span><span class="p">,</span>
+            <span class="n">levelset_type</span>       <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">BoundaryCondition</span><span class="p">(</span>    
+                <span class="n">domain_information</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>
+                <span class="n">material_manager</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+                <span class="n">unit_handler</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+                <span class="n">boundary_types</span>          <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">boundary_location_types</span><span class="p">,</span>
+                <span class="n">wall_velocity_functions</span> <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">wall_velocity_functions</span><span class="p">,</span>
+                <span class="n">dirichlet_functions</span>     <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">dirichlet_functions</span><span class="p">,</span>
+                <span class="n">neumann_functions</span>       <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">neumann_functions</span><span class="p">,</span>
+                <span class="n">levelset_type</span>           <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span>    <span class="o">=</span> <span class="n">LevelsetHandler</span><span class="p">(</span>
+                    <span class="n">domain_information</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>   
+                    <span class="n">numerical_setup</span>             <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">,</span>
+                    <span class="n">material_manager</span>            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">,</span>
+                    <span class="n">unit_handler</span>                <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+                    <span class="n">solid_interface_velocity</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">solid_interface_velocity</span><span class="p">,</span>
+                    <span class="n">boundary_condition</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">levelset_creator</span>   <span class="o">=</span> <span class="n">LevelsetCreator</span><span class="p">(</span>
+                    <span class="n">domain_information</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span>
+                    <span class="n">unit_handler</span>                <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="p">,</span>
+                    <span class="n">initial_levelset</span>            <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">initial_levelset</span><span class="p">,</span>
+                    <span class="n">narrow_band_cutoff</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">][</span><span class="s2">&quot;narrow_band_cutoff&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">is_turb_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">turb_init_manager</span> <span class="o">=</span> <span class="n">TurbInitManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Initializer.initialization"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.initializer.Initializer.initialization">[docs]</a>    <span class="k">def</span> <span class="nf">initialization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_prime_init</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a dictionary of initial buffers. The buffers are either created from the case setup file </span>
+<span class="sd">        or from the user_prime_init argument.</span>
+
+<span class="sd">        :param user_prime_init: User specified initial buffer for the primitive variables, defaults to None</span>
+<span class="sd">        :type user_prime_init: Union[np.ndarray, jnp.DeviceArray], optional</span>
+<span class="sd">        :return: Dictionary of initial buffers</span>
+<span class="sd">        :rtype: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># DOMAIN INFORMATION</span>
+        <span class="n">nh</span>                  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">nh_conservatives</span>
+        <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span>          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">number_of_cells</span>
+        <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives</span>
+        <span class="n">active_axis_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">active_axis_indices</span>
+
+        <span class="c1"># CREATE INITIAL BUFFER</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">primes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">primes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span>
+
+        <span class="c1"># FILL BUFFERS FROM RESTART FILE</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">restart_flag</span><span class="p">:</span>
+
+            <span class="n">h5file</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">restart_file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+
+            <span class="c1"># PHYSICAL SIMULATION TIME</span>
+            <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">][()],</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+            <span class="c1"># CHECK IF END TIME IS LARGER THAN TIME OF RESTART</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">end_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;The end time </span><span class="si">%.4e</span><span class="s2"> is not larger than the restart time </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">end_time</span><span class="p">,</span> <span class="n">current_time</span><span class="p">)</span>
+
+            <span class="c1"># LEVELSET FLUID FLUID INTERFACE INTERACTION TYPE</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="n">primes_fluid_fluid</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;density_0&quot;</span><span class="p">,</span> <span class="s2">&quot;velocity_0&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure_0&quot;</span><span class="p">,</span> <span class="s2">&quot;density_1&quot;</span><span class="p">,</span> <span class="s2">&quot;velocity_1&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure_1&quot;</span><span class="p">]</span>
+                <span class="n">density_0</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/density_0&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;density&quot;</span><span class="p">)</span>
+                <span class="n">density_1</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/density_1&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;density&quot;</span><span class="p">)</span>
+                <span class="n">density</span>     <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">density_0</span><span class="p">,</span> <span class="n">density_1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">pressure_0</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/pressure_0&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+                <span class="n">pressure_1</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/pressure_1&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+                <span class="n">pressure</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">pressure_0</span><span class="p">,</span> <span class="n">pressure_1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;velocity_0&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">velocity_0</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocity_0&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+                    <span class="n">velocity_1</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocity_1&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">velocityX_0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityX_0&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density_0</span><span class="p">)</span>
+                    <span class="n">velocityX_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityX_1&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density_0</span><span class="p">)</span>
+                    <span class="n">velocityX</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityX_0</span><span class="p">,</span> <span class="n">velocityX_1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">velocityY_0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityY_0&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density_0</span><span class="p">)</span> 
+                    <span class="n">velocityY_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityY_1&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density_0</span><span class="p">)</span>
+                    <span class="n">velocityX</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityY_0</span><span class="p">,</span> <span class="n">velocityY_1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">velocityZ_0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityZ_0&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">2</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density_0</span><span class="p">)</span>
+                    <span class="n">velocityZ_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityZ_1&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">2</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density_0</span><span class="p">)</span>
+                    <span class="n">velocityZ</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityZ_0</span><span class="p">,</span> <span class="n">velocityZ_1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">velocity</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">primes_init</span>     <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)])</span>
+                <span class="n">primes</span>          <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">primes_init</span><span class="p">)</span>
+            <span class="c1"># ELSE</span>
+            <span class="k">else</span><span class="p">:</span>  
+                <span class="n">density</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/density&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;density&quot;</span><span class="p">)</span>
+                <span class="n">pressure</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/pressure&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;velocity&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">velocity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocity&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">velocityX</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityX&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density</span><span class="p">)</span>
+                    <span class="n">velocityY</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityY&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">1</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density</span><span class="p">)</span> 
+                    <span class="n">velocityZ</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;primes/velocityZ&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="mi">2</span> <span class="ow">in</span> <span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">density</span><span class="p">)</span>
+                    <span class="n">velocity</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="n">primes_init</span>     <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">pressure</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)])</span>
+                <span class="n">primes</span>          <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">primes_init</span><span class="p">)</span>
+                <span class="n">primes</span>          <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="c1"># COMPUTE CONSERVATIVES AND FILL BOUNDARIES</span>
+            <span class="n">cons</span>            <span class="o">=</span> <span class="n">get_conservatives_from_primitives</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+            <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">current_time</span><span class="p">)</span>
+            
+            <span class="c1"># CHECK IF RESOLUTION OF RESTART FILE AND CASE SETUP MATCH</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">)</span> <span class="o">==</span> <span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;Resolution in case setup </span><span class="si">%s</span><span class="s2"> is not same as in restart file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">((</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">),</span> <span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">)</span> <span class="o">==</span> <span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;Resolution in case setup </span><span class="si">%s</span><span class="s2"> is not same as in restart file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">((</span><span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span><span class="p">),</span> <span class="n">density</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            
+            <span class="c1"># FORCINGS</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_mass_flow_forcing&quot;</span><span class="p">]:</span>
+                <span class="n">PID_e_int</span>       <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing/PID_e_int&quot;</span><span class="p">][()]</span>
+                <span class="n">PID_e_new</span>       <span class="o">=</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing/PID_e_new&quot;</span><span class="p">][()]</span>
+
+            <span class="c1"># LEVELSET QUANTITIE</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="s2">&quot;levelset&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s2">&quot;No levelset in restart file.&quot;</span>
+                <span class="k">assert</span> <span class="s2">&quot;levelset&quot;</span> <span class="ow">in</span> <span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s2">&quot;No levelset in restart file.&quot;</span>
+                <span class="n">levelset</span>                    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nx</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nx</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">ny</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ny</span><span class="p">,</span> <span class="n">nz</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">nh</span> <span class="k">if</span> <span class="n">nz</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">nz</span><span class="p">))</span>
+                <span class="n">levelset_init</span>               <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">h5file</span><span class="p">[</span><span class="s2">&quot;levelset/levelset&quot;</span><span class="p">][:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="s2">&quot;length&quot;</span><span class="p">)</span>
+                <span class="n">levelset</span>                    <span class="o">=</span> <span class="n">levelset</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">nhx</span><span class="p">,</span><span class="n">nhy</span><span class="p">,</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">levelset_init</span><span class="p">)</span>
+                <span class="n">levelset</span>                    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_levelset</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+                <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_volume_fraction_and_apertures</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+
+        <span class="c1"># FILL BUFFERS FROM TURBULENT INITIAL CONDITIONS</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">is_turb_init</span><span class="p">:</span>
+
+            <span class="c1"># PHYSICAL SIMULATION TIME</span>
+            <span class="n">current_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+            <span class="c1"># GET INITIAL PRIMITIVE VARIABLES</span>
+            <span class="n">density</span><span class="p">,</span> <span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">,</span> <span class="n">pressure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turb_init_manager</span><span class="o">.</span><span class="n">get_turbulent_initial_condition</span><span class="p">()</span> 
+            <span class="n">primes_init</span>     <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">density</span><span class="p">,</span> <span class="n">velocityX</span><span class="p">,</span> <span class="n">velocityY</span><span class="p">,</span> <span class="n">velocityZ</span><span class="p">,</span> <span class="n">pressure</span><span class="p">])</span>
+            <span class="n">primes</span>          <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">primes_init</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="n">primes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># CONSERVATIVES</span>
+            <span class="n">cons</span> <span class="o">=</span> <span class="n">get_conservatives_from_primitives</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+
+            <span class="c1"># BOUNDARIES</span>
+            <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># USER SPECIFIED INIT PRIME BUFFER</span>
+        <span class="k">elif</span> <span class="n">user_prime_init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># TODO LEVELSET</span>
+        
+            <span class="c1"># PHYSICAL SIMULATION TIME</span>
+            <span class="n">current_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+            
+            <span class="c1"># NONDIM</span>
+            <span class="n">user_prime_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">user_prime_init</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;density&quot;</span><span class="p">)</span>
+            <span class="n">user_prime_init</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">user_prime_init</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+            <span class="n">user_prime_init</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">user_prime_init</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+
+            <span class="c1"># PRIMES</span>
+            <span class="n">primes</span> <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">user_prime_init</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="n">primes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># CONSERVATIVES</span>
+            <span class="n">cons</span> <span class="o">=</span> <span class="n">get_conservatives_from_primitives</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+
+            <span class="c1"># BOUNDARIES</span>
+            <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># FILL BUFFERS USING THE INITIAL CONDITION FOR THE PRIMITIVE VARIABLES SPECIFIED IN THE CASE SETUP</span>
+        <span class="k">else</span><span class="p">:</span>
+            
+            <span class="c1"># PHYSICAL SIMULATION TIME</span>
+            <span class="n">current_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+            <span class="c1"># GENERATE MESHGRID</span>
+            <span class="n">fluid_phases</span>    <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="n">mesh_grid</span>       <span class="o">=</span> <span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">domain_information</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">active_axis_indices</span><span class="p">]</span>
+
+            <span class="c1"># DIMENSIONALIZE FOR LAMBDA FUNCTION</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mesh_grid</span><span class="p">)):</span>
+                <span class="n">mesh_grid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">mesh_grid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># GENERATE INITIAL CONDITION</span>
+            <span class="n">primes_init</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fluid_phases</span><span class="p">):</span>
+                <span class="n">initial_condition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">initial_condition</span><span class="p">[[</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;negative&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">initial_condition</span>
+                <span class="n">primes_init_fluid</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">initial_condition</span><span class="p">:</span>
+                    <span class="n">function</span> <span class="o">=</span> <span class="n">initial_condition</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]:</span>
+                        <span class="n">prime_state_init</span> <span class="o">=</span> <span class="n">function</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">mesh_grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">function</span><span class="p">)</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">:</span>
+                        <span class="n">prime_state_init</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">mesh_grid</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Initial condition must be float or lambda function&quot;</span>
+                    <span class="n">prime_state_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">prime_state_init</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                    <span class="n">primes_init_fluid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">prime_state_init</span> <span class="p">)</span>
+                <span class="n">primes_init_fluid</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">primes_init_fluid</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">primes</span> <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">nhx</span><span class="p">,</span> <span class="n">nhy</span><span class="p">,</span> <span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">primes_init_fluid</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="n">primes</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># CONSERVATIVES</span>
+            <span class="n">cons</span> <span class="o">=</span> <span class="n">get_conservatives_from_primitives</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span>
+
+            <span class="c1"># LEVELSET</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">levelset</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_creator</span><span class="o">.</span><span class="n">create_levelset</span><span class="p">()</span>
+                <span class="n">levelset</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_levelset</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+                <span class="n">levelset</span><span class="p">,</span> <span class="n">_</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">reinitialize</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">levelset</span>        <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_levelset</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+                <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_volume_fraction_and_apertures</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+                <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">extend_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">current_time</span><span class="p">)</span>
+
+            <span class="c1"># BOUNDARIES</span>
+            <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span><span class="o">.</span><span class="n">fill_boundary_primes</span><span class="p">(</span><span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="n">buffer_dictionary</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;material_fields&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;levelset_quantities&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;machinelearning_modules&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;time_control&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="p">}</span>
+        
+        <span class="c1"># MATERIAL FIELD BUFFERS</span>
+        <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;cons&quot;</span><span class="p">:</span> <span class="n">cons</span><span class="p">,</span> <span class="s2">&quot;primes&quot;</span><span class="p">:</span> <span class="n">primes</span><span class="p">,</span>
+        <span class="p">})</span>
+        
+        <span class="c1"># TIME CONTROL</span>
+        <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;current_time&quot;</span><span class="p">:</span> <span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;timestep_size&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">})</span>
+
+        <span class="c1"># MASS FLOW FORCING</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">restart_flag</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_mass_flow_forcing&quot;</span><span class="p">]:</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;PID_e_int&quot;</span><span class="p">:</span> <span class="n">PID_e_int</span><span class="p">,</span> <span class="s2">&quot;PID_e_new&quot;</span><span class="p">:</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="s2">&quot;scalar_value&quot;</span><span class="p">:</span> <span class="mf">0.0</span>
+            <span class="p">})</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_mass_flow_forcing&quot;</span><span class="p">]:</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;PID_e_int&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;PID_e_new&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;scalar_value&quot;</span><span class="p">:</span> <span class="mf">0.0</span>
+            <span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;PID_e_int&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;PID_e_new&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;scalar_value&quot;</span><span class="p">:</span> <span class="kc">None</span>
+            <span class="p">})</span>
+
+        <span class="c1"># LEVELSET QUANTITIES FIELD BUFFERS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;levelset&quot;</span><span class="p">:</span> <span class="n">levelset</span><span class="p">,</span> <span class="s2">&quot;volume_fraction&quot;</span><span class="p">:</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="s2">&quot;apertures&quot;</span><span class="p">:</span> <span class="n">apertures</span>
+            <span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s2">&quot;levelset&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;volume_fraction&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;apertures&quot;</span><span class="p">:</span> <span class="kc">None</span>
+            <span class="p">})</span>
+
+        <span class="c1"># MACHINE LEARNING</span>
+        <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;machinelearning_modules&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;ml_parameters_dict&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;ml_networks_dict&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">buffer_dictionary</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

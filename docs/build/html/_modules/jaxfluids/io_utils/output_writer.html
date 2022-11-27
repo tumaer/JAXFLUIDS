@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.io_utils.output_writer &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.io_utils.output_writer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.io_utils.output_writer</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.domain_information</span> <span class="kn">import</span> <span class="n">DomainInformation</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_handler</span> <span class="kn">import</span> <span class="n">LevelsetHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.unit_handler</span> <span class="kn">import</span> <span class="n">UnitHandler</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.input_reader</span> <span class="kn">import</span> <span class="n">InputReader</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.stencils.spatial_derivative</span> <span class="kn">import</span> <span class="n">SpatialDerivative</span>
+
+<div class="viewcode-block" id="OutputWriter"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter">[docs]</a><span class="k">class</span> <span class="nc">OutputWriter</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Output writer for JAX-FLUIDS. The OutputWriter class can write h5 and xdmf </span>
+<span class="sd">    files. h5 and xdmf files can be visualized in paraview. Xdmf output is activated</span>
+<span class="sd">    via the is_xdmf_file flag under the output keyword in the numerical setup.</span>
+
+<span class="sd">    If the xdmf option is activated, a single xdmf file is written for each h5 file.</span>
+<span class="sd">    Additionally, at the end of the simulation, an time series xdmf file is written</span>
+<span class="sd">    which summarizes the whole simulation. This enables loading the entire timeseries</span>
+<span class="sd">    into Paraview.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_reader</span><span class="p">:</span> <span class="n">InputReader</span><span class="p">,</span> <span class="n">unit_handler</span><span class="p">:</span> <span class="n">UnitHandler</span><span class="p">,</span> <span class="n">domain_information</span><span class="p">:</span> <span class="n">DomainInformation</span><span class="p">,</span>
+        <span class="n">material_manager</span><span class="p">:</span> <span class="n">MaterialManager</span><span class="p">,</span> <span class="n">levelset_handler</span><span class="p">:</span> <span class="n">LevelsetHandler</span><span class="p">,</span> <span class="n">derivative_stencil_conservatives</span><span class="p">:</span> <span class="n">SpatialDerivative</span><span class="p">,</span>
+        <span class="n">derivative_stencil_geometry</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SpatialDerivative</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># GENERAL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_name</span>      <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">case_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_timestamp</span> <span class="o">=</span> <span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">input_reader</span><span class="o">.</span><span class="n">save_dt</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dt</span>        <span class="o">=</span> <span class="n">unit_handler</span><span class="o">.</span><span class="n">non_dimensionalize</span><span class="p">(</span><span class="n">input_reader</span><span class="o">.</span><span class="n">save_dt</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_path</span>      <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">save_path</span>
+
+        <span class="c1"># JSON</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">case_setup</span>         <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">case_setup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span>    <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">numerical_setup</span>
+
+        <span class="c1"># NUMERICAL SETUP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_xdmf</span>                            <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;is_xdmf&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span>                          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;is_double_precision_output&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span>                  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="s2">&quot;quantities&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_mass_flow_forcing</span>               <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">[</span><span class="s2">&quot;active_forcings&quot;</span><span class="p">][</span><span class="s2">&quot;is_mass_flow_forcing&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span>                      <span class="o">=</span> <span class="n">input_reader</span><span class="o">.</span><span class="n">levelset_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil_conservatives</span>   <span class="o">=</span> <span class="n">derivative_stencil_conservatives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil_geometry</span>        <span class="o">=</span> <span class="n">derivative_stencil_geometry</span>
+
+        <span class="c1"># MATERIAL, UNITHANDLER</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span>       <span class="o">=</span> <span class="n">material_manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span>           <span class="o">=</span> <span class="n">unit_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span>       <span class="o">=</span> <span class="n">levelset_handler</span>
+
+        <span class="c1"># DOMAIN INFORMATION</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_cells</span>                    <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">number_of_cells</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell_centers</span>                       <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">cell_centers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span>                         <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">cell_faces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span>                         <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">cell_sizes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span>            <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span>         <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_geometry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nhx__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz__</span>      <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">domain_slices_conservatives_to_geometry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span>                <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">active_axis_indices</span>
+
+        <span class="c1"># QUANTITIES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantity_index</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;primes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;density&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;velocityX&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;velocityY&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;velocityZ&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span>  <span class="s2">&quot;pressure&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+            <span class="s2">&quot;cons&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;mass&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;momentumX&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;momentumY&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;momentumZ&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_timeseries</span>  <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xdmf_timeseries</span>    <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_path_case</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_path_domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_folder_name</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OutputWriter.create_folder"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.create_folder">[docs]</a>    <span class="k">def</span> <span class="nf">create_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Sets up a folder for the simulation. Dumps the numerical setup and</span>
+<span class="sd">        cas setup into the simulation folder and creates an output folder</span>
+<span class="sd">        within in simulation folder into which simulation output is saved.</span>
+
+<span class="sd">        simulation_folder</span>
+<span class="sd">        ---- Numerical setup</span>
+<span class="sd">        ---- Case setup</span>
+<span class="sd">        ---- domain</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_case</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_domain</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_case</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_name</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_setup</span><span class="p">,</span> <span class="n">json_file</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_case</span><span class="p">,</span> <span class="s2">&quot;numerical_setup.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numerical_setup</span><span class="p">,</span> <span class="n">json_file</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OutputWriter.get_folder_name"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.get_folder_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_folder_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns a name for the simulation folder based on the case name.</span>
+
+<span class="sd">        :return: Path to the simulation folder and path to domain folder within</span>
+<span class="sd">            simulation folder.</span>
+<span class="sd">        :rtype: Tuple[str, str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">case_name_folder</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_name</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">)</span>
+
+        <span class="n">create_directory</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span> <span class="n">create_directory</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">case_name_folder</span><span class="p">)):</span>
+                <span class="n">case_name_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">case_name</span> <span class="o">+</span> <span class="s2">&quot;-</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">save_path_case</span>     <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="n">case_name_folder</span><span class="p">)</span>
+                <span class="n">save_path_domain</span>   <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path_case</span><span class="p">,</span> <span class="s2">&quot;domain&quot;</span><span class="p">)</span>
+                <span class="n">create_directory</span>   <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="n">save_path_case</span><span class="p">,</span> <span class="n">save_path_domain</span></div>
+
+<div class="viewcode-block" id="OutputWriter.write_output"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.write_output">[docs]</a>    <span class="k">def</span> <span class="nf">write_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]],</span> 
+        <span class="n">force_output</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">simulation_finish</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes h5 and (optional) xdmf output.</span>
+
+<span class="sd">        :param buffer_dictionary: Dictionary with flow field buffers</span>
+<span class="sd">        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]</span>
+<span class="sd">        :param force_output: Flag which forces an output.</span>
+<span class="sd">        :type force_output: bool</span>
+<span class="sd">        :param simulation_finish: Flag that indicates the simulation finish -&gt; </span>
+<span class="sd">            then timeseries xdmf is written, defaults to False</span>
+<span class="sd">        :type simulation_finish: bool, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">][</span><span class="s2">&quot;current_time&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">force_output</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_h5file</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_xdmf</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_xdmffile</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">current_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_timestamp</span>
+            <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">write_h5file</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_xdmf</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">write_xdmffile</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">next_timestamp</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_dt</span>
+
+        <span class="k">if</span> <span class="n">simulation_finish</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_xdmf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_timeseries_xdmffile</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OutputWriter.write_h5file"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.write_h5file">[docs]</a>    <span class="k">def</span> <span class="nf">write_h5file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;time_control&quot;</span><span class="p">][</span><span class="s2">&quot;current_time&quot;</span><span class="p">]</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;data_</span><span class="si">%.6f</span><span class="s2">.h5&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_domain</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">h5file</span><span class="p">:</span>
+
+            <span class="c1"># MESH DATA</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/gridX&quot;</span><span class="p">,</span>        <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/gridY&quot;</span><span class="p">,</span>        <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/gridZ&quot;</span><span class="p">,</span>        <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_centers</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/gridFX&quot;</span><span class="p">,</span>       <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/gridFY&quot;</span><span class="p">,</span>       <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/gridFZ&quot;</span><span class="p">,</span>       <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/cellsizeX&quot;</span><span class="p">,</span>    <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/cellsizeY&quot;</span><span class="p">,</span>    <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mesh/cellsizeZ&quot;</span><span class="p">,</span>    <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+
+            <span class="c1"># CURRENT TIME</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">)</span>
+
+            <span class="c1"># COMPUTE TEMPERATURE</span>
+            <span class="n">primes</span>          <span class="o">=</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">][</span><span class="s2">&quot;primes&quot;</span><span class="p">]</span>
+            <span class="n">temperature</span>     <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_temperature</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">material_fields</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;primes&quot;</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">primes</span><span class="p">,</span> <span class="n">temperature</span><span class="p">]),</span> <span class="s2">&quot;cons&quot;</span><span class="p">:</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;material_fields&quot;</span><span class="p">][</span><span class="s2">&quot;cons&quot;</span><span class="p">]}</span>
+
+            <span class="c1"># CONSERAVITVES AND PRIMITIVES</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">,</span> <span class="s2">&quot;cons&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                                <span class="n">quantity_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                                <span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">material_fields</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">quantity_index</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">quantity</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">],</span> <span class="n">quantity</span><span class="p">)</span>
+                                <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">key</span><span class="p">,</span> <span class="n">quantity_name</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="n">buffer</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">material_fields</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">quantity_index</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">quantity</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">],</span> <span class="n">quantity</span><span class="p">)</span>
+                            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">key</span><span class="p">,</span> <span class="n">quantity</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="n">buffer</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                
+                <span class="c1"># LEVELSET QUANTITIES</span>
+                <span class="k">if</span> <span class="s2">&quot;levelset&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;levelset&quot;</span><span class="p">)</span>
+                    <span class="n">levelset_quantities</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span>   <span class="o">=</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">][</span><span class="s2">&quot;levelset&quot;</span><span class="p">],</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">][</span><span class="s2">&quot;volume_fraction&quot;</span><span class="p">]</span>
+                    <span class="n">normal</span>                      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">geometry_calculator</span><span class="o">.</span><span class="n">compute_normal</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
+                    <span class="n">mask_real</span><span class="p">,</span> <span class="n">_</span>                <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_masks</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                        <span class="n">interface_velocity</span><span class="p">,</span> <span class="n">interface_pressure</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_interface_quantities</span><span class="p">(</span><span class="n">material_fields</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">],</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+                        <span class="n">levelset_quantities</span><span class="p">[</span><span class="s2">&quot;interface_velocity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">interface_velocity</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+                        <span class="n">levelset_quantities</span><span class="p">[</span><span class="s2">&quot;interface_pressure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">interface_pressure</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">)</span>
+                        <span class="n">mask_real</span> <span class="o">=</span> <span class="n">mask_real</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-SOLID-DYNAMIC&quot;</span><span class="p">:</span>
+                        <span class="n">interface_velocity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_handler</span><span class="o">.</span><span class="n">compute_solid_interface_velocity</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
+                        <span class="n">levelset_quantities</span><span class="p">[</span><span class="s2">&quot;interface_velocity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">interface_velocity</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">)</span>
+                    <span class="n">levelset_quantities</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                        <span class="s2">&quot;levelset&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">levelset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">],</span> <span class="s2">&quot;length&quot;</span><span class="p">),</span>
+                        <span class="s2">&quot;volume_fraction&quot;</span><span class="p">:</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">],</span> <span class="s2">&quot;mask_real&quot;</span><span class="p">:</span> <span class="n">mask_real</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">],</span>
+                        <span class="s2">&quot;normal&quot;</span><span class="p">:</span> <span class="n">normal</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span>
+                        <span class="p">})</span>
+                    <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">]:</span>
+                        <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;levelset/&quot;</span> <span class="o">+</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">levelset_quantities</span><span class="p">[</span><span class="n">quantity</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+                
+                <span class="c1"># CONSERVATIVES AND PRIMITIVES FOR REAL FLUID</span>
+                <span class="k">if</span> <span class="s2">&quot;real_fluid&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;real_fluid&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cons&quot;</span><span class="p">,</span> <span class="s2">&quot;primes&quot;</span><span class="p">]:</span>
+                        <span class="n">real_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_real_buffer</span><span class="p">(</span><span class="n">material_fields</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">],</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">][</span><span class="s2">&quot;volume_fraction&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="p">[</span><span class="n">quant</span> <span class="k">for</span> <span class="n">quant</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="p">[</span><span class="s2">&quot;real_fluid&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity_index</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()]:</span>
+                            <span class="n">real_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">real_buffer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">quantity_index</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">quantity</span><span class="p">]],</span> <span class="n">quantity</span><span class="p">)</span>
+                            <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;real_fluid/&quot;</span> <span class="o">+</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">real_state</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+
+            <span class="c1"># MISCELLANEOUS - ALWAYS COMPUTED FOR REAL FLUID</span>
+            <span class="k">if</span> <span class="s2">&quot;miscellaneous&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;miscellaneous&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="p">[</span><span class="s2">&quot;miscellaneous&quot;</span><span class="p">]:</span>
+                    <span class="n">computed_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_miscellaneous</span><span class="p">(</span><span class="n">material_fields</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">],</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;levelset_quantities&quot;</span><span class="p">][</span><span class="s2">&quot;volume_fraction&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">!=</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;miscellaneous/&quot;</span> <span class="o">+</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">computed_quantity</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+
+            <span class="c1"># MASS FLOW FORCING</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_mass_flow_forcing</span><span class="p">:</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass_flow_forcing/scalar_value&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">][</span><span class="s2">&quot;scalar_value&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass_flow_forcing/PID_e_int&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">][</span><span class="s2">&quot;PID_e_int&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span>
+                <span class="n">h5file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass_flow_forcing/PID_e_new&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">buffer_dictionary</span><span class="p">[</span><span class="s2">&quot;mass_flow_forcing&quot;</span><span class="p">][</span><span class="s2">&quot;PID_e_new&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="s2">&quot;f4&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OutputWriter.write_xdmffile"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.write_xdmffile">[docs]</a>    <span class="k">def</span> <span class="nf">write_xdmffile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes an xdmf file for the current time step.</span>
+<span class="sd">        The xdmf file corresponds to an h5 file which holds the </span>
+<span class="sd">        data buffers.</span>
+
+<span class="sd">        :param current_time: Current simulation time.</span>
+<span class="sd">        :type current_time: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;data_</span><span class="si">%.6f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_handler</span><span class="o">.</span><span class="n">dimensionalize</span><span class="p">(</span><span class="n">current_time</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+
+        <span class="n">h5file_name</span>   <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.h5&quot;</span>
+        <span class="n">xdmffile_path</span> <span class="o">=</span> <span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;.xdmf&quot;</span>
+        <span class="n">h5file_path</span>   <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_domain</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">)</span>
+        <span class="n">xdmffile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_domain</span><span class="p">,</span> <span class="n">xdmffile_path</span><span class="p">)</span>
+
+        <span class="n">xdmf_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># XDMF START</span>
+        <span class="n">xdmf_preamble</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;?xml version=&quot;1.0&quot; ?&gt;</span>
+<span class="s1">        &lt;!DOCTYPE Xdmf SYSTEM &quot;Xdmf.dtd&quot; []&gt;</span>
+<span class="s1">        &lt;Xdmf Version=&quot;3.0&quot;&gt;</span>
+<span class="s1">        &lt;Domain&gt;</span>
+<span class="s1">            &lt;Grid Name=&quot;TimeStep&quot; GridType=&quot;Collection&quot; CollectionType=&quot;Temporal&quot;&gt;&#39;&#39;&#39;</span>
+        
+        <span class="n">xdmf_str_start</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">                &lt;Grid Name=&quot;SpatialData_</span><span class="si">%e</span><span class="s1">&quot; GridType=&quot;Uniform&quot;&gt;</span>
+<span class="s1">                    &lt;Time TimeType=&quot;Single&quot; Value=&quot;</span><span class="si">%e</span><span class="s1">&quot; /&gt;</span>
+
+<span class="s1">                    &lt;Geometry Type=&quot;VXVYVZ&quot;&gt;</span>
+<span class="s1">                        &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:mesh/gridFX&lt;/DataItem&gt;</span>
+<span class="s1">                        &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:mesh/gridFY&lt;/DataItem&gt;</span>
+<span class="s1">                        &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:mesh/gridFZ&lt;/DataItem&gt;</span>
+<span class="s1">                    &lt;/Geometry&gt;</span>
+<span class="s1">                    &lt;Topology Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot; Type=&quot;3DRectMesh&quot;/&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span> <span class="c1"># 1 512 128</span>
+                        <span class="n">current_time</span><span class="p">,</span> <span class="n">current_time</span><span class="p">,</span>
+                        <span class="mi">8</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">h5file_name</span><span class="p">,</span> 
+                        <span class="mi">8</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">h5file_name</span><span class="p">,</span> 
+                        <span class="mi">8</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">h5file_name</span><span class="p">,</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell_faces</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+        <span class="c1"># XDMF QUANTITIES</span>
+        <span class="n">xdmf_quants</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># CONSERVATIVES AND PRIMITIVES </span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cons&quot;</span><span class="p">,</span> <span class="s2">&quot;primes&quot;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="n">no_phases</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="k">else</span> <span class="mi">1</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">no_phases</span><span class="p">):</span>
+                        <span class="n">quantity_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span> <span class="k">else</span> <span class="n">quantity</span>
+                        <span class="n">xdmf_quants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_xdmf</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">quantity_name</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_cells</span><span class="p">))</span>
+
+
+        <span class="c1"># REAL FLUID AND MISCELLANEOUS</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;real_fluid&quot;</span><span class="p">,</span> <span class="s2">&quot;miscellaneous&quot;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_quantities</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="n">xdmf_quants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_xdmf</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_cells</span><span class="p">))</span>
+
+        <span class="n">xdmf_str_end</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;&lt;/Grid&gt;&#39;&#39;&#39;</span>
+
+        <span class="c1"># XDMF END</span>
+        <span class="n">xdmf_postamble</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;&lt;/Grid&gt;</span>
+<span class="s1">        &lt;/Domain&gt;</span>
+<span class="s1">        &lt;/Xdmf&gt;&#39;&#39;&#39;</span>
+
+        <span class="c1"># APPEND XDMF SPATIAL TO TIMESERIES</span>
+        <span class="k">if</span> <span class="n">current_time</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_timeseries</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_timeseries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xdmf_timeseries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xdmf_str_start</span><span class="p">]</span> <span class="o">+</span> <span class="n">xdmf_quants</span> <span class="o">+</span> <span class="p">[</span><span class="n">xdmf_str_end</span><span class="p">]))</span>
+
+        <span class="c1"># JOIN FINAL XDMF STR AND WRITE TO FILE</span>
+        <span class="n">xdmf_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xdmf_preamble</span><span class="p">,</span> <span class="n">xdmf_str_start</span><span class="p">]</span> <span class="o">+</span> <span class="n">xdmf_quants</span> <span class="o">+</span> <span class="p">[</span><span class="n">xdmf_str_end</span><span class="p">,</span> <span class="n">xdmf_postamble</span><span class="p">])</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xdmffile_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">xdmf_file</span><span class="p">:</span>
+            <span class="n">xdmf_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xdmf_str</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OutputWriter.write_timeseries_xdmffile"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.write_timeseries_xdmffile">[docs]</a>    <span class="k">def</span> <span class="nf">write_timeseries_xdmffile</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Write xdmffile for the complete time series so that visualization </span>
+<span class="sd">        tools like Paraview can load the complete time series at once. This is</span>
+<span class="sd">        done once at the end of a simulation when every output time stamp is </span>
+<span class="sd">        known. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xdmffile_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_path_domain</span><span class="p">,</span> <span class="s2">&quot;data_time_series.xdmf&quot;</span><span class="p">)</span>
+
+        <span class="n">xdmf_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># XDMF START</span>
+        <span class="n">xdmf_str_start</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;?xml version=&quot;1.0&quot; ?&gt;</span>
+<span class="s1">        &lt;!DOCTYPE Xdmf SYSTEM &quot;Xdmf.dtd&quot; []&gt;</span>
+<span class="s1">        &lt;Xdmf Version=&quot;3.0&quot;&gt;</span>
+<span class="s1">        &lt;Domain&gt;</span>
+<span class="s1">            &lt;Grid Name=&quot;TimeSeries&quot; GridType=&quot;Collection&quot; CollectionType=&quot;Temporal&quot;&gt;&#39;&#39;&#39;</span>
+
+        <span class="c1"># XDMF END</span>
+        <span class="n">xdmf_str_end</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;&lt;/Grid&gt;</span>
+<span class="s1">        &lt;/Domain&gt;</span>
+<span class="s1">        &lt;/Xdmf&gt;&#39;&#39;&#39;</span>
+
+        <span class="c1"># JOIN FINAL XDMF STR AND WRITE TO FILE</span>
+        <span class="n">xdmf_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xdmf_str_start</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdmf_timeseries</span> <span class="o">+</span> <span class="p">[</span><span class="n">xdmf_str_end</span><span class="p">])</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xdmffile_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">xdmf_file</span><span class="p">:</span>
+            <span class="n">xdmf_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xdmf_str</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OutputWriter.get_xdmf"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.get_xdmf">[docs]</a>    <span class="k">def</span> <span class="nf">get_xdmf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Nx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Ny</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Nz</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the string for the xdmf file for the given output quantity.</span>
+
+<span class="sd">        :param group: Group name in h5 file under which the quantity is stored.</span>
+<span class="sd">        :type group: str</span>
+<span class="sd">        :param quant: Name of the output quantity.</span>
+<span class="sd">        :type quant: str</span>
+<span class="sd">        :param h5file_name: Name of the corresponding h5 file.</span>
+<span class="sd">        :type h5file_name: str</span>
+<span class="sd">        :param Nx: Resolution in x direction.</span>
+<span class="sd">        :type Nx: int</span>
+<span class="sd">        :param Ny: Resolution in y direction.</span>
+<span class="sd">        :type Ny: int</span>
+<span class="sd">        :param Nz: Resolution in z direction.</span>
+<span class="sd">        :type Nz: int</span>
+<span class="sd">        :return: Xdmf string for the specified quantity.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">,</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">]:</span>
+            <span class="n">xdmf</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;Attribute Name=&quot;</span><span class="si">%s</span><span class="s1">&quot; AttributeType=&quot;Vector&quot; Center=&quot;Cell&quot;&gt;</span>
+<span class="s1">            &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&lt;/DataItem&gt;</span>
+<span class="s1">            &lt;/Attribute&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">quant</span><span class="p">,</span> <span class="mi">8</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span> <span class="n">Nz</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">quant</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xdmf</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;Attribute Name=&quot;</span><span class="si">%s</span><span class="s1">&quot; AttributeType=&quot;Scalar&quot; Center=&quot;Cell&quot;&gt;</span>
+<span class="s1">                &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&lt;/DataItem&gt;</span>
+<span class="s1">            &lt;/Attribute&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">quant</span><span class="p">,</span> <span class="mi">8</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_double</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span> <span class="n">Nz</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">quant</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xdmf</span></div>
+
+<div class="viewcode-block" id="OutputWriter.compute_real_buffer"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_real_buffer">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_real_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; For two-phase simulations, merges the two separate phase buffers </span>
+<span class="sd">        into a single real buffer. Calculation is done as a arithmetic average </span>
+<span class="sd">        based on the volume fraction. </span>
+
+<span class="sd">        :param buffer: Data buffer.</span>
+<span class="sd">        :type buffer: jnp.DeviceArray</span>
+<span class="sd">        :param volume_fraction: Buffer of the volume fraction.</span>
+<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :return: Combined data buffer of the &#39;real&#39; fluid.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">volume_fraction</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">volume_fraction</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">volume_fraction</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>       
+        <span class="n">conservatives_real</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">0</span><span class="p">,:,:,:]</span> <span class="o">*</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">buffer</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="mi">1</span><span class="p">,:,:,:]</span> <span class="o">*</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">conservatives_real</span></div>
+
+<div class="viewcode-block" id="OutputWriter.compute_miscellaneous"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_miscellaneous">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_miscellaneous</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Compute miscellaneous output fields for h5 output.</span>
+
+<span class="sd">        :param primes: Buffer of primitive variables.</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param quantity: String identifier of the quantity to be computed.</span>
+<span class="sd">        :type quantity: str</span>
+<span class="sd">        :param volume_fraction: Buffer of the volume fraction field, </span>
+<span class="sd">            only for two-phase simulations. Otherwise None.</span>
+<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :return: Computed phyiscal output quantity.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">primes_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_real_buffer</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz__</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">primes_real</span> <span class="o">=</span> <span class="n">primes</span>
+
+        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;schlieren&quot;</span><span class="p">:</span>
+            <span class="n">computed_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_schlieren</span><span class="p">(</span><span class="n">primes_real</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">:</span>
+            <span class="n">computed_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_vorticity</span><span class="p">(</span><span class="n">primes_real</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;absolute_vorticity&quot;</span><span class="p">:</span>
+            <span class="n">computed_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_absolute_vorticity</span><span class="p">(</span><span class="n">primes_real</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;absolute_velocity&quot;</span><span class="p">:</span>
+            <span class="n">computed_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_absolute_velocity</span><span class="p">(</span><span class="n">primes_real</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;mach_number&quot;</span><span class="p">:</span>
+            <span class="n">computed_quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_mach_number</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">computed_quantity</span></div>
+
+<div class="viewcode-block" id="OutputWriter.compute_absolute_velocity"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_absolute_velocity">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_absolute_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the absolute velocity field for h5 output.</span>
+
+<span class="sd">        :param velocity: Buffer of velocities.</span>
+<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :return: Buffer of absolute velocity.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">absolute_velocity</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">jnp</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">velocity</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">absolute_velocity</span> <span class="o">=</span> <span class="n">absolute_velocity</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">absolute_velocity</span> <span class="o">=</span> <span class="n">absolute_velocity</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">absolute_velocity</span></div>
+
+<div class="viewcode-block" id="OutputWriter.compute_mach_number"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_mach_number">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_mach_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the Mach number field for h5 output.</span>
+
+<span class="sd">        :param primes: Buffer of primitive variables.</span>
+<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :param volume_fraction: Buffer of volume fraction.</span>
+<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :return: Buffer of Mach number.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">absolute_velocity</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">jnp</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">speed_of_sound</span>      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">mach_number</span>         <span class="o">=</span> <span class="n">absolute_velocity</span><span class="o">/</span><span class="n">speed_of_sound</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">mach_number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_real_buffer</span><span class="p">(</span><span class="n">mach_number</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz__</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mach_number</span> <span class="o">=</span> <span class="n">mach_number</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">mach_number</span>            </div>
+
+<div class="viewcode-block" id="OutputWriter.compute_schlieren"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_schlieren">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_schlieren</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes numerical schlieren field for h5 output.</span>
+
+<span class="sd">        :param density: Buffer of density.</span>
+<span class="sd">        :type density: jnp.DeviceArray</span>
+<span class="sd">        :return: Buffer of schlieren.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schlieren</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+                <span class="n">schlieren</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil_geometry</span><span class="o">.</span><span class="n">derivative_xi</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">schlieren</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil_conservatives</span><span class="o">.</span><span class="n">derivative_xi</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">density</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">schlieren</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">schlieren</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">schlieren</span></div>
+
+<div class="viewcode-block" id="OutputWriter.compute_vorticity"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_vorticity">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_vorticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes vorticity field for h5 output.</span>
+
+<span class="sd">        :param velocity: Buffer of velocities.</span>
+<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :return: Buffer of vorticity.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
+            <span class="n">velocity_grad</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil_geometry</span><span class="o">.</span><span class="n">derivative_xi</span><span class="p">(</span><span class="n">velocity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">velocity_grad</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil_conservatives</span><span class="o">.</span><span class="n">derivative_xi</span><span class="p">(</span><span class="n">velocity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span> <span class="k">else</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">du_dy</span><span class="p">,</span> <span class="n">du_dz</span> <span class="o">=</span> <span class="n">velocity_grad</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">velocity_grad</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">dv_dx</span><span class="p">,</span> <span class="n">dv_dz</span> <span class="o">=</span> <span class="n">velocity_grad</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">velocity_grad</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">dw_dx</span><span class="p">,</span> <span class="n">dw_dy</span> <span class="o">=</span> <span class="n">velocity_grad</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">velocity_grad</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">vorticity</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+            <span class="n">dw_dy</span> <span class="o">-</span> <span class="n">dv_dz</span><span class="p">,</span>
+            <span class="n">du_dz</span> <span class="o">-</span> <span class="n">dw_dx</span><span class="p">,</span>
+            <span class="n">dv_dx</span> <span class="o">-</span> <span class="n">du_dy</span>
+        <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vorticity</span></div>
+
+<div class="viewcode-block" id="OutputWriter.compute_absolute_vorticity"><a class="viewcode-back" href="../../../jaxfluids.io_utils.html#jaxfluids.io_utils.output_writer.OutputWriter.compute_absolute_vorticity">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_absolute_vorticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes absolute vorticity field for h5 output.</span>
+
+<span class="sd">        :param velocity: Buffer of velocities.</span>
+<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :return: Buffer of absolute vorticity.</span>
+<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">absolute_vorticity</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_vorticity</span><span class="p">(</span><span class="n">velocity</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">absolute_vorticity</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

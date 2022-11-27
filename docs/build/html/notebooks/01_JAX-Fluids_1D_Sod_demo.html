@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JAX-Fluids: Sod shock tube demo &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Features" href="../features.html" />
+    <link rel="prev" title="Tutorials" href="../tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">JAX-Fluids: Sod shock tube demo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Simulation-Setup">Simulation Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Run-Simulation">Run Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Load-Data">Load Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Visualize-Data">Visualize Data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../tutorials.html">Tutorials</a> &raquo;</li>
+      <li>JAX-Fluids: Sod shock tube demo</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/01_JAX-Fluids_1D_Sod_demo.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="JAX-Fluids:-Sod-shock-tube-demo">
+<h1>JAX-Fluids: Sod shock tube demo<a class="headerlink" href="#JAX-Fluids:-Sod-shock-tube-demo" title="Permalink to this headline"></a></h1>
+<p>This demo will demonstrate how you can run a simple 1D simulation with JAX-Fluids. Here, we simulate the Sod shock tube.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">jaxfluids</span> <span class="kn">import</span> <span class="n">InputReader</span><span class="p">,</span> <span class="n">Initializer</span><span class="p">,</span> <span class="n">SimulationManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.post_process</span> <span class="kn">import</span> <span class="n">load_data</span><span class="p">,</span> <span class="n">create_lineplot</span>
+</pre></div>
+</div>
+</div>
+<section id="Simulation-Setup">
+<h2>Simulation Setup<a class="headerlink" href="#Simulation-Setup" title="Permalink to this headline"></a></h2>
+<p>To run a forward simulation with JAX-Fluids, you need an InputRead, an Initializer, and a SimulationManager.</p>
+<p>The InputReader reads a case setup file (here, “01_case_setup_sod.json”) and a numerical setup file (here, “01_numerical_setup_sod.json”). We can pass the path to those files as strings to the InputReader. The case setup specifies the physical setup of your simulation and the numerical setup specifies with which numerical methods you want to run your simulation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_reader</span> <span class="o">=</span> <span class="n">InputReader</span><span class="p">(</span><span class="s2">&quot;01_case_setup_sod.json&quot;</span><span class="p">,</span> <span class="s2">&quot;01_numerical_setup_sod.json&quot;</span><span class="p">)</span>
+<span class="n">initializer</span>  <span class="o">=</span> <span class="n">Initializer</span><span class="p">(</span><span class="n">input_reader</span><span class="p">)</span>
+<span class="n">sim_manager</span>  <span class="o">=</span> <span class="n">SimulationManager</span><span class="p">(</span><span class="n">input_reader</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:absl:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+</pre></div></div>
+</div>
+</section>
+<section id="Run-Simulation">
+<h2>Run Simulation<a class="headerlink" href="#Run-Simulation" title="Permalink to this headline"></a></h2>
+<p>The Initializer creates a dictionary which contains all initial flow fields. The SimulationManager runs the simulation and writes h5 output files.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buffer_dictionary</span> <span class="o">=</span> <span class="n">initializer</span><span class="o">.</span><span class="n">initialization</span><span class="p">()</span>
+<span class="n">sim_manager</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">buffer_dictionary</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+*------------------------------------------------------------------------------*
+*                                                                              *
+*                                                                              *
+*          _     _    __  __        _____  _      _   _  ___  ____   ____      *
+*         | |   / \   \ \/ /       |  ___|| |    | | | ||_ _||  _ \ / ___|     *
+*      _  | |  / _ \   \  /  _____ | |_   | |    | | | | | | | | | |\___ \     *
+*     | |_| | / ___ \  /  \ |_____||  _|  | |___ | |_| | | | | |_| | ___) |    *
+*      \___/ /_/   \_\/_/\_\       |_|    |_____| \___/ |___||____/ |____/     *
+*                                                                              *
+*                                By BB - ML@AER                                *
+*                                                                              *
+*------------------------------------------------------------------------------*
+* JAX-FLUIDS -                                                                 *
+*                                                                              *
+* A fully-differentiable CFD solver for compressible two-phase flows.          *
+* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *
+*                                                                              *
+* This program is free software: you can redistribute it and/or modify         *
+* it under the terms of the GNU General Public License as published by         *
+* the Free Software Foundation, either version 3 of the License, or            *
+* (at your option) any later version.                                          *
+*                                                                              *
+* This program is distributed in the hope that it will be useful,              *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of               *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
+* GNU General Public License for more details.                                 *
+*                                                                              *
+* You should have received a copy of the GNU General Public License            *
+* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+* CONTACT                                                                      *
+*                                                                              *
+* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+* Munich, April 15th, 2022                                                     *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*                                                                              *
+*                               NUMERICAL SETUP                                *
+*                                                                              *
+*    CONSERVATIVES                                                             *
+*        HALO CELLS                   :    4                                   *
+*        TIME INTEGRATION                                                      *
+*          INTEGRATOR                 :    RK3                                 *
+*          CFL                        :    0.9                                 *
+*        CONVECTIVE FLUXES                                                     *
+*          CONVECTIVE SOLVER          :    GODUNOV                             *
+*          RIEMANN SOLVER             :    HLLC                                *
+*          SIGNAL SPEED               :    EINFELDT                            *
+*          SPATIAL RECONSTRUCTOR      :    WENO5-JS                            *
+*          IS SAFE RECONSTRUCTION     :    False                               *
+*          RECONSTRUCTION VAR         :    CHAR-CONSERVATIVE                   *
+*        DISSIPATIVE FLUXES                                                    *
+*          RECONSTRUCTION STENCIL     :    R4                                  *
+*          DERIVATIVE STENCIL CENTER  :    DC4                                 *
+*          DERIVATIVE STENCIL FACE    :    DF4                                 *
+*                                                                              *
+*    ACTIVE PHYSICS                                                            *
+*        IS CONVECTIVE FLUX           :    True                                *
+*        IS VISCOUS FLUX              :    False                               *
+*        IS HEAT FLUX                 :    False                               *
+*        IS VOLUME FORCE              :    False                               *
+*                                                                              *
+*    ACTIVE FORCINGS                                                           *
+*        IS MASS FLOW FORCING         :    False                               *
+*        IS TEMPERATURE FORCING       :    False                               *
+*        IS TURB HIT FORCING          :    False                               *
+*                                                                              *
+*    OUTPUT                                                                    *
+*        IS DOUBLE PRECISION COMPUTE  :    False                               *
+*        IS DOUBLE PRECISION OUTPUT   :    False                               *
+*        DERIVATIVE STENCIL           :    DC4                                 *
+*        QUANTITIES                                                            *
+*          PRIMES                     :    [&#39;density&#39;, &#39;velocityX&#39;, &#39;pressure&#39;, &#39;temperature&#39;]*
+*        LOGGING                      :    INFO                                *
+*        IS XDMF                      :    False                               *
+*                                                                              *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*                                  CASE SETUP                                  *
+*                                                                              *
+*    GENERAL                                                                   *
+*        CASE NAME                    :    sod                                 *
+*        SAVE PATH                    :    ./results                           *
+*        END TIME                     :    0.2                                 *
+*        SAVE DT                      :    0.01                                *
+*                                                                              *
+*    DOMAIN                                                                    *
+*        X                                                                     *
+*          CELLS                      :    100                                 *
+*          RANGE                      :    [0.0, 1.0]                          *
+*        Y                                                                     *
+*          CELLS                      :    1                                   *
+*          RANGE                      :    [0.0, 1.0]                          *
+*        Z                                                                     *
+*          CELLS                      :    1                                   *
+*          RANGE                      :    [0.0, 1.0]                          *
+*                                                                              *
+*    BOUNDARY CONDITION                                                        *
+*        TYPES                                                                 *
+*          EAST                       :    neumann                             *
+*          WEST                       :    neumann                             *
+*          NORTH                      :    inactive                            *
+*          SOUTH                      :    inactive                            *
+*          TOP                        :    inactive                            *
+*          BOTTOM                     :    inactive                            *
+*                                                                              *
+*    INITIAL CONDITION                                                         *
+*        RHO                          :    lambda x: 1.0*(x &lt;= 0.5) + 0.125*(x &gt; 0.5)*
+*        U                            :    0.0                                 *
+*        V                            :    0.0                                 *
+*        W                            :    0.0                                 *
+*        P                            :    lambda x: 1.0*(x &lt;= 0.5) + 0.1*(x &gt; 0.5)*
+*                                                                              *
+*    MATERIAL PROPERTIES                                                       *
+*        TYPE                         :    IdealGas                            *
+*        DYNAMIC VISCOSITY            :    0.0                                 *
+*        BULK VISCOSITY               :    0.0                                 *
+*        THERMAL CONDUCTIVITY         :    0.0                                 *
+*        SPECIFIC HEAT RATIO          :    1.4                                 *
+*        SPECIFIC GAS CONSTANT        :    1.0                                 *
+*                                                                              *
+*    NONDIMENSIONALIZATION PARAMETERS                                          *
+*        DENSITY REFERENCE            :    1.0                                 *
+*        LENGTH REFERENCE             :    1.0                                 *
+*        VELOCITY REFERENCE           :    1.0                                 *
+*        TEMPERATURE REFERENCE        :    1.0                                 *
+*                                                                              *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*                                                                              *
+*          _     _    __  __        _____  _      _   _  ___  ____   ____      *
+*         | |   / \   \ \/ /       |  ___|| |    | | | ||_ _||  _ \ / ___|     *
+*      _  | |  / _ \   \  /  _____ | |_   | |    | | | | | | | | | |\___ \     *
+*     | |_| | / ___ \  /  \ |_____||  _|  | |___ | |_| | | | | |_| | ___) |    *
+*      \___/ /_/   \_\/_/\_\       |_|    |_____| \___/ |___||____/ |____/     *
+*                                                                              *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.5355e-03                               *
+*    CURRENT DT                     = 2.5355e-03                               *
+*    CURRENT STEP                   =      1                                   *
+*    WALL CLOCK TIMESTEP            = 1.6543e+01                               *
+*    MEAN WALL CLOCK TIMESTEP       = 1.6543e+01                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.6543e-01                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 1.6543e-01                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 4.8562e-03                               *
+*    CURRENT DT                     = 2.3207e-03                               *
+*    CURRENT STEP                   =      2                                   *
+*    WALL CLOCK TIMESTEP            = 1.6013e+01                               *
+*    MEAN WALL CLOCK TIMESTEP       = 1.6013e+01                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.6013e-01                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 1.6013e-01                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 7.0562e-03                               *
+*    CURRENT DT                     = 2.2001e-03                               *
+*    CURRENT STEP                   =      3                                   *
+*    WALL CLOCK TIMESTEP            = 1.9751e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 1.9751e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9751e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 1.9751e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 9.2314e-03                               *
+*    CURRENT DT                     = 2.1752e-03                               *
+*    CURRENT STEP                   =      4                                   *
+*    WALL CLOCK TIMESTEP            = 2.0599e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 2.0599e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0599e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 2.0599e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.1371e-02                               *
+*    CURRENT DT                     = 2.1392e-03                               *
+*    CURRENT STEP                   =      5                                   *
+*    WALL CLOCK TIMESTEP            = 2.9609e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 8.9473e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.9609e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 8.9473e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.3440e-02                               *
+*    CURRENT DT                     = 2.0694e-03                               *
+*    CURRENT STEP                   =      6                                   *
+*    WALL CLOCK TIMESTEP            = 2.1119e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5802e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1119e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5802e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.5495e-02                               *
+*    CURRENT DT                     = 2.0550e-03                               *
+*    CURRENT STEP                   =      7                                   *
+*    WALL CLOCK TIMESTEP            = 1.7400e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.6068e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7400e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.6068e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.7565e-02                               *
+*    CURRENT DT                     = 2.0695e-03                               *
+*    CURRENT STEP                   =      8                                   *
+*    WALL CLOCK TIMESTEP            = 2.0292e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 5.9529e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0292e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 5.9529e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.9579e-02                               *
+*    CURRENT DT                     = 2.0141e-03                               *
+*    CURRENT STEP                   =      9                                   *
+*    WALL CLOCK TIMESTEP            = 1.7853e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 5.4319e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7853e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 5.4319e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.1567e-02                               *
+*    CURRENT DT                     = 1.9886e-03                               *
+*    CURRENT STEP                   =     10                                   *
+*    WALL CLOCK TIMESTEP            = 3.4679e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 8.6816e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.4679e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 8.6816e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.3562e-02                               *
+*    CURRENT DT                     = 1.9943e-03                               *
+*    CURRENT STEP                   =     11                                   *
+*    WALL CLOCK TIMESTEP            = 2.0118e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 8.0146e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0118e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 8.0146e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.5550e-02                               *
+*    CURRENT DT                     = 1.9884e-03                               *
+*    CURRENT STEP                   =     12                                   *
+*    WALL CLOCK TIMESTEP            = 1.7631e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4463e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7631e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4463e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.7509e-02                               *
+*    CURRENT DT                     = 1.9586e-03                               *
+*    CURRENT STEP                   =     13                                   *
+*    WALL CLOCK TIMESTEP            = 1.7910e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.9750e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7910e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.9750e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.9463e-02                               *
+*    CURRENT DT                     = 1.9547e-03                               *
+*    CURRENT STEP                   =     14                                   *
+*    WALL CLOCK TIMESTEP            = 1.9920e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.5917e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9920e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.5917e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 3.1428e-02                               *
+*    CURRENT DT                     = 1.9646e-03                               *
+*    CURRENT STEP                   =     15                                   *
+*    WALL CLOCK TIMESTEP            = 3.2766e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 8.4613e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.2766e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 8.4613e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 3.3375e-02                               *
+*    CURRENT DT                     = 1.9474e-03                               *
+*    CURRENT STEP                   =     16                                   *
+*    WALL CLOCK TIMESTEP            = 2.5609e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 8.0679e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5609e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 8.0679e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 3.5313e-02                               *
+*    CURRENT DT                     = 1.9377e-03                               *
+*    CURRENT STEP                   =     17                                   *
+*    WALL CLOCK TIMESTEP            = 2.2748e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7059e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2748e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7059e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 3.7251e-02                               *
+*    CURRENT DT                     = 1.9383e-03                               *
+*    CURRENT STEP                   =     18                                   *
+*    WALL CLOCK TIMESTEP            = 2.1060e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3765e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1060e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3765e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 3.9194e-02                               *
+*    CURRENT DT                     = 1.9426e-03                               *
+*    CURRENT STEP                   =     19                                   *
+*    WALL CLOCK TIMESTEP            = 1.9801e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0767e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9801e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0767e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 4.1125e-02                               *
+*    CURRENT DT                     = 1.9313e-03                               *
+*    CURRENT STEP                   =     20                                   *
+*    WALL CLOCK TIMESTEP            = 2.4584e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.9981e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.4584e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.9981e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 4.3053e-02                               *
+*    CURRENT DT                     = 1.9279e-03                               *
+*    CURRENT STEP                   =     21                                   *
+*    WALL CLOCK TIMESTEP            = 2.3952e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7180e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3952e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7180e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 4.4982e-02                               *
+*    CURRENT DT                     = 1.9291e-03                               *
+*    CURRENT STEP                   =     22                                   *
+*    WALL CLOCK TIMESTEP            = 1.9908e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4452e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9908e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4452e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 4.6909e-02                               *
+*    CURRENT DT                     = 1.9274e-03                               *
+*    CURRENT STEP                   =     23                                   *
+*    WALL CLOCK TIMESTEP            = 1.9388e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.1949e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9388e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.1949e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 4.8832e-02                               *
+*    CURRENT DT                     = 1.9226e-03                               *
+*    CURRENT STEP                   =     24                                   *
+*    WALL CLOCK TIMESTEP            = 2.0411e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.9709e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0411e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.9709e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 5.0753e-02                               *
+*    CURRENT DT                     = 1.9214e-03                               *
+*    CURRENT STEP                   =     25                                   *
+*    WALL CLOCK TIMESTEP            = 3.0742e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.9613e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.0742e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.9613e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 5.2676e-02                               *
+*    CURRENT DT                     = 1.9229e-03                               *
+*    CURRENT STEP                   =     26                                   *
+*    WALL CLOCK TIMESTEP            = 1.5271e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7040e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.5271e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7040e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 5.4595e-02                               *
+*    CURRENT DT                     = 1.9188e-03                               *
+*    CURRENT STEP                   =     27                                   *
+*    WALL CLOCK TIMESTEP            = 1.5271e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4664e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.5271e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4664e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 5.6512e-02                               *
+*    CURRENT DT                     = 1.9165e-03                               *
+*    CURRENT STEP                   =     28                                   *
+*    WALL CLOCK TIMESTEP            = 1.9300e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2613e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9300e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2613e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 5.8428e-02                               *
+*    CURRENT DT                     = 1.9163e-03                               *
+*    CURRENT STEP                   =     29                                   *
+*    WALL CLOCK TIMESTEP            = 1.6079e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0594e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.6079e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0594e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 6.0344e-02                               *
+*    CURRENT DT                     = 1.9163e-03                               *
+*    CURRENT STEP                   =     30                                   *
+*    WALL CLOCK TIMESTEP            = 2.0591e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5260e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0591e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5260e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 6.2258e-02                               *
+*    CURRENT DT                     = 1.9134e-03                               *
+*    CURRENT STEP                   =     31                                   *
+*    WALL CLOCK TIMESTEP            = 2.1188e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3458e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1188e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3458e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 6.4170e-02                               *
+*    CURRENT DT                     = 1.9122e-03                               *
+*    CURRENT STEP                   =     32                                   *
+*    WALL CLOCK TIMESTEP            = 1.8659e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.1690e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.8659e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.1690e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 6.6082e-02                               *
+*    CURRENT DT                     = 1.9124e-03                               *
+*    CURRENT STEP                   =     33                                   *
+*    WALL CLOCK TIMESTEP            = 1.8880e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0040e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.8880e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0040e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 6.7994e-02                               *
+*    CURRENT DT                     = 1.9115e-03                               *
+*    CURRENT STEP                   =     34                                   *
+*    WALL CLOCK TIMESTEP            = 2.3088e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.8617e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3088e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.8617e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 6.9904e-02                               *
+*    CURRENT DT                     = 1.9098e-03                               *
+*    CURRENT STEP                   =     35                                   *
+*    WALL CLOCK TIMESTEP            = 2.6171e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.7369e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.6171e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.7369e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 7.1813e-02                               *
+*    CURRENT DT                     = 1.9092e-03                               *
+*    CURRENT STEP                   =     36                                   *
+*    WALL CLOCK TIMESTEP            = 3.6789e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5955e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.6789e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5955e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 7.3722e-02                               *
+*    CURRENT DT                     = 1.9094e-03                               *
+*    CURRENT STEP                   =     37                                   *
+*    WALL CLOCK TIMESTEP            = 2.3329e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4493e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3329e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4493e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 7.5631e-02                               *
+*    CURRENT DT                     = 1.9085e-03                               *
+*    CURRENT STEP                   =     38                                   *
+*    WALL CLOCK TIMESTEP            = 2.2471e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3087e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2471e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3087e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 7.7538e-02                               *
+*    CURRENT DT                     = 1.9075e-03                               *
+*    CURRENT STEP                   =     39                                   *
+*    WALL CLOCK TIMESTEP            = 2.0449e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.1702e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0449e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.1702e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 7.9445e-02                               *
+*    CURRENT DT                     = 1.9072e-03                               *
+*    CURRENT STEP                   =     40                                   *
+*    WALL CLOCK TIMESTEP            = 2.1408e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0412e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1408e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0412e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 8.1353e-02                               *
+*    CURRENT DT                     = 1.9074e-03                               *
+*    CURRENT STEP                   =     41                                   *
+*    WALL CLOCK TIMESTEP            = 2.3427e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4509e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3427e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4509e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 8.3259e-02                               *
+*    CURRENT DT                     = 1.9065e-03                               *
+*    CURRENT STEP                   =     42                                   *
+*    WALL CLOCK TIMESTEP            = 2.7800e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3369e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.7800e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3369e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 8.5165e-02                               *
+*    CURRENT DT                     = 1.9059e-03                               *
+*    CURRENT STEP                   =     43                                   *
+*    WALL CLOCK TIMESTEP            = 1.8277e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2058e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.8277e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2058e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 8.7071e-02                               *
+*    CURRENT DT                     = 1.9058e-03                               *
+*    CURRENT STEP                   =     44                                   *
+*    WALL CLOCK TIMESTEP            = 2.3212e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0922e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3212e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0922e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 8.8977e-02                               *
+*    CURRENT DT                     = 1.9060e-03                               *
+*    CURRENT STEP                   =     45                                   *
+*    WALL CLOCK TIMESTEP            = 2.5902e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 6.9899e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5902e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 6.9899e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 9.0882e-02                               *
+*    CURRENT DT                     = 1.9053e-03                               *
+*    CURRENT STEP                   =     46                                   *
+*    WALL CLOCK TIMESTEP            = 3.1795e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5411e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.1795e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5411e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 9.2787e-02                               *
+*    CURRENT DT                     = 1.9050e-03                               *
+*    CURRENT STEP                   =     47                                   *
+*    WALL CLOCK TIMESTEP            = 2.8930e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4400e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.8930e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4400e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 9.4692e-02                               *
+*    CURRENT DT                     = 1.9050e-03                               *
+*    CURRENT STEP                   =     48                                   *
+*    WALL CLOCK TIMESTEP            = 2.3317e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3314e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3317e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3314e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 9.6597e-02                               *
+*    CURRENT DT                     = 1.9050e-03                               *
+*    CURRENT STEP                   =     49                                   *
+*    WALL CLOCK TIMESTEP            = 2.5089e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2309e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5089e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2309e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 9.8502e-02                               *
+*    CURRENT DT                     = 1.9046e-03                               *
+*    CURRENT STEP                   =     50                                   *
+*    WALL CLOCK TIMESTEP            = 2.2268e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.1288e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2268e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.1288e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.0041e-01                               *
+*    CURRENT DT                     = 1.9045e-03                               *
+*    CURRENT STEP                   =     51                                   *
+*    WALL CLOCK TIMESTEP            = 2.3768e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4615e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3768e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4615e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.0231e-01                               *
+*    CURRENT DT                     = 1.9046e-03                               *
+*    CURRENT STEP                   =     52                                   *
+*    WALL CLOCK TIMESTEP            = 3.1049e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3761e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.1049e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3761e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.0422e-01                               *
+*    CURRENT DT                     = 1.9045e-03                               *
+*    CURRENT STEP                   =     53                                   *
+*    WALL CLOCK TIMESTEP            = 2.3229e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2789e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3229e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2789e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.0612e-01                               *
+*    CURRENT DT                     = 1.9043e-03                               *
+*    CURRENT STEP                   =     54                                   *
+*    WALL CLOCK TIMESTEP            = 1.8470e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.1765e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.8470e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.1765e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.0802e-01                               *
+*    CURRENT DT                     = 1.9044e-03                               *
+*    CURRENT STEP                   =     55                                   *
+*    WALL CLOCK TIMESTEP            = 1.9357e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0794e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9357e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0794e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.0993e-01                               *
+*    CURRENT DT                     = 1.9044e-03                               *
+*    CURRENT STEP                   =     56                                   *
+*    WALL CLOCK TIMESTEP            = 7.8259e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.0930e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 7.8259e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.0930e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.1183e-01                               *
+*    CURRENT DT                     = 1.9043e-03                               *
+*    CURRENT STEP                   =     57                                   *
+*    WALL CLOCK TIMESTEP            = 3.3779e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5695e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.3779e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5695e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.1374e-01                               *
+*    CURRENT DT                     = 1.9044e-03                               *
+*    CURRENT STEP                   =     58                                   *
+*    WALL CLOCK TIMESTEP            = 2.5129e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4808e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5129e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4808e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.1564e-01                               *
+*    CURRENT DT                     = 1.9045e-03                               *
+*    CURRENT STEP                   =     59                                   *
+*    WALL CLOCK TIMESTEP            = 2.0061e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3864e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0061e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3864e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.1755e-01                               *
+*    CURRENT DT                     = 1.9044e-03                               *
+*    CURRENT STEP                   =     60                                   *
+*    WALL CLOCK TIMESTEP            = 2.2810e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2999e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2810e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2999e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.1945e-01                               *
+*    CURRENT DT                     = 1.9045e-03                               *
+*    CURRENT STEP                   =     61                                   *
+*    WALL CLOCK TIMESTEP            = 2.3522e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2174e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3522e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2174e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.2136e-01                               *
+*    CURRENT DT                     = 1.9046e-03                               *
+*    CURRENT STEP                   =     62                                   *
+*    WALL CLOCK TIMESTEP            = 2.9830e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5881e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.9830e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5881e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.2326e-01                               *
+*    CURRENT DT                     = 1.9045e-03                               *
+*    CURRENT STEP                   =     63                                   *
+*    WALL CLOCK TIMESTEP            = 2.1260e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5000e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1260e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5000e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.2516e-01                               *
+*    CURRENT DT                     = 1.9046e-03                               *
+*    CURRENT STEP                   =     64                                   *
+*    WALL CLOCK TIMESTEP            = 1.7838e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4093e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7838e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4093e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.2707e-01                               *
+*    CURRENT DT                     = 1.9047e-03                               *
+*    CURRENT STEP                   =     65                                   *
+*    WALL CLOCK TIMESTEP            = 2.0962e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3263e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0962e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3263e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.2897e-01                               *
+*    CURRENT DT                     = 1.9047e-03                               *
+*    CURRENT STEP                   =     66                                   *
+*    WALL CLOCK TIMESTEP            = 2.5620e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.2530e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5620e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.2530e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.3088e-01                               *
+*    CURRENT DT                     = 1.9048e-03                               *
+*    CURRENT STEP                   =     67                                   *
+*    WALL CLOCK TIMESTEP            = 3.6741e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6998e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.6741e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6998e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.3278e-01                               *
+*    CURRENT DT                     = 1.9049e-03                               *
+*    CURRENT STEP                   =     68                                   *
+*    WALL CLOCK TIMESTEP            = 2.2819e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6189e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2819e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6189e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.3469e-01                               *
+*    CURRENT DT                     = 1.9049e-03                               *
+*    CURRENT STEP                   =     69                                   *
+*    WALL CLOCK TIMESTEP            = 2.4662e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5431e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.4662e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5431e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.3659e-01                               *
+*    CURRENT DT                     = 1.9051e-03                               *
+*    CURRENT STEP                   =     70                                   *
+*    WALL CLOCK TIMESTEP            = 2.3241e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4675e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3241e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4675e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.3850e-01                               *
+*    CURRENT DT                     = 1.9051e-03                               *
+*    CURRENT STEP                   =     71                                   *
+*    WALL CLOCK TIMESTEP            = 1.9901e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.3892e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9901e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.3892e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.4040e-01                               *
+*    CURRENT DT                     = 1.9051e-03                               *
+*    CURRENT STEP                   =     72                                   *
+*    WALL CLOCK TIMESTEP            = 3.5635e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7871e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.5635e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7871e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.4231e-01                               *
+*    CURRENT DT                     = 1.9053e-03                               *
+*    CURRENT STEP                   =     73                                   *
+*    WALL CLOCK TIMESTEP            = 2.3448e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7115e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3448e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7115e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.4421e-01                               *
+*    CURRENT DT                     = 1.9052e-03                               *
+*    CURRENT STEP                   =     74                                   *
+*    WALL CLOCK TIMESTEP            = 2.5189e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6403e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5189e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6403e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.4612e-01                               *
+*    CURRENT DT                     = 1.9053e-03                               *
+*    CURRENT STEP                   =     75                                   *
+*    WALL CLOCK TIMESTEP            = 2.5117e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5710e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5117e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5710e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.4803e-01                               *
+*    CURRENT DT                     = 1.9055e-03                               *
+*    CURRENT STEP                   =     76                                   *
+*    WALL CLOCK TIMESTEP            = 1.7600e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4936e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7600e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4936e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.4993e-01                               *
+*    CURRENT DT                     = 1.9054e-03                               *
+*    CURRENT STEP                   =     77                                   *
+*    WALL CLOCK TIMESTEP            = 1.8318e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4191e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.8318e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4191e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.5184e-01                               *
+*    CURRENT DT                     = 1.9055e-03                               *
+*    CURRENT STEP                   =     78                                   *
+*    WALL CLOCK TIMESTEP            = 3.5117e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7788e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.5117e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7788e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.5374e-01                               *
+*    CURRENT DT                     = 1.9056e-03                               *
+*    CURRENT STEP                   =     79                                   *
+*    WALL CLOCK TIMESTEP            = 2.5692e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7120e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.5692e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7120e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.5565e-01                               *
+*    CURRENT DT                     = 1.9056e-03                               *
+*    CURRENT STEP                   =     80                                   *
+*    WALL CLOCK TIMESTEP            = 2.2118e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6424e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2118e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6424e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.5755e-01                               *
+*    CURRENT DT                     = 1.9057e-03                               *
+*    CURRENT STEP                   =     81                                   *
+*    WALL CLOCK TIMESTEP            = 2.1992e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5743e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1992e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5743e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.5946e-01                               *
+*    CURRENT DT                     = 1.9058e-03                               *
+*    CURRENT STEP                   =     82                                   *
+*    WALL CLOCK TIMESTEP            = 2.2659e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5088e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2659e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5088e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.6136e-01                               *
+*    CURRENT DT                     = 1.9057e-03                               *
+*    CURRENT STEP                   =     83                                   *
+*    WALL CLOCK TIMESTEP            = 2.7457e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7521e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.7457e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7521e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.6327e-01                               *
+*    CURRENT DT                     = 1.9058e-03                               *
+*    CURRENT STEP                   =     84                                   *
+*    WALL CLOCK TIMESTEP            = 2.4488e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6882e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.4488e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6882e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.6518e-01                               *
+*    CURRENT DT                     = 1.9059e-03                               *
+*    CURRENT STEP                   =     85                                   *
+*    WALL CLOCK TIMESTEP            = 1.7300e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6172e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7300e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6172e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.6708e-01                               *
+*    CURRENT DT                     = 1.9059e-03                               *
+*    CURRENT STEP                   =     86                                   *
+*    WALL CLOCK TIMESTEP            = 2.1560e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5530e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1560e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5530e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.6899e-01                               *
+*    CURRENT DT                     = 1.9060e-03                               *
+*    CURRENT STEP                   =     87                                   *
+*    WALL CLOCK TIMESTEP            = 2.1393e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.4900e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1393e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.4900e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.7089e-01                               *
+*    CURRENT DT                     = 1.9061e-03                               *
+*    CURRENT STEP                   =     88                                   *
+*    WALL CLOCK TIMESTEP            = 3.1974e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7715e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.1974e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7715e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.7280e-01                               *
+*    CURRENT DT                     = 1.9060e-03                               *
+*    CURRENT STEP                   =     89                                   *
+*    WALL CLOCK TIMESTEP            = 2.0728e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7067e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0728e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7067e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.7471e-01                               *
+*    CURRENT DT                     = 1.9061e-03                               *
+*    CURRENT STEP                   =     90                                   *
+*    WALL CLOCK TIMESTEP            = 2.2101e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6449e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2101e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6449e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.7661e-01                               *
+*    CURRENT DT                     = 1.9062e-03                               *
+*    CURRENT STEP                   =     91                                   *
+*    WALL CLOCK TIMESTEP            = 1.8773e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5809e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.8773e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5809e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.7852e-01                               *
+*    CURRENT DT                     = 1.9062e-03                               *
+*    CURRENT STEP                   =     92                                   *
+*    WALL CLOCK TIMESTEP            = 2.0869e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5205e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.0869e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5205e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.8042e-01                               *
+*    CURRENT DT                     = 1.9062e-03                               *
+*    CURRENT STEP                   =     93                                   *
+*    WALL CLOCK TIMESTEP            = 3.6461e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.8351e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.6461e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.8351e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.8233e-01                               *
+*    CURRENT DT                     = 1.9064e-03                               *
+*    CURRENT STEP                   =     94                                   *
+*    WALL CLOCK TIMESTEP            = 2.3177e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7757e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.3177e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7757e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.8424e-01                               *
+*    CURRENT DT                     = 1.9063e-03                               *
+*    CURRENT STEP                   =     95                                   *
+*    WALL CLOCK TIMESTEP            = 2.4371e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7189e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.4371e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7189e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.8614e-01                               *
+*    CURRENT DT                     = 1.9064e-03                               *
+*    CURRENT STEP                   =     96                                   *
+*    WALL CLOCK TIMESTEP            = 1.7478e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6561e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.7478e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6561e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.8805e-01                               *
+*    CURRENT DT                     = 1.9065e-03                               *
+*    CURRENT STEP                   =     97                                   *
+*    WALL CLOCK TIMESTEP            = 2.1341e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5986e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1341e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5986e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.8996e-01                               *
+*    CURRENT DT                     = 1.9064e-03                               *
+*    CURRENT STEP                   =     98                                   *
+*    WALL CLOCK TIMESTEP            = 1.9591e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.5404e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9591e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.5404e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.9186e-01                               *
+*    CURRENT DT                     = 1.9065e-03                               *
+*    CURRENT STEP                   =     99                                   *
+*    WALL CLOCK TIMESTEP            = 3.7395e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.8451e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.7395e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.8451e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.9377e-01                               *
+*    CURRENT DT                     = 1.9066e-03                               *
+*    CURRENT STEP                   =    100                                   *
+*    WALL CLOCK TIMESTEP            = 2.2650e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7887e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.2650e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7887e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.9568e-01                               *
+*    CURRENT DT                     = 1.9066e-03                               *
+*    CURRENT STEP                   =    101                                   *
+*    WALL CLOCK TIMESTEP            = 2.1479e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.7323e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 2.1479e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.7323e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.9758e-01                               *
+*    CURRENT DT                     = 1.9066e-03                               *
+*    CURRENT STEP                   =    102                                   *
+*    WALL CLOCK TIMESTEP            = 1.9143e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6747e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9143e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6747e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 1.9949e-01                               *
+*    CURRENT DT                     = 1.9066e-03                               *
+*    CURRENT STEP                   =    103                                   *
+*    WALL CLOCK TIMESTEP            = 1.9970e-03                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.6190e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 1.9970e-05                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.6190e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*                                                                              *
+*    CURRENT TIME                   = 2.0140e-01                               *
+*    CURRENT DT                     = 1.9067e-03                               *
+*    CURRENT STEP                   =    104                                   *
+*    WALL CLOCK TIMESTEP            = 3.8381e-02                               *
+*    MEAN WALL CLOCK TIMESTEP       = 7.9177e-03                               *
+*    WALL CLOCK TIMESTEP CELL       = 3.8381e-04                               *
+*    MEAN WALL CLOCK TIMESTEP CELL  = 7.9177e-05                               *
+*                                                                              *
+*------------------------------------------------------------------------------*
+*------------------------------------------------------------------------------*
+*                                                                              *
+*                       SIMULATION FINISHED SUCCESSFULLY                       *
+*                          SIMULATION TIME 3.457e+01s                          *
+*                                                                              *
+*          _     _    __  __        _____  _      _   _  ___  ____   ____      *
+*         | |   / \   \ \/ /       |  ___|| |    | | | ||_ _||  _ \ / ___|     *
+*      _  | |  / _ \   \  /  _____ | |_   | |    | | | | | | | | | |\___ \     *
+*     | |_| | / ___ \  /  \ |_____||  _|  | |___ | |_| | | | | |_| | ___) |    *
+*      \___/ /_/   \_\/_/\_\       |_|    |_____| \___/ |___||____/ |____/     *
+*                                                                              *
+*                                                                              *
+*------------------------------------------------------------------------------*
+</pre></div></div>
+</div>
+</section>
+<section id="Load-Data">
+<h2>Load Data<a class="headerlink" href="#Load-Data" title="Permalink to this headline"></a></h2>
+<p>JAX-Fluids offers post-processing tools for visualizing your simulation data. You can find them under jaxfluids.post_process.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span> <span class="o">=</span> <span class="n">sim_manager</span><span class="o">.</span><span class="n">output_writer</span><span class="o">.</span><span class="n">save_path_domain</span>
+<span class="n">quantities</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;density&quot;</span><span class="p">,</span> <span class="s2">&quot;velocityX&quot;</span><span class="p">,</span> <span class="s2">&quot;pressure&quot;</span><span class="p">]</span>
+<span class="n">cell_centers</span><span class="p">,</span> <span class="n">cell_sizes</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">data_dict</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">quantities</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Loading time snapshot 0.0000e+00
+Loading time snapshot 1.1371e-02
+Loading time snapshot 2.1567e-02
+Loading time snapshot 3.1428e-02
+Loading time snapshot 4.1125e-02
+Loading time snapshot 5.0753e-02
+Loading time snapshot 6.0344e-02
+Loading time snapshot 7.1813e-02
+Loading time snapshot 8.1353e-02
+Loading time snapshot 9.0882e-02
+Loading time snapshot 1.0041e-01
+Loading time snapshot 1.1183e-01
+Loading time snapshot 1.2136e-01
+Loading time snapshot 1.3088e-01
+Loading time snapshot 1.4040e-01
+Loading time snapshot 1.5184e-01
+Loading time snapshot 1.6136e-01
+Loading time snapshot 1.7089e-01
+Loading time snapshot 1.8043e-01
+Loading time snapshot 1.9186e-01
+Loading time snapshot 2.0140e-01
+</pre></div></div>
+</div>
+</section>
+<section id="Visualize-Data">
+<h2>Visualize Data<a class="headerlink" href="#Visualize-Data" title="Permalink to this headline"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nrows_ncols</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">create_lineplot</span><span class="p">(</span><span class="n">data_dict</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="o">=</span><span class="n">nrows_ncols</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">static_time</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_01_JAX-Fluids_1D_Sod_demo_10_0.png" src="../_images/notebooks_01_JAX-Fluids_1D_Sod_demo_10_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../tutorials.html" class="btn btn-neutral float-left" title="Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../features.html" class="btn btn-neutral float-right" title="Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

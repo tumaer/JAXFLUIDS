@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jaxfluids.solvers.riemann_solvers.RiemannNN &mdash; jaxfluids 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> jaxfluids
+          </a>
+              <div class="version">
+                0.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">JAX-Fluids: First steps</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../runsimulation.html">Run Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials.html">Tutorials</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Under the hood</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../available_modules.html">Available modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../change_log.html">Change log</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">JAX-Fluids API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../jaxfluids.html">jaxfluids package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contact</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authors.html">Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">jaxfluids</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>jaxfluids.solvers.riemann_solvers.RiemannNN</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for jaxfluids.solvers.riemann_solvers.RiemannNN</h1><div class="highlight"><pre>
+<span></span><span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#* JAX-FLUIDS -                                                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* A fully-differentiable CFD solver for compressible two-phase flows.          *</span>
+<span class="c1">#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is free software: you can redistribute it and/or modify         *</span>
+<span class="c1">#* it under the terms of the GNU General Public License as published by         *</span>
+<span class="c1">#* the Free Software Foundation, either version 3 of the License, or            *</span>
+<span class="c1">#* (at your option) any later version.                                          *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* This program is distributed in the hope that it will be useful,              *</span>
+<span class="c1">#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *</span>
+<span class="c1">#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *</span>
+<span class="c1">#* GNU General Public License for more details.                                 *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* You should have received a copy of the GNU General Public License            *</span>
+<span class="c1">#* along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.       *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* CONTACT                                                                      *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#* Munich, April 15th, 2022                                                     *</span>
+<span class="c1">#*                                                                              *</span>
+<span class="c1">#*------------------------------------------------------------------------------*</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span> <span class="nn">jax</span>
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">import</span> <span class="nn">haiku</span>
+
+<span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.solvers.riemann_solvers.riemann_solver</span> <span class="kn">import</span> <span class="n">RiemannSolver</span>
+<span class="kn">from</span> <span class="nn">jaxfluids.utilities</span> <span class="kn">import</span> <span class="n">get_fluxes_xi</span>
+
+<div class="viewcode-block" id="RiemannNN"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.RiemannNN.RiemannNN">[docs]</a><span class="k">class</span> <span class="nc">RiemannNN</span><span class="p">(</span><span class="n">RiemannSolver</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">material_manager</span><span class="p">:</span> <span class="n">MaterialManager</span><span class="p">,</span> <span class="n">signal_speed</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">material_manager</span><span class="o">=</span><span class="n">material_manager</span><span class="p">,</span> <span class="n">signal_speed</span><span class="o">=</span><span class="n">signal_speed</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RiemannNN.solve_riemann_problem_xi"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.RiemannNN.RiemannNN.solve_riemann_problem_xi">[docs]</a>    <span class="k">def</span> <span class="nf">solve_riemann_problem_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> 
+        <span class="n">cons_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> 
+        <span class="n">ml_params_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">ml_networks_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">ml_params_dict</span><span class="p">[</span><span class="s2">&quot;riemannsolver&quot;</span><span class="p">]</span>
+        <span class="n">net</span>    <span class="o">=</span> <span class="n">ml_networks_dict</span><span class="p">[</span><span class="s2">&quot;riemannsolver&quot;</span><span class="p">]</span>
+       
+        <span class="n">fluxes_left</span>  <span class="o">=</span> <span class="n">get_fluxes_xi</span><span class="p">(</span><span class="n">primes_L</span><span class="p">,</span> <span class="n">cons_L</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+        <span class="n">fluxes_right</span> <span class="o">=</span> <span class="n">get_fluxes_xi</span><span class="p">(</span><span class="n">primes_R</span><span class="p">,</span> <span class="n">cons_R</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="n">speed_of_sound_left</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">primes_L</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rho</span> <span class="o">=</span> <span class="n">primes_L</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">speed_of_sound_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">primes_R</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rho</span> <span class="o">=</span> <span class="n">primes_R</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">speed_of_sound</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">speed_of_sound_left</span> <span class="o">+</span> <span class="n">speed_of_sound_right</span><span class="p">)</span>
+
+        <span class="c1"># STANDARD RUSANOV DISSIPATION</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">primes_L</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">speed_of_sound_left</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">primes_R</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">speed_of_sound_right</span><span class="p">)</span>
+
+        <span class="n">delta_vel</span>  <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">primes_R</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">primes_L</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">mean_vel</span>   <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">primes_L</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">primes_R</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">delta_mach</span> <span class="o">=</span> <span class="n">delta_vel</span> <span class="o">/</span> <span class="n">speed_of_sound</span>
+        <span class="n">mean_mach</span>  <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mean_vel</span><span class="p">)</span> <span class="o">/</span> <span class="n">speed_of_sound</span> 
+
+        <span class="n">entropy_L</span> <span class="o">=</span> <span class="n">primes_L</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">primes_L</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="n">entropy_R</span> <span class="o">=</span> <span class="n">primes_R</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">primes_R</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="n">sum_entropy</span>   <span class="o">=</span> <span class="n">entropy_L</span> <span class="o">+</span> <span class="n">entropy_R</span>
+        <span class="n">delta_entropy</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">entropy_R</span> <span class="o">-</span> <span class="n">entropy_L</span><span class="p">)</span>
+        <span class="n">entropy_ratio</span> <span class="o">=</span> <span class="n">delta_entropy</span> <span class="o">/</span> <span class="n">sum_entropy</span>
+
+        <span class="c1"># EVALUATION OF NEURAL NETWORK</span>
+
+        <span class="n">vec</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">delta_mach</span><span class="p">,</span> <span class="n">mean_mach</span><span class="p">,</span> <span class="n">entropy_ratio</span><span class="p">])</span>
+        <span class="n">dissipation_nn</span> <span class="o">=</span> <span class="n">speed_of_sound</span> <span class="o">*</span> <span class="n">net</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">vec</span><span class="p">)</span>
+        <span class="n">dissipation</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">dissipation_nn</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="c1"># print(dissipation.shape)</span>
+        <span class="c1"># exit()</span>
+        <span class="n">fluxes_xi</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">fluxes_left</span> <span class="o">+</span> <span class="n">fluxes_right</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dissipation</span> <span class="o">*</span> <span class="p">(</span><span class="n">cons_R</span> <span class="o">-</span> <span class="n">cons_L</span><span class="p">)</span>
+        <span class="c1"># fluxes_xi = 0.5 * (fluxes_left + fluxes_right) - jnp.einsum(&quot;ij...,j...-&gt;i...&quot;, dissipation, delta_u)</span>
+        <span class="c1"># print(fluxes_xi.shape)</span>
+        <span class="c1"># exit()</span>
+        <span class="k">return</span> <span class="n">fluxes_xi</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Chair of Aerodynamics and Fluid Mechanics, Technical University of Munich.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
