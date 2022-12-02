@@ -1,0 +1,57 @@
+{
+    "general": {
+        "case_name": "fullimplosion",
+        "end_time": 2.5,
+        "save_path": "./results",
+        "save_dt": 2e-3
+    },
+    "domain": {
+        "x": {
+            "cells": 32,
+            "range": [0.0, 0.3]
+        },
+        "y": {
+            "cells": 32,
+            "range": [0.0, 0.3]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_condition": {
+        "types": {
+            "east": "symmetry",
+            "west": "symmetry",
+            "north": "symmetry",
+            "south": "symmetry",
+            "top": "inactive",
+            "bottom": "inactive"
+        }
+    },
+    "initial_condition": {
+        "rho": "lambda x, y: ((x + y) <= 0.150001) * 0.14  + ((x + y) > 0.150001) * 1.0",
+        "u": 0.0,
+        "v": 0.0,
+        "w": 0.0,
+        "p": "lambda x, y: ((x + y) <= 0.150001) * 0.125 + ((x + y) > 0.150001) * 1.0"
+    },
+    "material_properties": {
+        "type": "IdealGas",
+        "dynamic_viscosity": 0.0,
+        "bulk_viscosity": 0.0,
+        "thermal_conductivity": 0.0,
+        "specific_heat_ratio": 1.4,
+        "specific_gas_constant": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": ""
+    }
+}
