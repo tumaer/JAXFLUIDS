@@ -113,7 +113,7 @@ class InterfaceFluxComputer:
                 
                 # COMPUTE VELOCITY GRADIENT
                 velocity            = primes[1:4, self.nhx__, self.nhy__, self.nhz__]
-                velocity_gradient   = jnp.stack([self.derivative_stencil.derivative_xi(velocity, self.cell_sizes[k], k) if k in self.active_axis_indices else jnp.zeros(velocity[:,self.nhx,self.nhy,self.nhz].shape) for k in range(3)], axis=1)
+                velocity_gradient   = jnp.stack([self.derivative_stencil.derivative_xi(velocity, self.cell_sizes[k], k) if k in self.active_axis_indices else jnp.zeros(velocity[:,self.nhx_,self.nhy_,self.nhz_].shape) for k in range(3)], axis=1)
                 
                 mu_1 = self.material_manager.get_dynamic_viscosity(self.material_manager.get_temperature(primes[4,self.nhx,self.nhy,self.nhz], primes[0,self.nhx,self.nhy,self.nhz]))
                 mu_2 = self.material_manager.bulk_viscosity - 2.0 / 3.0 * mu_1
