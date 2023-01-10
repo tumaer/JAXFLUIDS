@@ -18,7 +18,7 @@ cell_centers, cell_sizes, times, data_dict = load_data(path, quantities)
 
 # PLOT
 nrows_ncols = (1,len(quantities))
-create_lineplot(data_dict, cell_centers, times, nrows_ncols, axis="y", values=[0.0, 0.0])
+create_lineplot(data_dict, cell_centers, times, nrows_ncols=nrows_ncols, axis="y", values=[0.0, 0.0])
 
 def poiseuille_analytical(y, dm, rho, h):
     return 6 * dm / rho / h**3 * y * (h - y)

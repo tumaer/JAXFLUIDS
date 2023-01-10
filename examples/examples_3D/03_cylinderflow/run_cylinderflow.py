@@ -22,4 +22,4 @@ plot_dict = {
     "absolute_vorticity": np.clip(data_dict["absolute_vorticity"], 1e0, 2e2)
 }
 nrows_ncols = (2, 1)
-create_contourplot(data_dict, cell_centers, times, nrows_ncols=nrows_ncols)
+create_contourplot(plot_dict, cell_centers, times, nrows_ncols=nrows_ncols)

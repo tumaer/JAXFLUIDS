@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from jaxfluids import InputReader, Initializer, SimulationManager
 from jaxfluids.post_process import load_data, create_contourplot
 

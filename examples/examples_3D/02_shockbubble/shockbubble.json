@@ -41,19 +41,21 @@
     },
 
     "initial_condition": {
-        "positive" : {
-            "rho": "lambda x,y,z: jnp.where(x < -0.03,1,0)*1.7201 + jnp.where(x >= -0.03,1,0)*1.2041",
-            "u": "lambda x,y,z: jnp.where(x < -0.03,1,0)*128.7",
-            "v": 0.0,
-            "w": 0.0,
-            "p": "lambda x,y,z: jnp.where(x < -0.03,1,0)*167819.5 + jnp.where(x >= -0.03,1,0)*101325.0"
-        },
-        "negative": {
-            "rho": 0.166,
-            "u": 0.0,
-            "v": 0.0,
-            "w": 0.0,
-            "p": 101325.0
+        "primes": {
+            "positive" : {
+                "rho": "lambda x,y,z: jnp.where(x < -0.03,1,0)*1.7201 + jnp.where(x >= -0.03,1,0)*1.2041",
+                "u": "lambda x,y,z: jnp.where(x < -0.03,1,0)*128.7",
+                "v": 0.0,
+                "w": 0.0,
+                "p": "lambda x,y,z: jnp.where(x < -0.03,1,0)*167819.5 + jnp.where(x >= -0.03,1,0)*101325.0"
+            },
+            "negative": {
+                "rho": 0.166,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 101325.0
+            }
         },
 
         "levelset" : "lambda x,y,z:  - 0.0225 + jnp.sqrt(x**2 + y**2 + z**2)"

@@ -35,7 +35,7 @@
         "u": "lambda x, y, z:  1.0 * np.sin(x / 1.0) * np.cos(y / 1.0) * np.cos(z / 1.0)",
         "v": "lambda x, y, z: -1.0 * np.cos(x / 1.0) * np.sin(y / 1.0) * np.cos(z / 1.0)",
         "w": 0.0,
-        "p": "lambda x, y, z: 1.0 * 1.0**2 * (1 / 1.4 / 0.1**2 + 1/16.0 * ((np.cos(2 * x / 1.0) + np.cos(2 * y / 1.0)) * (np.cos(2 * z / 1.0) + 2)))"
+        "p": "lambda x, y, z: 1.0 * 1.0**2 * (1 / 1.4 / 0.3**2 + 1/16.0 * ((np.cos(2 * x / 1.0) + np.cos(2 * y / 1.0)) * (np.cos(2 * z / 1.0) + 2)))"
     },
     "material_properties": {
         "type": "IdealGas",

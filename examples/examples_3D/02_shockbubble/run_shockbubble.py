@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from jaxfluids import InputReader, Initializer, SimulationManager
 from jaxfluids.post_process import load_data, create_contourplot
 
@@ -22,4 +23,4 @@ plot_dict = {
     "schlieren": np.clip(data_dict["schlieren"], 1e-1, 5e2)
     }
 nrows_ncols = (1,2)
-create_contourplot(data_dict, cell_centers, times, nrows_ncols, plane="xy", plane_value=0, interval=100)
+create_contourplot(plot_dict, cell_centers, times, nrows_ncols=nrows_ncols, plane="xy", plane_value=0, interval=100)
