@@ -34,10 +34,21 @@ The current version provides the following features:
 - CPU/GPU/TPU capability
 
 ## Example simulations
-<img src="/docs/images/fullimplosion.png" alt="fullimplosion" height="250"/>
-<img src="/docs/images/shockbubble_2d.png" alt="air helium shockbubble 2D" height="250"/>
-<img src="/docs/images/shockbubble_3d.png" alt="air helium shockbubble 3D" height="250"/>
-<img src="/docs/images/shuttle.png" alt="space shuttle at mach 2" height="250"/>
+Space shuttle at Mach 2 - Immersed solid boundary method via level-set
+
+<img src="/docs/images/shuttle.png" alt="space shuttle at mach 2" height="300"/>
+
+Shock-bubble interaction with diffuse-interface method - approx. 800M cells on TPUv3-64
+
+<img src="/docs/images/diffuse_bubble_array.png" alt="diffuse-interface bubble array" height="300"/>
+
+Shock-bubble interaction with level-set method - approx. 2B cells on TPUv3-256
+
+<img src="/docs/images/levelset_bubble_array.png" alt="level-set bubble array" height="300"/>
+
+Shock-induced collapse of air bubbles in water (click link for video)
+
+https://www.youtube.com/watch?v=mt8HjZhm60U
 
 ## Pip Installation
 Before installing JAX-Fluids, please ensure that you have
@@ -79,9 +90,13 @@ of the spatial reconstruction stencil or decrease the resolution of the simulati
 ## Upcoming features 
 - 5-Equation diffuse interface model for multiphase flows 
 - CPU/GPU/TPU parallelization based on homogenous domain decomposition
+- Lagrangian particles
 
 ## Documentation
 Check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.html) of JAX-Fluids.
+
+## Acknowledgements
+We gratefully acknowledge access to TPU compute resources granted by Google's TRC program.
 
 ## Citation
 https://doi.org/10.1016/j.cpc.2022.108527
