@@ -58,7 +58,7 @@ class DerivativeSecondOrderFace(SpatialDerivative):
                 jnp.s_[..., self.nhx, self.nhy, jnp.s_[self.n  :-self.n+1] if self.n != 1 else jnp.s_[self.n:None]],   ],   
         ]
 
-    def derivative_xi(self, buffer: jnp.DeviceArray, dxi: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def derivative_xi(self, buffer: jnp.ndarray, dxi: jnp.ndarray, axis: int) -> jnp.ndarray:
         s1_ = self.s_[axis]
         deriv_xi = (1.0 / dxi) * (-buffer[s1_[0]] + buffer[s1_[1]])
         return deriv_xi

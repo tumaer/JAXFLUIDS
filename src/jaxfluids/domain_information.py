@@ -90,7 +90,7 @@ class DomainInformation:
         
         self.resolution         = jnp.prod(jnp.array(self.number_of_cells))
 
-    def compute_mesh_xi(self, nxi: int, domain_size_xi: List) -> Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]:
+    def compute_mesh_xi(self, nxi: int, domain_size_xi: List) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
         """Computes cell center coordinates, cell face coordinates and cell sizes in the specified direction
 
         :param nxi: Number of cells in xi direction
@@ -98,7 +98,7 @@ class DomainInformation:
         :param domain_size_xi: Domain size in xi direction
         :type domain_size_xi: List
         :return: Cell center coordinates, cell face coordinates and cell sizes in xi direction
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]
         """
         cell_sizes_xi   = (domain_size_xi[1] - domain_size_xi[0]) / nxi
         cell_centers_xi = jnp.linspace(domain_size_xi[0] + cell_sizes_xi/2, domain_size_xi[1] - cell_sizes_xi/2, nxi)

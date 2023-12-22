@@ -167,28 +167,28 @@ class LevelsetHandler():
             if pair[0] in self.active_axis_indices and pair[1] in self.active_axis_indices:
                 self.index_pairs_mixing.append(pair)
 
-    def compute_cut_cell_mask(self, volume_fraction: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_cut_cell_mask(self, volume_fraction: jnp.ndarray) -> jnp.ndarray:
         """Computes the cut cell mask, i.e., cells where the volume fraction is > 0.0 and < 1.0
 
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Cut cell mask
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         mask_cut_cells = jnp.where( (volume_fraction > 0.0) & (volume_fraction < 1.0), 1, 0)
         return mask_cut_cells
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_masks(self, levelset: jnp.DeviceArray,
-            volume_fraction: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def compute_masks(self, levelset: jnp.ndarray,
+            volume_fraction: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Computes the real mask and the cut cell mask
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Tuple containing the real mask and the cut cell mask
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
         if self.levelset_type == "FLUID-FLUID":
             mask_positive   = jnp.where( levelset[self.nhx__, self.nhy__, self.nhz__] > 0.0, 1, 0 )
@@ -203,37 +203,37 @@ class LevelsetHandler():
             mask_real       = jnp.maximum(mask_positive, mask_cut_cells)
         return mask_real, mask_cut_cells
 
-    def compute_volume_fraction_and_apertures(self, levelset: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, List]:
+    def compute_volume_fraction_and_apertures(self, levelset: jnp.ndarray) -> Tuple[jnp.ndarray, List]:
         """Computes the volume fraction and apertures via linear interface reconstruction
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Tuple containing the volume fraction buffer and the aperture buffers
-        :rtype: Tuple[jnp.DeviceArray, List]
+        :rtype: Tuple[jnp.ndarray, List]
         """
         volume_fraction, apertures = self.geometry_calculator.linear_interface_reconstruction(levelset)
         return volume_fraction, apertures
 
-    def extend_primes(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, levelset: jnp.DeviceArray,
-            volume_fraction: jnp.DeviceArray, current_time: float,
-            mask_small_cells: jnp.DeviceArray = None) -> Tuple[jnp.DeviceArray, float]:
+    def extend_primes(self, cons: jnp.ndarray, primes: jnp.ndarray, levelset: jnp.ndarray,
+            volume_fraction: jnp.ndarray, current_time: float,
+            mask_small_cells: jnp.ndarray = None) -> Tuple[jnp.ndarray, float]:
         """Extends the primitives from the real fluid cells into the ghost fluid cells within the narrow_band_compute.
         Subsequently, the corresponding conservatives are computed from the extended primitives.
 
         :param cons: Buffer of conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :param current_time: Current physical simulation time
         :type current_time: float
         :param mask_small_cells: Mask indicating small negative cells, defaults to None
-        :type mask_small_cells: jnp.DeviceArray, optional
+        :type mask_small_cells: jnp.ndarray, optional
         :return: Tuple of primitive and conservative buffer and maximum extension residual
-        :rtype: Tuple[jnp.DeviceArray, float]
+        :rtype: Tuple[jnp.ndarray, float]
         """
         
         # GEOMETRICAL QUANTITIES - WE EXTEND INTO GHOST CELLS PLUS SMALL CELLS INSIDE THE NARROW BAND
@@ -271,33 +271,33 @@ class LevelsetHandler():
         cons = cons.at[...,self.nhx,self.nhy,self.nhz].add(cons_in_extend)
         return cons, primes, max_residual
         
-    def transform_to_conservatives(self, cons: jnp.DeviceArray, volume_fraction: jnp.DeviceArray) -> jnp.DeviceArray:
+    def transform_to_conservatives(self, cons: jnp.ndarray, volume_fraction: jnp.ndarray) -> jnp.ndarray:
         """Transforms the volume-averaged conservatives to actual conservatives that can be integrated
         according to the volume fraction.
 
         :param cons: Buffer of conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Buffer of actual conservative variables
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         if self.levelset_type == "FLUID-FLUID":
             volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
         cons = cons.at[...,self.nhx,self.nhy,self.nhz].mul(volume_fraction[...,self.nhx_,self.nhy_,self.nhz_])
         return cons
 
-    def transform_to_volume_averages(self, cons: jnp.DeviceArray, volume_fraction: jnp.DeviceArray) -> jnp.DeviceArray:
+    def transform_to_volume_averages(self, cons: jnp.ndarray, volume_fraction: jnp.ndarray) -> jnp.ndarray:
         """Transforms the mixed conservatives to volume-averaged conservatives.
         Emtpy cells are filled with eps. Negative small cells (which may occur after mixing) are filled with eps.
         We extend the integrated primitive state into the negative small cells cells.
 
         :param cons: Buffer of mixed conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Volume-averaged conservatives
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         if self.levelset_type == "FLUID-FLUID": 
@@ -314,30 +314,30 @@ class LevelsetHandler():
 
         return cons
 
-    def weight_cell_face_flux_xi(self, flux_xi: jnp.DeviceArray, apertures: jnp.DeviceArray) -> jnp.DeviceArray:
+    def weight_cell_face_flux_xi(self, flux_xi: jnp.ndarray, apertures: jnp.ndarray) -> jnp.ndarray:
         """Weights the cell face fluxes according to the apertures.
 
         :param flux_xi: Cell face flux at xi
-        :type flux_xi: jnp.DeviceArray
+        :type flux_xi: jnp.ndarray
         :param apertures: Aperture buffer
-        :type apertures: jnp.DeviceArray
+        :type apertures: jnp.ndarray
         :return: Weighted cell face flux at xi
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         if self.levelset_type == "FLUID-FLUID": 
             apertures = jnp.stack([apertures, 1.0 - apertures], axis=0)
         flux_xi *= apertures[...,self.nhx_,self.nhy_,self.nhz_]
         return flux_xi
 
-    def weight_volume_force(self, volume_force: jnp.DeviceArray, volume_fraction: jnp.DeviceArray) -> jnp.DeviceArray:
+    def weight_volume_force(self, volume_force: jnp.ndarray, volume_fraction: jnp.ndarray) -> jnp.ndarray:
         """Weights the volume forces according to the volume fraction.
 
         :param volume_force: Volume force buffer
-        :type volume_force: jnp.DeviceArray
+        :type volume_force: jnp.ndarray
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Weighted volume force
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         if self.levelset_type == "FLUID-FLUID":
             volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
@@ -345,31 +345,31 @@ class LevelsetHandler():
         return volume_force
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_solid_interface_velocity(self, current_time: float) -> jnp.DeviceArray:
+    def compute_solid_interface_velocity(self, current_time: float) -> jnp.ndarray:
         """Computes the interface velocity for FLUID-SOLID-DYNAMIC interface interaction.
 
         :param current_time: Current physical simulation time
         :type current_time: float
         :return: Interface velocity buffer
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         interface_velocity = self.interface_quantity_computer.compute_solid_interface_velocity(current_time)
         return interface_velocity
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_interface_quantities(self, primes: jnp.DeviceArray, levelset: jnp.DeviceArray,
-            volume_fraction: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, jnp.DeviceArray, float]:
+    def compute_interface_quantities(self, primes: jnp.ndarray, levelset: jnp.ndarray,
+            volume_fraction: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray, float]:
         """Computes interface velocity and pressure for FLUID-FLUID interface interaction and
         extends the values into the narrow_band_compute.
 
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param volume_fraction: Volume fractio buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Tuple of interface velocity, interface pressure and maximum residual of the extension
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray, float]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray, float]
         """
 
         # GEOMTRICAL QUANTITIES
@@ -393,42 +393,42 @@ class LevelsetHandler():
 
         return interface_quantities[0], interface_quantities[1:], max_residual
 
-    def compute_interface_flux_xi(self, primes: jnp.DeviceArray, levelset: jnp.DeviceArray, interface_velocity: jnp.DeviceArray,
-            interface_pressure: Union[jnp.DeviceArray, None], volume_fraction: jnp.DeviceArray, apertures: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_interface_flux_xi(self, primes: jnp.ndarray, levelset: jnp.ndarray, interface_velocity: jnp.ndarray,
+            interface_pressure: Union[jnp.ndarray, None], volume_fraction: jnp.ndarray, apertures: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Computes the interface flux depending on the present interface interaction type.
 
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param interface_velocity: Interface velocity buffer
-        :type interface_velocity: jnp.DeviceArray
+        :type interface_velocity: jnp.ndarray
         :param interface_pressure: Interface pressure buffer
-        :type interface_pressure: Union[jnp.DeviceArray, None]
+        :type interface_pressure: Union[jnp.ndarray, None]
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :param apertures: Aperture buffer
-        :type apertures: jnp.DeviceArray
+        :type apertures: jnp.ndarray
         :param axis: Current axis
         :type axis: int
         :return: Interface fluxes
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         normal              = self.geometry_calculator.compute_normal(levelset)
         interface_flux_xi   = self.interface_flux_computer.compute_interface_flux_xi(primes, interface_velocity, interface_pressure, volume_fraction, apertures, normal, axis)
         return interface_flux_xi
 
-    def compute_levelset_advection_rhs(self, levelset: jnp.DeviceArray, interface_velocity: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_levelset_advection_rhs(self, levelset: jnp.ndarray, interface_velocity: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Computes the right-hand-side of the levelset advection equation.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param interface_velocity: Interface velocity buffer
-        :type interface_velocity: jnp.DeviceArray
+        :type interface_velocity: jnp.ndarray
         :param axis: Current axis
         :type axis: int
         :return: right-hand-side contribution for current axis
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         
         # GEOMETRICAL QUANTITIES
@@ -454,7 +454,7 @@ class LevelsetHandler():
         return rhs_contribution
 
     # @partial(jax.jit, static_argnums=(0, 2))
-    def reinitialize(self, levelset: jnp.DeviceArray, initializer: bool) -> Tuple[jnp.DeviceArray, float]:
+    def reinitialize(self, levelset: jnp.ndarray, initializer: bool) -> Tuple[jnp.ndarray, float]:
         """Reinitializes the levelset buffer and subsequently applies cut off 
         to values that lie outside the narrow_band_cutoff. If the initializer flag is True,
         cut cells are always reinitialized. This is required to initialize
@@ -463,12 +463,12 @@ class LevelsetHandler():
         The residual is only computed in the narrow_band_computations.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param initializer: Bool indicating if the reinitialization is performed in the
             jaxfluids initializer or the jaxfluids simulation manager
         :type initializer: bool
         :return: Reinitialized levelset buffer and the corresponding maximum residual
-        :rtype: Tuple[jnp.DeviceArray, float]
+        :rtype: Tuple[jnp.ndarray, float]
         """
         
         # TODO SPLIT UP INITIAL REINITIALIZATION AND SET CUT OFF
@@ -499,23 +499,23 @@ class LevelsetHandler():
 
         return levelset, max_residual
 
-    def mixing(self, cons: jnp.DeviceArray, levelset_new: jnp.DeviceArray, volume_fraction_new: jnp.DeviceArray,
-            volume_fraction_old: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def mixing(self, cons: jnp.ndarray, levelset_new: jnp.ndarray, volume_fraction_new: jnp.ndarray,
+            volume_fraction_old: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """ Performs a mixing procedure on the integrated conservatives enabling stable integration of
         small cut cells with the CFL criterion for full cells. For small cells that are in the process of vanishing 
         (becoming ghost cells), this procedure may produce negative mass/energy. To prevent numerical instability,
         we track these cells with the mask_small_cells buffer and perform a prime extension into these cells.
 
         :param cons: Buffer of integrated conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param levelset_new: Integrated levelset buffer
-        :type levelset_new: jnp.DeviceArray
+        :type levelset_new: jnp.ndarray
         :param volume_fraction_new: Integrated volume fraction buffer
-        :type volume_fraction_new: jnp.DeviceArray
+        :type volume_fraction_new: jnp.ndarray
         :param volume_fraction_old: Volume fraction buffer of previous time step (RK stage)
-        :type volume_fraction_old: jnp.DeviceArray
+        :type volume_fraction_old: jnp.ndarray
         :return: Tuple containing the mixed conservatives and a mask indicating small cells with negative energy/mass.
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         # GEOMETRICAL QUANTITIES
@@ -608,22 +608,22 @@ class LevelsetHandler():
         
         return cons, mask_small_cells
 
-    def compute_primitives_from_conservatives_in_real_fluid(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray,
-            levelset: jnp.DeviceArray, volume_fraction: jnp.DeviceArray, mask_small_cells: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_primitives_from_conservatives_in_real_fluid(self, cons: jnp.ndarray, primes: jnp.ndarray,
+            levelset: jnp.ndarray, volume_fraction: jnp.ndarray, mask_small_cells: jnp.ndarray) -> jnp.ndarray:
         """Computes the primitive variables from the mixed conservatives within the real fluid.
 
         :param cons: Buffer of primitive variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: _description_
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param levelset: _description_
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param volume_fraction: _description_
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :param mask_small_cells: _description_
-        :type mask_small_cells: jnp.DeviceArray
+        :type mask_small_cells: jnp.ndarray
         :return: _description_
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         # WE COMPUTE PRIMES ONLY IN REAL CELLS IN WHICH WE DO NOT EXTEND, I.E. REAL CELLS MINUS SMALL CELLS
         mask_real, _    = self.compute_masks(levelset, volume_fraction)

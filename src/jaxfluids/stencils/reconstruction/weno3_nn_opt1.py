@@ -109,7 +109,7 @@ class WENO3NNOPT1(SpatialReconstruction):
             ],
         ]
 
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
 
         dx1 = jnp.abs( buffer[s1_[1]] - buffer[s1_[0]] )

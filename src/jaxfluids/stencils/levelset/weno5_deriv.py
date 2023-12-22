@@ -86,7 +86,7 @@ class WENO5DERIV(SpatialDerivative):
         else:
             assert False, "WENO5DERIV face_value must be left or right"
 
-    def derivative_xi(self, levelset: jnp.DeviceArray, dx:int, i: int, j: int, *args) -> jnp.DeviceArray:
+    def derivative_xi(self, levelset: jnp.ndarray, dx:int, i: int, j: int, *args) -> jnp.ndarray:
 
         levelset = self.derivative_stencil.derivative_xi(levelset, dx, i, j=self.sided_deriv_upwind)
 

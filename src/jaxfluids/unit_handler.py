@@ -67,15 +67,15 @@ class UnitHandler:
         return domain_size_nondim
 
     @partial(jax.jit, static_argnums=(0, 2))
-    def non_dimensionalize(self, value: Union[jnp.DeviceArray, float], quantity: str) -> Union[jnp.DeviceArray, float]:
+    def non_dimensionalize(self, value: Union[jnp.ndarray, float], quantity: str) -> Union[jnp.ndarray, float]:
         """Non-dimensionalizes the given buffer w.r.t. the specified quantity.
 
         :param value: Dimensional quantity buffer
-        :type value: Union[jnp.DeviceArray, float]
+        :type value: Union[jnp.ndarray, float]
         :param quantity: Quantity name
         :type quantity: str
         :return: Non-dimensional quantity buffer
-        :rtype: Union[jnp.DeviceArray, float]
+        :rtype: Union[jnp.ndarray, float]
         """
         
         # NAME CONVERSION
@@ -137,15 +137,15 @@ class UnitHandler:
         return value
         
     @partial(jax.jit, static_argnums=(0, 2))
-    def dimensionalize(self, value: Union[jnp.DeviceArray, float], quantity: str) -> Union[jnp.DeviceArray, float]:
+    def dimensionalize(self, value: Union[jnp.ndarray, float], quantity: str) -> Union[jnp.ndarray, float]:
         """Dimensionalizes the given quantity buffer w.r.t. the specified quanty.
 
         :param value: Non-dimensional quantity buffer
-        :type value: Union[jnp.DeviceArray, float]
+        :type value: Union[jnp.ndarray, float]
         :param quantity: Quantity name
         :type quantity: str
         :return: Dimensional quantity buffer
-        :rtype: Union[jnp.DeviceArray, float]
+        :rtype: Union[jnp.ndarray, float]
         """
 
         # NAME CONVERSION

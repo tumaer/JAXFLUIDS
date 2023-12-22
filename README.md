@@ -19,6 +19,20 @@ Authors:
 
 Correspondence via [mail](mailto:aaron.buhendwa@tum.de,mailto:deniz.bezgin@tum.de).
 
+## JAX-FLUIDS 2.0 IS COMING IN 2024!
+
+JAX-Fluids 2.0 is coming in 2024! Here, is a short overview on what JAX-Fluids 2.0 will 
+bring to the table:
+- Support for parallel simulations
+- Diffuse-interface model for two-phase simulations
+- Many new & robust high-order numerics
+- New boundary conditions
+- Performance improvements for forward simulations and backward passes
+- Completely updated & more intuitive I/O
+- And many more...
+
+Stay tuned and feel free to reach out!
+
 ## Physical models and numerical methods
 
 JAX-Fluids solves the Navier-Stokes-equations using the finite-volume-method on a Cartesian grid. 
@@ -53,6 +67,10 @@ https://www.youtube.com/watch?v=mt8HjZhm60U
 ## Pip Installation
 Before installing JAX-Fluids, please ensure that you have
 an updated and upgraded pip version.
+```bash
+pip install --upgrade pip
+```
+
 ### CPU-only support
 To install the CPU-only version of JAX-Fluids, you can run
 ```bash
@@ -67,15 +85,32 @@ pip install --editable .
 ```
 
 Note: if you want to use jaxlib on a Mac with M1 chip, check the discussion [here](https://github.com/google/jax/issues/5501).
+
 ### GPU and CPU support
-If you want to install JAX-Fluids with CPU and GPU support, you must
-first install [CUDA](https://developer.nvidia.com/cuda-downloads) -
-we have tested JAX-Fluids with CUDA 11.1 or newer.
-After installing CUDA, run the following
+If you want to install JAX-Fluids with CPU AND GPU support, you must
+first install JAX with GPU support. There are two ways to do this:
+1) installing CUDA & CUDNN via pip,
+2) installing CUDA & CUDNN yourself.
+
+See [JAX installation](https://jax.readthedocs.io/en/latest/installation.html) for details.
+
+We recommend using CUDA & CUDNN using pip wheels:
+```bash
+pip install --upgrade pip
+
+# CUDA 12 installation
+# Note: wheels only available on linux.
+pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+# CUDA 11 installation
+# Note: wheels only available on linux.
+pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+```
+After having installed CUDA, run the following to install JAX-Fluids
 ```bash
 git clone https://github.com/tumaer/JAXFLUIDS.git
 cd JAXFLUIDS
-pip install .[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install -e .
 ```
 For more information
 on JAX on GPU please refer to the [github of JAX](https://github.com/google/jax)

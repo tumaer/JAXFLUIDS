@@ -96,7 +96,7 @@ class WENO5(SpatialReconstruction):
 
         ] for j in range(2) ]
 
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
         
         # beta_0 = 13/12 * (u_{i-2} - 2*u_{i-1} + u_{i})**2 + 1/4 * (u_{i-2} - 4*u_{i-1} + 3*u_{i})**2

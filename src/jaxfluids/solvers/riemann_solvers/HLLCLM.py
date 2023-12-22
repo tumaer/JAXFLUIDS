@@ -49,8 +49,8 @@ class HLLCLM(RiemannSolver):
         self.s_star = compute_sstar
         self.Ma_limit = 0.1
 
-    def solve_riemann_problem_xi(self, cell_state_L: jnp.DeviceArray, cell_state_R: jnp.DeviceArray, 
-        conservative_L: jnp.DeviceArray, conservative_R: jnp.DeviceArray, axis: int, **kwargs) -> jnp.DeviceArray:
+    def solve_riemann_problem_xi(self, cell_state_L: jnp.ndarray, cell_state_R: jnp.ndarray, 
+        conservative_L: jnp.ndarray, conservative_R: jnp.ndarray, axis: int, **kwargs) -> jnp.ndarray:
         fluxes_left = get_fluxes_xi(cell_state_L, conservative_L, axis)
         fluxes_right = get_fluxes_xi(cell_state_R, conservative_R, axis)
         

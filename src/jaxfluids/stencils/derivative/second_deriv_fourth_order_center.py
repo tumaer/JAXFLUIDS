@@ -136,12 +136,12 @@ class SecondDerivativeFourthOrderCenter(SpatialDerivative):
 
         self.index_pair_dict = {"01": 0, "02": 1, "12": 2}
 
-    def derivative_xi(self, primes: jnp.DeviceArray, dxi: jnp.DeviceArray, i: int) -> jnp.DeviceArray:
+    def derivative_xi(self, primes: jnp.ndarray, dxi: jnp.ndarray, i: int) -> jnp.ndarray:
         s1_ = self.s_[i]
         deriv_xi = (1.0 / 12.0 / dxi / dxi) * (- primes[s1_[0]] + 16.0 * primes[s1_[1]] - 30.0 * primes[s1_[2]] + 16.0 * primes[s1_[3]] - primes[s1_[4]])
         return deriv_xi
 
-    def derivative_xi_xj(self, primes: jnp.DeviceArray, dxi: jnp.DeviceArray, dxj: jnp.DeviceArray, i: int, j: int) -> jnp.DeviceArray:
+    def derivative_xi_xj(self, primes: jnp.ndarray, dxi: jnp.ndarray, dxj: jnp.ndarray, i: int, j: int) -> jnp.ndarray:
         s1_ = self.s__[self.index_pair_dict[str(i) + (str(j))]]
         deriv_xi_xj = 1.0 / 144.0 / dxi / dxj  * \
                 ( + 1 * ( primes[s1_[0]]  - 8 * primes[s1_[1]]  + 8 * primes[s1_[2]]  - primes[s1_[3]] )  

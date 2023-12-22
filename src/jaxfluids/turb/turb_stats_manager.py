@@ -64,13 +64,13 @@ class TurbStatsManager:
         self.shell          = (self.k_mag_field + 0.5).astype(int)
         self.fact           = 2 * (self.k_field[0] > 0) * (self.k_field[0] < self.Nx//2) + 1 * (self.k_field[0] == 0) + 1 * (self.k_field[0] == self.Nx//2)
 
-    def _get_real_wavenumber_grid(self, N: int) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def _get_real_wavenumber_grid(self, N: int) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Initializes wavenumber grid and wavenumber vector.
 
         :param N: Resolution.
         :type N: int
         :return: Wavenumber grid and wavenumber vector.
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         Nf = N//2 + 1
@@ -80,13 +80,13 @@ class TurbStatsManager:
         k_field = jnp.array(jnp.meshgrid(kx, k, k, indexing="ij"), dtype=int)
         return k_field, k 
 
-    def energy_spectrum_spectral(self, velocity_hat: jnp.DeviceArray) -> jnp.DeviceArray:
+    def energy_spectrum_spectral(self, velocity_hat: jnp.ndarray) -> jnp.ndarray:
         """Calculates the three-dimensional spectral energy spectrum of the input velocity.
 
         :param velocity_hat: Velocity vector in spectral space.
-        :type velocity_hat: jnp.DeviceArray
+        :type velocity_hat: jnp.ndarray
         :return: Spectral energy spectrum.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         ek          = jnp.zeros(self.Nx)
@@ -100,35 +100,35 @@ class TurbStatsManager:
         ek = ek * 4 * jnp.pi * self.k_vec**2 / (n_samples + self.eps) / (self.Nx**3) / (self.Nx**3) 
         return ek
 
-    def energy_spectrum_physical(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def energy_spectrum_physical(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """Calculates the three-dimensional spectral energy spectrum of the input velocity.
         Wrapper around self.energy_spectrum_spectral
 
         :param velocity: Velocity vector in physical space.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Spectral energy spectrum.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         velocity_hat = jnp.stack([jnp.fft.rfftn(velocity[ii], axes=(2,1,0)) for ii in range(3)])
         return self.energy_spectrum_spectral(velocity_hat)
 
-    def get_turbulent_statistics(self, primes: jnp.DeviceArray) -> Dict:
+    def get_turbulent_statistics(self, primes: jnp.ndarray) -> Dict:
         """Computes the turbulent statistics for the given primitive buffer.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :return: Dictionary with turbulent statistics.
         :rtype: Dict
         """
         # TODO Include other setups besides HIT
         return self.hit_statistics(primes)
 
-    def hit_statistics(self, primes: jnp.DeviceArray) -> Dict:
+    def hit_statistics(self, primes: jnp.ndarray) -> Dict:
         """Calculates statistics for homogeneous isotropic turbulence.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :return: Dictionary with information on the HIT statistics.
         :rtype: Dict
         """
@@ -248,16 +248,16 @@ class TurbStatsManager:
 
         return turb_stats_dict
 
-    def calculate_vorticity_spectral(self, velocity_hat: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_vorticity_spectral(self, velocity_hat: jnp.ndarray) -> jnp.ndarray:
         """Calculates the vortiticy of the input velocity field. Calculation done in 
         spectral space.
 
         omega = (du3/dx2 - du2/dx3, du1/dx3 - du3/dx1, du2/dx1 - du1/dx2)
 
         :param velocity_hat: Buffer of velocities in spectral space.
-        :type velocity_hat: jnp.DeviceArray
+        :type velocity_hat: jnp.ndarray
         :return: Vorticity vector in physical space.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         omega_0 = jnp.fft.irfftn(1j * (self.k_field[1] * velocity_hat[2] - self.k_field[2] * velocity_hat[1]), axes=(2,1,0))
@@ -266,7 +266,7 @@ class TurbStatsManager:
         omega   = jnp.stack([omega_0, omega_1, omega_2])
         return omega 
 
-    def calculate_vorticity(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_vorticity(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """Calculates the vortiticy of the input velocity field. Calculation done in 
         spectral space.
 
@@ -275,23 +275,23 @@ class TurbStatsManager:
                     du2/dx1 - du1/dx2]
 
         :param velocity: Buffer of velocities in physical space.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Vorticity vector in physical space.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         velocity_hat = jnp.stack([jnp.fft.rfftn(velocity[ii], axes=(2,1,0)) for ii in range(3)])
         return self.calculate_vorticity_spectral(velocity_hat)
 
-    def calculate_sheartensor_spectral(self, velocity_hat: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_sheartensor_spectral(self, velocity_hat: jnp.ndarray) -> jnp.ndarray:
         """Calculates the shear tensor in spectral space.
 
         dui/dxj = IFFT ( 1j * k_j * u_i_hat  )
 
         :param velocity_hat: Buffer of velocities in spectral space.
-        :type velocity_hat: jnp.DeviceArray
+        :type velocity_hat: jnp.ndarray
         :return: Buffer of the shear tensor.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         duidj = [[], [], []]
@@ -300,7 +300,7 @@ class TurbStatsManager:
                 duidj[ii].append(jnp.fft.irfftn(1j * self.k_field[jj] * velocity_hat[ii], axes=(2,1,0)))
         return jnp.array(duidj)
 
-    def calculate_sheartensor(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_sheartensor(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """Calculates the shear tensor in spectral space. Wrapper around 
         self.calculate_sheartensor_spectral().
 
@@ -311,28 +311,28 @@ class TurbStatsManager:
         ]
 
         :param velocity: Buffer of velocities in physical space.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Buffer of the shear tensor.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
     
         velocity_hat = jnp.stack([jnp.fft.rfftn(velocity[ii], axes=(2,1,0)) for ii in range(3)])
         return self.calculate_sheartensor_spectral(velocity_hat)
 
-    def calculate_dilatation_spectral(self, velocity_hat: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_dilatation_spectral(self, velocity_hat: jnp.ndarray) -> jnp.ndarray:
         """Calculates the dilatation of the given velocity field in spectral space.
 
         :param velocity_hat: Buffer of velocities in spectral space.
-        :type velocity_hat: jnp.DeviceArray
+        :type velocity_hat: jnp.ndarray
         :return: Buffer of the dilatational field.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         dilatation_spectral = 1j * (self.k_field[0] * velocity_hat[0] + self.k_field[1] * velocity_hat[1] + self.k_field[2] * velocity_hat[2])
         dilatation_real     = jnp.fft.irfftn(dilatation_spectral, axes=(2,1,0))
         return dilatation_real
 
-    def calculate_dilatation(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_dilatation(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """_summary_
 
         Calculates dilatation in spectral space 
@@ -343,21 +343,21 @@ class TurbStatsManager:
         dilatation = du1/dx1 + du2/dx2 + du3/dx3
 
         :param velocity: Buffer of velocities in physical space.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Buffer of dilatational field.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         
         velocity_hat = jnp.stack([jnp.fft.rfftn(velocity[ii], axes=(2,1,0)) for ii in range(3)])
         return self.calculate_dilatation_spectral(velocity_hat)
 
-    def calculate_strain(duidj: jnp.DeviceArray) -> jnp.DeviceArray:
+    def calculate_strain(duidj: jnp.ndarray) -> jnp.ndarray:
         """Calculates the strain given the velocity gradient tensor.
 
         :param duidj: Buffer of velocity gradient.
-        :type duidj: jnp.DeviceArray
+        :type duidj: jnp.ndarray
         :return: Buffer of strain tensor.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         S_ij = 0.5 * ( duidj + jnp.transpose(duidj, axes=(1,0,2,3,4)) )

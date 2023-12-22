@@ -57,28 +57,28 @@ class SafeIdealGas(Material):
         """See base class. """
         return self.gamma - 1
 
-    def get_speed_of_sound(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_speed_of_sound(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return jnp.sqrt( self.gamma * jnp.maximum( p, self.eps) / jnp.maximum( rho, self.eps ) )
 
-    def get_pressure(self, e: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_pressure(self, e: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return (self.gamma - 1) * e * rho
 
-    def get_temperature(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_temperature(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return p / ( rho * self.R + self.eps )
         
-    def get_energy(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_energy(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return jnp.maximum( p, self.eps) / jnp.maximum( rho, self.eps ) / (self.gamma - 1)
 
-    def get_total_energy(self, p: jnp.DeviceArray, rho: jnp.DeviceArray, u: jnp.DeviceArray, v: jnp.DeviceArray, w: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_total_energy(self, p: jnp.ndarray, rho: jnp.ndarray, u: jnp.ndarray, v: jnp.ndarray, w: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         # Total energy per unit volume
         return jnp.maximum( p, self.eps) / (self.gamma - 1) + 0.5 * jnp.maximum( rho, self.eps) * ( (u * u + v * v + w * w) )
 
-    def get_total_enthalpy(self, p: jnp.DeviceArray, rho: jnp.DeviceArray, u: jnp.DeviceArray, v: jnp.DeviceArray, w: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_total_enthalpy(self, p: jnp.ndarray, rho: jnp.ndarray, u: jnp.ndarray, v: jnp.ndarray, w: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         # Total specific enthalpy
         return (self.get_total_energy(p, rho, u, v, w) + jnp.maximum( p, self.eps)) / jnp.maximum( rho, self.eps)

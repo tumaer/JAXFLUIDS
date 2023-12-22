@@ -83,12 +83,12 @@ class SecondDerivativeSecondOrderCenter(SpatialDerivative):
 
         self.index_pair_dict = {"01": 0, "02": 1, "12": 2}
 
-    def derivative_xi(self, buffer: jnp.DeviceArray, dxi: jnp.DeviceArray, i: int) -> jnp.DeviceArray:
+    def derivative_xi(self, buffer: jnp.ndarray, dxi: jnp.ndarray, i: int) -> jnp.ndarray:
         s1_ = self.s_[i]
         deriv_xi = (1.0 / dxi / dxi ) * (buffer[s1_[0]] - 2.0 * buffer[s1_[1]] + buffer[s1_[2]])
         return deriv_xi
 
-    def derivative_xi_xj(self, buffer: jnp.DeviceArray, dxi: jnp.DeviceArray, dxj: jnp.DeviceArray, i: int, j: int) -> jnp.DeviceArray:
+    def derivative_xi_xj(self, buffer: jnp.ndarray, dxi: jnp.ndarray, dxj: jnp.ndarray, i: int, j: int) -> jnp.ndarray:
         s1_ = self.s__[self.index_pair_dict[str(i) + (str(j))]]
         deriv_xi_xj = 1.0 / 4.0 / dxi / dxj  * ( buffer[s1_[0]]  - buffer[s1_[1]]  - buffer[s1_[2]] + buffer[s1_[3]] )   
         return deriv_xi_xj

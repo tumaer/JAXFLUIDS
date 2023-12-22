@@ -69,7 +69,7 @@ class Ducros(ShockSensor):
 
         self.epsilon_s = 1e-15
 
-    def compute_sensor_function(self, vels: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_sensor_function(self, vels: jnp.ndarray, axis: int) -> jnp.ndarray:
         if len(self.active_axis_indices) == 1:
             fs = 1.0
         else:
@@ -93,7 +93,7 @@ class Ducros(ShockSensor):
 
         return fs    
 
-    def compute_velocity_derivatives(self, vels: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_velocity_derivatives(self, vels: jnp.ndarray) -> jnp.ndarray:
         """Computes the velocity gradient.
         Note that velocity gradients and especially curl and divergence
         are often used to determine the presence of shocks.
@@ -103,9 +103,9 @@ class Ducros(ShockSensor):
                      du/dz dv/dz dw/dz ]
 
         :param vels: Buffer of velocities.
-        :type vels: jnp.DeviceArray
+        :type vels: jnp.ndarray
         :return: Buffer of the velocity gradient.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         vel_grad = jnp.stack([self.derivative_stencil_center.derivative_xi(vels, self.cell_sizes[i], i) if i in self.active_axis_indices else jnp.zeros(self.shape_vel_grad) for i in range(3)])
         return vel_grad

@@ -58,7 +58,7 @@ class ALDM_WENO1(SpatialReconstruction):
 
             ] for j in range(2)]
 
-    def reconstruct_xi(self, primes: jnp.DeviceArray, axis: int, j: int, dx: float = None, fs=0) -> jnp.DeviceArray:
+    def reconstruct_xi(self, primes: jnp.ndarray, axis: int, j: int, dx: float = None, fs=0) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
 
         cell_state_xi_j = primes[s1_[0]]

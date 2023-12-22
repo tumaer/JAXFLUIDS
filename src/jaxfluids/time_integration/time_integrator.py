@@ -51,13 +51,13 @@ class TimeIntegrator(ABC):
         self.timestep_multiplier = ()
         self.timestep_increment_factor = ()
 
-    def integrate_conservatives(self, cons: jnp.DeviceArray, rhs: jnp.DeviceArray, timestep: float) -> jnp.DeviceArray:
+    def integrate_conservatives(self, cons: jnp.ndarray, rhs: jnp.ndarray, timestep: float) -> jnp.ndarray:
         """Integrates the conservative variables.
 
         :param cons: conservative variables buffer before integration
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param rhs: right-hand side buffer 
-        :type rhs: jnp.DeviceArray
+        :type rhs: jnp.ndarray
         :param timestep: timestep adjusted according to sub-stage in Runge-Kutta
         :type timestep: float
         :return: conservative variables buffer after integration
@@ -67,15 +67,15 @@ class TimeIntegrator(ABC):
         return cons
 
     @abstractmethod
-    def integrate(self, cons: jnp.DeviceArray, rhs: jnp.DeviceArray, timestep: float, stage: int) -> jnp.DeviceArray:
+    def integrate(self, cons: jnp.ndarray, rhs: jnp.ndarray, timestep: float, stage: int) -> jnp.ndarray:
         """Wrapper function around integrate_conservatives. Adjusts the timestep
         according to current RK stage and calls integrate_conservatives.
         Implementation in child class.
 
         :param cons: conservative variables buffer before integration
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param rhs: right-hand side buffer 
-        :type rhs: jnp.DeviceArray
+        :type rhs: jnp.ndarray
         :param timestep: timestep to be integrated
         :type timestep: float
         :return: conservative variables buffer after integration
@@ -83,17 +83,17 @@ class TimeIntegrator(ABC):
         """
         pass
 
-    def prepare_buffer_for_integration(self, cons: jnp.DeviceArray, init: jnp.DeviceArray, stage: int) -> jnp.DeviceArray:
+    def prepare_buffer_for_integration(self, cons: jnp.ndarray, init: jnp.ndarray, stage: int) -> jnp.ndarray:
         """In multi-stage Runge-Kutta methods, prepares the buffer for integration.
         Implementation in child class.
 
         :param cons: Buffer of conservative variables.
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param init: Initial conservative buffer.
-        :type init: jnp.DeviceArray
+        :type init: jnp.ndarray
         :param stage: Current stage of the RK time integrator.
         :type stage: int
         :return: Sum of initial buffer and current buffer.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         pass

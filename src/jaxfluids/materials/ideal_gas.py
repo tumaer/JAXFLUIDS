@@ -50,37 +50,37 @@ class IdealGas(Material):
         self.R          = unit_handler.non_dimensionalize(specific_gas_constant, "specific_gas_constant")
         self.cp         = self.gamma / (self.gamma - 1) * self.R
 
-    def get_psi(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_psi(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return p / rho
 
-    def get_grueneisen(self, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_grueneisen(self, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return self.gamma - 1
 
-    def get_speed_of_sound(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_speed_of_sound(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return jnp.sqrt( self.gamma * p / rho )
 
-    def get_pressure(self, e: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_pressure(self, e: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return (self.gamma - 1) * e * rho
 
-    def get_temperature(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_temperature(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         return p / ( rho * self.R )
     
-    def get_energy(self, p:jnp.DeviceArray, rho:jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_energy(self, p:jnp.ndarray, rho:jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         # Specific internal energy
         return p / ( rho * (self.gamma - 1) )
 
-    def get_total_energy(self, p:jnp.DeviceArray, rho:jnp.DeviceArray, u:jnp.DeviceArray, v:jnp.DeviceArray, w:jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_total_energy(self, p:jnp.ndarray, rho:jnp.ndarray, u:jnp.ndarray, v:jnp.ndarray, w:jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         # Total energy per unit volume
         return p / (self.gamma - 1) + 0.5 * rho * ( (u * u + v * v + w * w) )
 
-    def get_total_enthalpy(self, p:jnp.DeviceArray, rho:jnp.DeviceArray, u:jnp.DeviceArray, v:jnp.DeviceArray, w:jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_total_enthalpy(self, p:jnp.ndarray, rho:jnp.ndarray, u:jnp.ndarray, v:jnp.ndarray, w:jnp.ndarray) -> jnp.ndarray:
         """See base class. """
         # Total specific enthalpy
         return (self.get_total_energy(p, rho, u, v, w) + p) / rho

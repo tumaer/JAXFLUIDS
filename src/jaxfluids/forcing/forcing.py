@@ -115,22 +115,22 @@ class Forcing:
         # TEMPERATURE FORCING
         self.temperature_target = temperature_target
     
-    def compute_forcings(self, primes: jnp.DeviceArray, cons: jnp.DeviceArray, levelset: Union[jnp.DeviceArray, None],
-        volume_fraction: Union[jnp.DeviceArray, None], current_time: float, timestep_size: float, PID_e_new: float, PID_e_int: float,
-        logger: Logger, primes_dash: Union[jnp.DeviceArray, None] = None, **kwargs) -> Dict:
+    def compute_forcings(self, primes: jnp.ndarray, cons: jnp.ndarray, levelset: Union[jnp.ndarray, None],
+        volume_fraction: Union[jnp.ndarray, None], current_time: float, timestep_size: float, PID_e_new: float, PID_e_int: float,
+        logger: Logger, primes_dash: Union[jnp.ndarray, None] = None, **kwargs) -> Dict:
         
         """Computes forcings for temperature, mass flow and turbulence kinetic energy.
 
         :param primes: buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param primes_dash: buffer of primitive variables for next time step without forcing
-        :type primes_dash: Union[jnp.DeviceArray, None]
+        :type primes_dash: Union[jnp.ndarray, None]
         :param cons: buffer of conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param volume_fraction: buffer of volume fractions
-        :type volume_fraction: Union[jnp.DeviceArray, None]
+        :type volume_fraction: Union[jnp.ndarray, None]
         :param mask_real: mask indicating the real fluid
-        :type mask_real: Union[jnp.DeviceArray, None]
+        :type mask_real: Union[jnp.ndarray, None]
         :param current_time: current physical simulation time
         :type current_time: float
         :param timestep_size: current physical time step size
@@ -185,22 +185,22 @@ class Forcing:
         return forcings_dictionary
         
     @partial(jax.jit, static_argnums=(0))
-    def compute_temperature_forcing(self, primes: jnp.DeviceArray, levelset: Union[jnp.DeviceArray, None], volume_fraction: Union[jnp.DeviceArray, None],
-            current_time: float, timestep_size: float) -> Tuple[jnp.DeviceArray, float]:
+    def compute_temperature_forcing(self, primes: jnp.ndarray, levelset: Union[jnp.ndarray, None], volume_fraction: Union[jnp.ndarray, None],
+            current_time: float, timestep_size: float) -> Tuple[jnp.ndarray, float]:
         """Computes temperature forcing.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param levelset: Buffer of level-set field.
-        :type levelset: Union[jnp.DeviceArray, None]
+        :type levelset: Union[jnp.ndarray, None]
         :param volume_fraction: Buffer of volume fraction field.
-        :type volume_fraction: Union[jnp.DeviceArray, None]
+        :type volume_fraction: Union[jnp.ndarray, None]
         :param current_time: Current simulation time.
         :type current_time: float
         :param timestep_size: Current integration time step.
         :type timestep_size: float
         :return: Buffer of the forcing vector and the mean absolute error wrt the temperature target.
-        :rtype: Tuple[jnp.DeviceArray, float]
+        :rtype: Tuple[jnp.ndarray, float]
         """
        
         # COMPUTE TEMPERATURE
@@ -235,16 +235,16 @@ class Forcing:
         return jnp.stack(forcing, axis=0), mean_absolute_error
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_mass_flow_forcing(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, volume_fraction: Union[jnp.DeviceArray, None], 
-        current_time: float, timestep_size: float, PID_e_new: float, PID_e_int: float) -> Tuple[jnp.DeviceArray, float, float, float, float]:
+    def compute_mass_flow_forcing(self, cons: jnp.ndarray, primes: jnp.ndarray, volume_fraction: Union[jnp.ndarray, None], 
+        current_time: float, timestep_size: float, PID_e_new: float, PID_e_int: float) -> Tuple[jnp.ndarray, float, float, float, float]:
         """Computes mass flow forcing
 
         :param cons: Buffer of the conservative variables.
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Buffer of the primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param volume_fraction: Buffer of the volume fraction in two-phase flows.
-        :type volume_fraction: Union[jnp.DeviceArray, None]
+        :type volume_fraction: Union[jnp.ndarray, None]
         :param current_time: Current simulation time.
         :type current_time: float
         :param timestep_size: Current time step.
@@ -254,7 +254,7 @@ class Forcing:
         :param PID_e_int: Current PID integral error
         :type PID_e_int: float
         :return: Buffer of the body force, current mass flow, mass flow target, PID error, PID integral error
-        :rtype: Tuple[jnp.DeviceArray, float, float]
+        :rtype: Tuple[jnp.ndarray, float, float]
         """
         # COMPUTE MASS FLOW TARGET
         if type(self.mass_flow_target) == types.LambdaType:
@@ -283,18 +283,18 @@ class Forcing:
         return body_force, mass_flow_current, mass_flow_target, PID_e_new, PID_e_int
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_turb_hit_forcing(self, primes: jnp.DeviceArray, primes_dash: jnp.DeviceArray, timestep: float) -> jnp.DeviceArray:
+    def compute_turb_hit_forcing(self, primes: jnp.ndarray, primes_dash: jnp.ndarray, timestep: float) -> jnp.ndarray:
         """Computes forcing for HIT 
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param primes_dash: Buffer of intermediate primitive variables which are obtained
             by integrating primes without forcing term.
-        :type primes_dash: jnp.DeviceArray
+        :type primes_dash: jnp.ndarray
         :param timestep: Current time step.
         :type timestep: float
         :return: Buffer of the forcing vector.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         primes      = primes[:,self.nhx,self.nhy,self.nhz]
         primes_dash = primes_dash[:,self.nhx,self.nhy,self.nhz]
@@ -309,20 +309,20 @@ class Forcing:
         force = [s_0, s_1, s_2, s_3, s_4]
         return primes[0] * jnp.stack(force)
 
-    def calculate_velocity_forcing_vector(self, vels: jnp.DeviceArray, vels_dash: jnp.DeviceArray, eta_s: int, timestep: float) -> jnp.DeviceArray:
+    def calculate_velocity_forcing_vector(self, vels: jnp.ndarray, vels_dash: jnp.ndarray, eta_s: int, timestep: float) -> jnp.ndarray:
         """Calculates the velocity forcing vector for HIT forcing.
 
         :param vels: Buffer of velocities.
-        :type vels: jnp.DeviceArray
+        :type vels: jnp.ndarray
         :param vels_dash: Buffer of intermediate velocities which are obtained
             by integrating primes without forcing term.
-        :type vels_dash: jnp.DeviceArray
+        :type vels_dash: jnp.ndarray
         :param eta_s: Cut-off wavenumber up to which forcing is applied.
         :type eta_s: int
         :param timestep: Current time step.
         :type timestep: float
         :return: Buffer of the velocity forcing vector.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         vels_hat      = jnp.stack([jnp.fft.rfftn(vels[ii], axes=(2,1,0)) for ii in range(3)])

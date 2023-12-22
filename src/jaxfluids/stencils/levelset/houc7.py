@@ -81,7 +81,7 @@ class HOUC7(SpatialDerivative):
 
             ] for j in self.sign ]
 
-    def derivative_xi(self, levelset: jnp.DeviceArray, dxi:float, i: int, j: int, *args) -> jnp.DeviceArray:
+    def derivative_xi(self, levelset: jnp.ndarray, dxi:float, i: int, j: int, *args) -> jnp.ndarray:
         s1_ = self._slices[j][i]
 
         cell_state_xi_j = sum(levelset[s1_[k]]*self.coeff[k] for k in range(len(self.coeff)))

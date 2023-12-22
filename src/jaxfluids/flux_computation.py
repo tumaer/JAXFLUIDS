@@ -80,14 +80,14 @@ class FluxComputer:
                 material_manager    = material_manager
                 )
 
-    def compute_convective_flux_xi(self, primes: jnp.DeviceArray, cons: jnp.DeviceArray, axis: int,
-        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None) -> jnp.DeviceArray:
+    def compute_convective_flux_xi(self, primes: jnp.ndarray, cons: jnp.ndarray, axis: int,
+        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None) -> jnp.ndarray:
         """Computes the convective fluxes. 
 
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param cons: Conservative variable buffer
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param axis: Spatial direction
         :type axis: int
         :param ml_parameters_dict: Dictionary of neural network weights, defaults to None
@@ -95,7 +95,7 @@ class FluxComputer:
         :param ml_networks_dict: Dictionary of neural network architectures, defaults to None
         :type ml_networks_dict: Union[Dict, None], optional
         :return: Convective fluxes in axis direction
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         
         fluxes_xi = self.flux_computer.compute_fluxes_xi(primes, cons, axis, 

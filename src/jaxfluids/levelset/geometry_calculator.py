@@ -276,13 +276,13 @@ class GeometryCalculator:
 
         self.index_pairs = [(0,1), (0,2), (1,2)]
 
-    def linear_interface_reconstruction(self, levelset: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, List]:
+    def linear_interface_reconstruction(self, levelset: jnp.ndarray) -> Tuple[jnp.ndarray, List]:
         """Computes the volume fraction and the apertures assuming a linear interface within each cell.
 
         :param levelset: Leveset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Tuple of volume fraction and apertures
-        :rtype: Tuple[jnp.DeviceArray, List]
+        :rtype: Tuple[jnp.ndarray, List]
         """
         corner_values = self.compute_corner_values(levelset)
         apertures = []
@@ -295,13 +295,13 @@ class GeometryCalculator:
                 apertures[i] = 2 * self.interpolation_factor[self.dim - 1] * sum([apertures[i][slices] for slices in self.aperture_subcell_interpolation_slices[i]])
         return volume_fraction, apertures
 
-    def compute_corner_values(self, levelset: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_corner_values(self, levelset: jnp.ndarray) -> jnp.ndarray:
         """Linear interpolation of the levelset values at the cell center to the corners of the cells.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Levelset values at the corners of cells
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         factor          = self.interpolation_factor[self.dim - 1]
         corner_values   = factor * sum([levelset[slices] for slices in self.single_cell_interpolation_slices])
@@ -318,15 +318,15 @@ class GeometryCalculator:
         corner_values = corner_values * jnp.where(jnp.abs(corner_values) < self.eps, 0.0, 1.0) 
         return corner_values
 
-    def compute_apertures(self, corner_values: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_apertures(self, corner_values: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Computes the apertures in axis direction.
 
         :param corner_values: Levelset values at cell corners
-        :type corner_values: jnp.DeviceArray
+        :type corner_values: jnp.ndarray
         :param axis: spatial axis
         :type axis: int
         :return: Apertures in axis direction
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         if self.dim == 1:
@@ -366,15 +366,15 @@ class GeometryCalculator:
         apertures = jnp.clip(apertures, 0.0, 1.0)
         return apertures
         
-    def compute_volume_fraction(self, corner_values: jnp.DeviceArray, apertures: List) -> jnp.DeviceArray:
+    def compute_volume_fraction(self, corner_values: jnp.ndarray, apertures: List) -> jnp.ndarray:
         """Computes the volume fraction.
 
         :param corner_values: Levelset values at cell corners
-        :type corner_values: jnp.DeviceArray
+        :type corner_values: jnp.ndarray
         :param apertures: Apertures
         :type apertures: List
         :return: Volume fraction
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         levelset_center_value   = self.interpolation_factor[self.dim - 1] * sum([corner_values[slices] for slices in self.levelset_center_value_slices])
         interface_length        = jnp.sqrt(sum([((apertures[i][self.axis_slices_apertures[i][0]] - apertures[i][self.axis_slices_apertures[i][1]]) * self.cell_face_area[i] )**2 for i in self.active_axis_indices]))
@@ -383,13 +383,13 @@ class GeometryCalculator:
         volume_fraction         = jnp.clip(volume_fraction, 0.0, 1.0)
         return volume_fraction
 
-    def compute_normal(self, levelset: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_normal(self, levelset: jnp.ndarray) -> jnp.ndarray:
         """Computes the normal with the stencil specified in the numerical setup.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Normal buffer
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         normal = []
         for i in range(3):
@@ -398,13 +398,13 @@ class GeometryCalculator:
         normal = normal / jnp.sqrt( jnp.sum( jnp.square(normal), axis=0 ) + self.eps )
         return normal
 
-    def compute_curvature(self, levelset: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_curvature(self, levelset: jnp.ndarray) -> jnp.ndarray:
         """Computes the curvature with the stencil specified in the numerical setup.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Curvature buffer
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         # GRADIENT

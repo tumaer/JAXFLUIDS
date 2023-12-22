@@ -62,22 +62,22 @@ class LevelsetReinitializer:
         self.derivative_stencil         = derivative_stencil
         self.boundary_condition         = boundary_condition
 
-    def reinitialize(self, levelset: jnp.DeviceArray, mask_reinitialize: jnp.DeviceArray,
-            mask_residual: jnp.DeviceArray, CFL: float, steps: int) -> Tuple[jnp.DeviceArray, float]:
+    def reinitialize(self, levelset: jnp.ndarray, mask_reinitialize: jnp.ndarray,
+            mask_residual: jnp.ndarray, CFL: float, steps: int) -> Tuple[jnp.ndarray, float]:
         """Reinitializes the levelset buffer.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param mask_reinitialize: Mask indicating which cells to reinitialize
-        :type mask_reinitialize: jnp.DeviceArray
+        :type mask_reinitialize: jnp.ndarray
         :param mask_residual: Mask indicating where to compute the maximum residual of the reinitialization equation 
-        :type mask_residual: jnp.DeviceArray
+        :type mask_residual: jnp.ndarray
         :param CFL: CFL number
         :type CFL: float
         :param steps: Number of integration steps
         :type steps: int
         :return: Reinitialized levelset buffer and maximum residual of the reinitialization equation 
-        :rtype: Tuple[jnp.DeviceArray, float]
+        :rtype: Tuple[jnp.ndarray, float]
         """
         levelset_0      = jnp.array(levelset, copy=True)
         timestep_size   = CFL * self.smallest_cell_size
@@ -87,20 +87,20 @@ class LevelsetReinitializer:
             max_residual        = jnp.max(jnp.abs(mask_residual*residual))
         return levelset, max_residual
 
-    def do_integration_step(self, levelset: jnp.DeviceArray, levelset_0: jnp.DeviceArray,
-            mask: jnp.DeviceArray, timestep_size: float) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def do_integration_step(self, levelset: jnp.ndarray, levelset_0: jnp.ndarray,
+            mask: jnp.ndarray, timestep_size: float) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Performs an integration step of the levelset reinitialization equation.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param levelset_0: Levelset buffer at fictitious time = 0.0
-        :type levelset_0: jnp.DeviceArray
+        :type levelset_0: jnp.ndarray
         :param mask: Mask for right-hand-side
-        :type mask: jnp.DeviceArray
+        :type mask: jnp.ndarray
         :param timestep_size: Timestep size
         :type timestep_size: float
         :return: Tuple containing integrated levelset buffer and signed distance residual
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         # FILL INIT
@@ -119,19 +119,19 @@ class LevelsetReinitializer:
 
         return levelset, residual
 
-    def compute_rhs(self, levelset: jnp.DeviceArray, levelset_0: jnp.DeviceArray,
-            mask: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def compute_rhs(self, levelset: jnp.ndarray, levelset_0: jnp.ndarray,
+            mask: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
         
         """Computes the right-hand-side of the levelset reinitialization equation.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param levelset_0: Levelset buffer at fictitious time = 0.0
-        :type levelset_0: jnp.DeviceArray
+        :type levelset_0: jnp.ndarray
         :param mask: Mask for right-hand-side
-        :type mask: jnp.DeviceArray
+        :type mask: jnp.ndarray
         :return: Tuple of right-hand-side and signed distance residual
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         # TODO STENCILS IN __INIT__ FOR MASK CUT CELL AND DISTANCE

@@ -90,10 +90,10 @@ class Eigendecomposition:
 
         self.flux_splitting = flux_splitting
 
-    def get_stencil_window(self, var: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def get_stencil_window(self, var: jnp.ndarray, axis: int) -> jnp.ndarray:
         return var[self.stencil_slices[axis]]
 
-    def compute_frozen_state(self, primes: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_frozen_state(self, primes: jnp.ndarray, axis: int) -> jnp.ndarray:
         primes_L   = primes[self.s2_[axis][0]]
         primes_R   = primes[self.s2_[axis][1]]
         
@@ -143,28 +143,28 @@ class Eigendecomposition:
 
             return primes_ave, enthalpy_ave, grueneisen_ave, c_ave, cc_ave, velocity_square
 
-    def compute_roe_cons(self, prime_L: jnp.DeviceArray, prime_R: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_roe_cons(self, prime_L: jnp.ndarray, prime_R: jnp.ndarray) -> jnp.ndarray:
         """Computes the Roe averaged conservative state.
 
         :param prime_L: Buffer of primitive variables left of a cell face.
-        :type prime_L: jnp.DeviceArray
+        :type prime_L: jnp.ndarray
         :param prime_R: Buffer of primitive variables right of a cell face.
-        :type prime_R: jnp.DeviceArray
+        :type prime_R: jnp.ndarray
         :return: Buffer of Roe averaged quantities at the cell face.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         roe_cons = (jnp.sqrt(prime_L[0]) * prime_L + jnp.sqrt(prime_R[0]) * prime_R) / (jnp.sqrt(prime_L[0]) + jnp.sqrt(prime_R[0]) + self.eps)
         return roe_cons
 
-    def eigendecomp_prim(self, primes: jnp.DeviceArray, axis: int) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def eigendecomp_prim(self, primes: jnp.ndarray, axis: int) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Computes the eigendecomposition of the Jacobian matrix wrt primitive variables.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param axis: Direction of the cell face at which the eigendecomposition is to be performed.
         :type axis: int
         :return: Buffer of left and right eigenvectors.
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         _s = primes_ave[0].shape
@@ -224,17 +224,17 @@ class Eigendecomposition:
 
         return right_eigs, left_eigs
 
-    def _eigendecomp_cons(self, primes: jnp.DeviceArray, axis: int) -> Union[Tuple[jnp.DeviceArray, jnp.DeviceArray], 
-        Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]]:
+    def _eigendecomp_cons(self, primes: jnp.ndarray, axis: int) -> Union[Tuple[jnp.ndarray, jnp.ndarray], 
+        Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]:
         """Computes eigendecomposition of the Jacobian matrix for conservative variables.
         Formulation only valid for an ideal gas. Implementation according to Rohde 2001.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param axis: Direction of the cell face at which the eigendecomposition is to be performed.
         :type axis: int
         :return: Buffer of left, right eigenvectors and the eigenvalues.
-        :rtype: Union[Tuple[jnp.DeviceArray, jnp.DeviceArray], Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]]
+        :rtype: Union[Tuple[jnp.ndarray, jnp.ndarray], Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]
         """
 
         primes_ave, enthalpy_ave, grueneisen_ave, c_ave, cc_ave, velocity_square  = self.compute_frozen_state(primes, axis)
@@ -330,17 +330,17 @@ class Eigendecomposition:
 
         return right_eigs, left_eigs, eigvals     
 
-    def eigendecomp_cons(self, primes: jnp.DeviceArray, axis: int) -> Union[Tuple[jnp.DeviceArray, jnp.DeviceArray], 
-        Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]]:
+    def eigendecomp_cons(self, primes: jnp.ndarray, axis: int) -> Union[Tuple[jnp.ndarray, jnp.ndarray], 
+        Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]:
         """Computes eigendecomposition of the Jacobian matrix for conservative variables.
         Formulation for a general equation of state. Implementation according to Fedkiv et al.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param axis: Direction of the cell face at which the eigendecomposition is to be performed.
         :type axis: int
         :return: Buffer of left, right eigenvectors and the eigenvalues.
-        :rtype: Union[Tuple[jnp.DeviceArray, jnp.DeviceArray], Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]]
+        :rtype: Union[Tuple[jnp.ndarray, jnp.ndarray], Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]]
         """
 
         primes_ave, enthalpy_ave, grueneisen_ave, c_ave, cc_ave, velocity_square  = self.compute_frozen_state(primes, axis)
@@ -437,29 +437,29 @@ class Eigendecomposition:
 
         return right_eigs, left_eigs, eigvals     
 
-    def transformtochar(self, stencil: jnp.DeviceArray, left_eig: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def transformtochar(self, stencil: jnp.ndarray, left_eig: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Transforms the stencil from physical to characteristic space.
 
         :param stencil: Buffer with variables in physical space.
-        :type stencil: jnp.DeviceArray
+        :type stencil: jnp.ndarray
         :param left_eig: Buffer of left eigenvalues.
-        :type left_eig: jnp.DeviceArray
+        :type left_eig: jnp.ndarray
         :param axis: Spatial direction along which transformation has to be performed. 
         :type axis: int
         :return: Buffer with variables in characteristic space.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         left_eig = jnp.expand_dims(left_eig, axis=axis-3)
         return jnp.einsum("ij...,j...->i...", left_eig, stencil)
 
-    def transformtophysical(self, stencil: jnp.DeviceArray, right_eig: jnp.DeviceArray) -> jnp.DeviceArray:
+    def transformtophysical(self, stencil: jnp.ndarray, right_eig: jnp.ndarray) -> jnp.ndarray:
         """Transforms the stencil from characteristic to physical space.
 
         :param stencil: Buffer with variables in characteristic space.
-        :type stencil: jnp.DeviceArray
+        :type stencil: jnp.ndarray
         :param right_eig: Buffer of right eigenvalues.
-        :type right_eig: jnp.DeviceArray
+        :type right_eig: jnp.ndarray
         :return: Buffer with variables in physical space.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         return jnp.einsum("ij...,j...->i...", right_eig, stencil)

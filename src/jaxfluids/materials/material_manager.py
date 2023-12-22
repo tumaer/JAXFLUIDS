@@ -68,7 +68,7 @@ class MaterialManager():
             self.gamma                      = self.material.gamma
             self.R                          = self.material.R
 
-    def get_thermal_conductivity(self, T: jnp.DeviceArray):
+    def get_thermal_conductivity(self, T: jnp.ndarray):
         if self.levelset_type == "FLUID-FLUID":
             thermal_conductivity_1  = self.materials["positive"].get_thermal_conductivity(T[0])
             thermal_conductivity_2  = self.materials["negative"].get_thermal_conductivity(T[1])
@@ -79,7 +79,7 @@ class MaterialManager():
             thermal_conductivity = self.material.get_thermal_conductivity(T)
         return thermal_conductivity
 
-    def get_dynamic_viscosity(self, T: jnp.DeviceArray):
+    def get_dynamic_viscosity(self, T: jnp.ndarray):
         if self.levelset_type == "FLUID-FLUID":
             dynamic_viscosity_1 = self.materials["positive"].get_dynamic_viscosity(T[0])
             dynamic_viscosity_2 = self.materials["negative"].get_dynamic_viscosity(T[1])
@@ -90,7 +90,7 @@ class MaterialManager():
             dynamic_viscosity = self.material.get_dynamic_viscosity(T)
         return dynamic_viscosity
 
-    def get_speed_of_sound(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_speed_of_sound(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         if self.levelset_type == "FLUID-FLUID":
             speed_of_sound = []
             for i, fluid in enumerate(self.materials):
@@ -100,7 +100,7 @@ class MaterialManager():
             speed_of_sound = self.material.get_speed_of_sound(p, rho)
         return speed_of_sound
 
-    def get_pressure(self, e: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_pressure(self, e: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         if self.levelset_type == "FLUID-FLUID":
             pressure = []
             for i, fluid in enumerate(self.materials):
@@ -110,7 +110,7 @@ class MaterialManager():
             pressure = self.material.get_pressure(e, rho)
         return pressure
 
-    def get_temperature(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_temperature(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         if self.levelset_type == "FLUID-FLUID":
             temperature = []
             for i, fluid in enumerate(self.materials):
@@ -120,7 +120,7 @@ class MaterialManager():
             temperature = self.material.get_temperature(p, rho)
         return temperature
     
-    def get_energy(self, p:jnp.DeviceArray, rho:jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_energy(self, p:jnp.ndarray, rho:jnp.ndarray) -> jnp.ndarray:
         # Specific internal energy
         if self.levelset_type == "FLUID-FLUID":
             energy = []
@@ -131,7 +131,7 @@ class MaterialManager():
             energy = self.material.get_energy(p, rho)
         return energy
 
-    def get_total_energy(self, p:jnp.DeviceArray, rho:jnp.DeviceArray, u:jnp.DeviceArray, v:jnp.DeviceArray, w:jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_total_energy(self, p:jnp.ndarray, rho:jnp.ndarray, u:jnp.ndarray, v:jnp.ndarray, w:jnp.ndarray) -> jnp.ndarray:
         # Total energy per unit volume
         if self.levelset_type == "FLUID-FLUID":
             total_energy = []
@@ -142,7 +142,7 @@ class MaterialManager():
             total_energy = self.material.get_total_energy(p, rho)
         return total_energy
 
-    def get_total_enthalpy(self, p:jnp.DeviceArray, rho:jnp.DeviceArray, u:jnp.DeviceArray, v:jnp.DeviceArray, w:jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_total_enthalpy(self, p:jnp.ndarray, rho:jnp.ndarray, u:jnp.ndarray, v:jnp.ndarray, w:jnp.ndarray) -> jnp.ndarray:
         # Total specific enthalpy
         if self.levelset_type == "FLUID-FLUID":
             total_enthalpy = []
@@ -153,7 +153,7 @@ class MaterialManager():
             total_enthalpy = self.material.get_total_enthalpy(p, rho, u, v, w)
         return total_enthalpy
 
-    def get_psi(self, p: jnp.DeviceArray, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_psi(self, p: jnp.ndarray, rho: jnp.ndarray) -> jnp.ndarray:
         if self.levelset_type == "FLUID-FLUID":
             psi = []
             for i, fluid in enumerate(self.materials):
@@ -163,7 +163,7 @@ class MaterialManager():
             psi = self.material.get_psi(p, rho)
         return psi
 
-    def get_grueneisen(self, rho: jnp.DeviceArray) -> jnp.DeviceArray:
+    def get_grueneisen(self, rho: jnp.ndarray) -> jnp.ndarray:
         if self.levelset_type == "FLUID-FLUID":
             grueneisen = []
             for i, fluid in enumerate(self.materials):

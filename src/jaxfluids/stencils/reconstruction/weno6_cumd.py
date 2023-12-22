@@ -136,7 +136,7 @@ class WENO6CUMD(SpatialReconstruction):
             
             ]
 
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, j: int, dx: float, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx: float, **kwargs) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
 
         beta_0 = 13.0 / 12.0 * (buffer[s1_[0]] - 2 * buffer[s1_[1]] + buffer[s1_[2]]) * (buffer[s1_[0]] - 2 * buffer[s1_[1]] + buffer[s1_[2]]) \

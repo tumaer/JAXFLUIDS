@@ -64,7 +64,7 @@ class DerivativeFourthOrderCenter(SpatialDerivative):
                 jnp.s_[..., self.nhx, self.nhy, jnp.s_[self.n+2:-self.n+2] if self.n != 2 else jnp.s_[self.n+2:None]]  ]   
         ]
 
-    def derivative_xi(self, buffer: jnp.DeviceArray, dxi: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def derivative_xi(self, buffer: jnp.ndarray, dxi: jnp.ndarray, axis: int) -> jnp.ndarray:
         s1_ = self.s_[axis]
         deriv_xi = (1.0 / 12.0 / dxi) * (buffer[s1_[0]] - 8.0 * buffer[s1_[1]] + 8.0 * buffer[s1_[2]] - buffer[s1_[3]])
         return deriv_xi

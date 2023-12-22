@@ -60,7 +60,7 @@ class CentralSecondOrderReconstruction(SpatialReconstruction):
                 jnp.s_[..., self.nhx, self.nhy, jnp.s_[self.n  :-self.n+1] if self.n != 1 else jnp.s_[self.n:None]],   ],   
         ]
 
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, **kwargs) -> jnp.ndarray:
         s1_ = self.s_[axis]
         cell_state_xi = (1.0 / 2.0) * (buffer[s1_[0]] + buffer[s1_[1]])
         return cell_state_xi

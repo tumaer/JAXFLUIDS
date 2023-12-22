@@ -46,8 +46,8 @@ class HLL(RiemannSolver):
     def __init__(self, material_manager: MaterialManager, signal_speed: Callable) -> None:
         super().__init__(material_manager, signal_speed)
 
-    def solve_riemann_problem_xi(self, primes_L: jnp.DeviceArray, primes_R: jnp.DeviceArray, 
-        cons_L: jnp.DeviceArray, cons_R: jnp.DeviceArray, axis: int, **kwargs) -> jnp.DeviceArray:
+    def solve_riemann_problem_xi(self, primes_L: jnp.ndarray, primes_R: jnp.ndarray, 
+        cons_L: jnp.ndarray, cons_R: jnp.ndarray, axis: int, **kwargs) -> jnp.ndarray:
         fluxes_left = get_fluxes_xi(primes_L, cons_L, axis)
         fluxes_right = get_fluxes_xi(primes_R, cons_R, axis)
 

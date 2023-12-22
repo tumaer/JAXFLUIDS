@@ -63,13 +63,13 @@ class InterfaceQuantityComputer:
 
         self.is_surface_tension = numerical_setup["active_physics"]["is_surface_tension"]
 
-    def compute_solid_interface_velocity(self, current_time: float) -> jnp.DeviceArray:
+    def compute_solid_interface_velocity(self, current_time: float) -> jnp.ndarray:
         """Computes the solid interface velocity for FLUID-SOLID-DYNAMIC interface interactions.
 
         :param current_time: Current physical simulation time  
         :type current_time: float
         :return: Solid interface velocity
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         # COMPUTE LAMBDA INPUTS
@@ -100,18 +100,18 @@ class InterfaceQuantityComputer:
         return solid_interface_velocity
 
 
-    def solve_interface_interaction(self, primes: jnp.DeviceArray, normal: jnp.DeviceArray,
-            curvature: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def solve_interface_interaction(self, primes: jnp.ndarray, normal: jnp.ndarray,
+            curvature: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Solves the two-material Riemann problem for FLUID-FLUID interface interactions.
 
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param normal: Interface normal buffer
-        :type normal: jnp.DeviceArray
+        :type normal: jnp.ndarray
         :param curvature: Interface curvature buffer
-        :type curvature: jnp.DeviceArray
+        :type curvature: jnp.ndarray
         :return: Interface velocity and interface pressure
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
         
         primes      = primes[...,self.nhx__,self.nhy__,self.nhz__]

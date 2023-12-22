@@ -59,7 +59,7 @@ class WENO1(SpatialReconstruction):
 
         ] for j in range(2)]
 
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, j: int, dx = None, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx = None, **kwargs) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
 
         cell_state_xi_j = buffer[s1_[0]]

@@ -53,34 +53,34 @@ class SpatialDerivative(ABC):
         self.eps = jnp.finfo(jnp.float64).eps
 
     @abstractmethod
-    def derivative_xi(self, buffer: jnp.DeviceArray, dxi: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def derivative_xi(self, buffer: jnp.ndarray, dxi: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Calculates the derivative in the direction indicated by axis.
 
         :param buffer: Buffer for which the derivative will be calculated
-        :type buffer: jnp.DeviceArray
+        :type buffer: jnp.ndarray
         :param dxi: Cell sizes along axis direction
-        :type dxi: jnp.DeviceArray
+        :type dxi: jnp.ndarray
         :param axis: Spatial axis along which derivative is calculated
         :type axis: int
         :return: Buffer with numerical derivative
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         pass
 
-    def derivative_xi_xj(self, buffer: jnp.DeviceArray, dxi: jnp.DeviceArray, dxj: jnp.DeviceArray, i: int, j: int) -> jnp.DeviceArray:
+    def derivative_xi_xj(self, buffer: jnp.ndarray, dxi: jnp.ndarray, dxj: jnp.ndarray, i: int, j: int) -> jnp.ndarray:
         """Calculates the second derivative in the directions indicated by i and j.
 
         :param buffer: Buffer for which the second derivative will be calculated
-        :type buffer: jnp.DeviceArray
+        :type buffer: jnp.ndarray
         :param dxi: Cell sizes along i direction
-        :type dxi: jnp.DeviceArray
+        :type dxi: jnp.ndarray
         :param dxj: Cell sizes along j direction
-        :type dxj: jnp.DeviceArray
+        :type dxj: jnp.ndarray
         :param i: Spatial axis along which derivative is calculated
         :type i: int
         :param j: Spatial axis along which derivative is calculated
         :type j: int
         :return: Buffer with numerical derivative
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         pass

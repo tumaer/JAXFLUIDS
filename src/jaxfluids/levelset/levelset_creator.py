@@ -69,7 +69,7 @@ class LevelsetCreator:
             "sphere": self.get_sphere
             }
 
-    def get_circle(self, radius: float, position: List) -> jnp.DeviceArray:
+    def get_circle(self, radius: float, position: List) -> jnp.ndarray:
         """Creates the levelset field for a circle.
 
         :param radius: Radius
@@ -77,7 +77,7 @@ class LevelsetCreator:
         :param position: Center position
         :type position: List
         :return: Levelset buffer
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         mesh_grid   = [jnp.meshgrid(*self.cell_centers, indexing="ij")[i] for i in self.active_axis_indices]
         for i in range(len(mesh_grid)):
@@ -85,7 +85,7 @@ class LevelsetCreator:
         levelset    = - radius + jnp.sqrt((mesh_grid[0] - position[0])**2 + (mesh_grid[1] - position[1])**2)
         return levelset
 
-    def get_rectangle(self, length: float, position: List, height : float = None, radius: float = None) -> jnp.DeviceArray:
+    def get_rectangle(self, length: float, position: List, height : float = None, radius: float = None) -> jnp.ndarray:
         """Creates the levelset field for a rectangle. If the radius argument is specified, the rectangle corners will 
         be rounded using that radius. If the height argument is not specified, a square will be created.
 
@@ -98,7 +98,7 @@ class LevelsetCreator:
         :param radius: Radius of the corners, defaults to None
         :type radius: float, optional
         :return: Leveset buffer
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         mesh_grid = [jnp.meshgrid(*self.cell_centers, indexing="ij")[i] for i in self.active_axis_indices]
         for i in range(len(mesh_grid)):
@@ -138,7 +138,7 @@ class LevelsetCreator:
 
         return levelset
 
-    def get_sphere(self, radius: float, position: float) -> jnp.DeviceArray:
+    def get_sphere(self, radius: float, position: float) -> jnp.ndarray:
         """Creates the levelset field for a sphere.
 
         :param radius: Radius
@@ -146,7 +146,7 @@ class LevelsetCreator:
         :param position: Center position
         :type position: float
         :return: _description_
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         mesh_grid = [jnp.meshgrid(*self.cell_centers, indexing="ij")[i] for i in self.active_axis_indices]
@@ -156,11 +156,11 @@ class LevelsetCreator:
         
         return levelset
 
-    def create_levelset(self) -> jnp.DeviceArray:
+    def create_levelset(self) -> jnp.ndarray:
         """Creates the levelset field either from the user defined lambda or from the user defined building blocks.
 
         :return: Levelset buffer
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         # CREATE BUFFER

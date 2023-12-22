@@ -480,18 +480,18 @@ class BoundaryCondition:
         return corners
 
 
-    def fill_boundary_primes(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray,
-            current_time: float) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def fill_boundary_primes(self, cons: jnp.ndarray, primes: jnp.ndarray,
+            current_time: float) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Fills the halo cells of the primitive and conservative variable buffers.
 
         :param cons: Buffer of conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param current_time: Current physical simulation time
         :type current_time: float
         :return: Primitive and conservative variable buffer with filled halo cells
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         # FILL BOUNDARIES
@@ -551,13 +551,13 @@ class BoundaryCondition:
 
         return cons, primes
 
-    def fill_boundary_levelset(self, levelset: jnp.DeviceArray) -> jnp.DeviceArray:
+    def fill_boundary_levelset(self, levelset: jnp.ndarray) -> jnp.ndarray:
         """Fills the levelset buffer halo cells.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Levelset buffer with filled halo cells
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         for boundary_location, boundary_type in self.boundary_types_levelset.items():
@@ -572,13 +572,13 @@ class BoundaryCondition:
 
         return levelset
 
-    def fill_corners_levelset(self, levelset: jnp.DeviceArray) -> jnp.DeviceArray:
+    def fill_corners_levelset(self, levelset: jnp.ndarray) -> jnp.ndarray:
         """Fills the levelset buffer halo cells that are located at the diagional extension of the domain.
 
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :return: Levelset buffer with filled halo cells at the corners
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         for location_fill, combinations in self.corners["levelset"].items():
@@ -612,13 +612,13 @@ class BoundaryCondition:
 
         return levelset    
 
-    def fill_corners_primes(self, primes: jnp.DeviceArray) -> jnp.DeviceArray:
+    def fill_corners_primes(self, primes: jnp.ndarray) -> jnp.ndarray:
         """Fills the prime buffer halo cells that are located at the diagonal extension of the domain.
 
         :param primes: Buffer of the primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :return: Primitive variables buffer with filled halo cells at the corners
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         for location_fill, combinations in self.corners["primes"].items():
@@ -675,15 +675,15 @@ class BoundaryCondition:
 
         return primes
 
-    def wall(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, location: str,
-            functions: Dict, current_time: float, b_range: List) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def wall(self, cons: jnp.ndarray, primes: jnp.ndarray, location: str,
+            functions: Dict, current_time: float, b_range: List) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Fills the halo cells of the primitive and conservative variable buffer at the specified
         location according to the no-slip wall boundary condition.
 
         :param cons: Conservative variable buffer
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param location: Boundary location
         :type location: str
         :param functions: Wall velocity functions
@@ -693,7 +693,7 @@ class BoundaryCondition:
         :param b_range: List containing the spatial range of the boundary at the specified location
         :type b_range: List
         :return: Primitive and conservative variable buffers with filled halos at specified location
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         if self.dim == 2:
@@ -733,16 +733,16 @@ class BoundaryCondition:
 
         return cons, primes
 
-    def dirichlet(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, location: str,
-            functions: Union[Callable, float], current_time: float, b_range: List) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def dirichlet(self, cons: jnp.ndarray, primes: jnp.ndarray, location: str,
+            functions: Union[Callable, float], current_time: float, b_range: List) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Fills the halo cells of the primitive and conservative variable buffer at the specified location 
         according to the dirichlet boundary condition.
 
 
         :param cons: Conservative variable buffer
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param location: Boundary location
         :type location: str
         :param functions: Dirichlet functions
@@ -752,7 +752,7 @@ class BoundaryCondition:
         :param b_range: List containing the spatial range of the boundary at the specified location
         :type b_range: List
         :return: Primitive and conservative variable buffers with filled halos at specified location
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         # GET SLICE OBJECTS
@@ -800,15 +800,15 @@ class BoundaryCondition:
 
         return cons, primes
 
-    def neumann(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, location: str,
-            functions: Union[Callable, float], current_time: float, b_range: List) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def neumann(self, cons: jnp.ndarray, primes: jnp.ndarray, location: str,
+            functions: Union[Callable, float], current_time: float, b_range: List) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Fills the halo cells of the primitive and conservative variable buffer at the specified
         location according to the neumann boundary condition. 
 
         :param cons: Conservative variable buffer
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param location: Boundary location
         :type location: str
         :param functions: Neumann functions
@@ -818,7 +818,7 @@ class BoundaryCondition:
         :param b_range: List containing the spatial range of the boundary at the specified location
         :type b_range: List
         :return: Primitive and conservative variable buffers with filled halos at specified location
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
         
         # GET SLICE OBJECTS
@@ -868,21 +868,21 @@ class BoundaryCondition:
 
         return cons, primes
 
-    def symmetry(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray,
-            location: str, b_range: List) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def symmetry(self, cons: jnp.ndarray, primes: jnp.ndarray,
+            location: str, b_range: List) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Fills the halo cells of the primitive and conservative variable buffer
         at the specified location according to the symmetric boundary condition.
 
         :param cons: Conservative variable buffer
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param location: Boundary location
         :type location: str
         :param b_range: List containing the spatial range of the boundary at the specified location
         :type b_range: List
         :return: Primitive and conservative variable buffers with filled halos at specified location
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         if self.dim == 2:
@@ -901,20 +901,20 @@ class BoundaryCondition:
 
         return cons, primes
 
-    def periodic(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, location: str, b_range: List) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def periodic(self, cons: jnp.ndarray, primes: jnp.ndarray, location: str, b_range: List) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Fills the halos of the conservative and primitive variable buffer at
         the specified location according to the periodic boundary condition.
 
         :param cons: Conservative variable buffer
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Primitive variable buffer
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param location: Boundary location
         :type location: str
         :param b_range: List containing the spatial range of the boundary at the specified location
         :type b_range: List
         :return: Primitive and conservative variable buffers with filled halos at specified location
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         if self.dim == 2:
@@ -967,13 +967,13 @@ class BoundaryCondition:
         slices[self.spatial_axis_to_index_for_slices[axis]] = jnp.s_[a:b]
         return tuple(slices)
 
-    def symmetry_levelset(self, levelset: jnp.DeviceArray, location: str):
+    def symmetry_levelset(self, levelset: jnp.ndarray, location: str):
         slices_retrieve = self.slices_retrieve["symmetry"][location]
         slices_fill = self.slices_fill[location]
         levelset = levelset.at[slices_fill].set(levelset[slices_retrieve])
         return levelset
         
-    def periodic_levelset(self, levelset: jnp.DeviceArray, location: str):
+    def periodic_levelset(self, levelset: jnp.ndarray, location: str):
         slices_retrieve = self.slices_retrieve["periodic"][location]
         slices_fill = self.slices_fill[location]
         levelset = levelset.at[slices_fill].set(levelset[slices_retrieve])

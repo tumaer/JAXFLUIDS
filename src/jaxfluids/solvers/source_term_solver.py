@@ -51,7 +51,7 @@ class SourceTermSolver:
 
     """
     
-    def __init__(self, material_manager: MaterialManager, gravity: jnp.DeviceArray, domain_information: DomainInformation, derivative_stencil_center: SpatialDerivative,
+    def __init__(self, material_manager: MaterialManager, gravity: jnp.ndarray, domain_information: DomainInformation, derivative_stencil_center: SpatialDerivative,
             derivative_stencil_face: SpatialDerivative, reconstruct_stencil_duidxi: SpatialReconstruction, reconstruct_stencil_ui: SpatialReconstruction,
             levelset_type: str) -> None:
         
@@ -76,13 +76,13 @@ class SourceTermSolver:
         self.cell_sizes                 = domain_information.cell_sizes
         self.nhx, self.nhy, self.nhz    = domain_information.domain_slices_conservatives
 
-    def compute_gravity_forces(self, cons: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_gravity_forces(self, cons: jnp.ndarray) -> jnp.ndarray:
         """Computes flux due to gravitational force.
 
         :param cons: Buffer of conservative variables.
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :return: Buffer with gravitational forces.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         density  = cons[0:1, ..., self.nhx, self.nhy, self.nhz]
@@ -95,15 +95,15 @@ class SourceTermSolver:
 
         return gravity_forces
 
-    def compute_heat_flux_xi(self, temperature: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_heat_flux_xi(self, temperature: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Computes the heat flux in axis direction.
 
         :param temperature: Buffer with temperature.
-        :type temperature: jnp.DeviceArray
+        :type temperature: jnp.ndarray
         :param axis: Spatial direction along which the heat flux is calculated.
         :type axis: int
         :return: Heat flux in axis direction.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         temperature_at_xj       = self.reconstruct_stencil_ui.reconstruct_xi(temperature, axis)
         thermal_conductivity    = self.material_manager.get_thermal_conductivity(temperature_at_xj)
@@ -112,7 +112,7 @@ class SourceTermSolver:
         heat_flux_xi            = jnp.vstack([jnp.zeros(flux_xi.shape), jnp.zeros(flux_xi.shape), jnp.zeros(flux_xi.shape), jnp.zeros(flux_xi.shape), flux_xi])
         return heat_flux_xi
     
-    def compute_viscous_flux_xi(self, vels: jnp.DeviceArray, temperature: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_viscous_flux_xi(self, vels: jnp.ndarray, temperature: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Computes viscous flux in one spatial direction
 
         vel_grad = [
@@ -122,13 +122,13 @@ class SourceTermSolver:
         ]
 
         :param vels: Buffer of velocities.
-        :type vels: jnp.DeviceArray
+        :type vels: jnp.ndarray
         :param temperature: Buffer of temperature.
-        :type temperature: jnp.DeviceArray
+        :type temperature: jnp.ndarray
         :param axis: Axis along which the viscous flux is computed.
         :type axis: int
         :return: Viscous flux along axis direction.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         temperature_at_cf   = self.reconstruct_stencil_ui.reconstruct_xi(temperature, axis)
         dynamic_viscosity   = self.material_manager.get_dynamic_viscosity(temperature_at_cf[0])
@@ -146,21 +146,21 @@ class SourceTermSolver:
 
         return fluxes_xj
 
-    def compute_tau(self, vel_grad: jnp.DeviceArray, dynamic_viscosity: jnp.DeviceArray, 
-        bulk_viscosity: jnp.DeviceArray, axis: int) -> jnp.DeviceArray:
+    def compute_tau(self, vel_grad: jnp.ndarray, dynamic_viscosity: jnp.ndarray, 
+        bulk_viscosity: jnp.ndarray, axis: int) -> jnp.ndarray:
         """Computes the stress tensor at a cell face in axis direction.
         tau_axis = [tau_axis0, tau_axis1, tau_axis2]
 
         :param vel_grad: Buffer of velocity gradient. Shape is 3 x 3 (x 2) x Nx x Ny x Nz 
-        :type vel_grad: jnp.DeviceArray
+        :type vel_grad: jnp.ndarray
         :param dynamic_viscosity: Buffer of dynamic viscosity.
-        :type dynamic_viscosity: jnp.DeviceArray
+        :type dynamic_viscosity: jnp.ndarray
         :param bulk_viscosity: Buffer of bulk viscosity.
-        :type bulk_viscosity: jnp.DeviceArray
+        :type bulk_viscosity: jnp.ndarray
         :param axis: Cell face direction at which viscous stresses are calculated.
         :type axis: int
         :return: Buffer of viscous stresses.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         mu_1 = dynamic_viscosity
         mu_2 = bulk_viscosity - 2.0 / 3.0 * dynamic_viscosity
@@ -172,17 +172,17 @@ class SourceTermSolver:
         tau_list[axis] += mu_2 * sum([vel_grad[k,k] for k in self.active_axis_indices])
         return jnp.stack(tau_list)
 
-    def compute_xi_derivatives_at_xj(self, prime: jnp.DeviceArray, axis_i: int, axis_j: int) -> jnp.DeviceArray:
+    def compute_xi_derivatives_at_xj(self, prime: jnp.ndarray, axis_i: int, axis_j: int) -> jnp.ndarray:
         """Computes the spatial derivative in axis_i direction at the cell face in axis_j direction.
 
         :param prime: Buffer of primitive variables.
-        :type prime: jnp.DeviceArray
+        :type prime: jnp.ndarray
         :param axis_i: Spatiald direction wrt which the derivative is taken.
         :type axis_i: int
         :param axis_j: Spatial direction along which derivative is evaluated.
         :type axis_j: int
         :return: Derivative wrt axis_i direction at cell face in axis_j direction.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         
         if axis_i == axis_j:

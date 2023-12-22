@@ -62,17 +62,17 @@ class FluxSplittingScheme:
 
         self.cell_sizes = domain_information.cell_sizes
 
-    def compute_fluxes_xi(self, primes: jnp.DeviceArray, cons: jnp.DeviceArray, axis: int, **kwargs) -> jnp.DeviceArray:
+    def compute_fluxes_xi(self, primes: jnp.ndarray, cons: jnp.ndarray, axis: int, **kwargs) -> jnp.ndarray:
         """Computes the numerical flux in axis direction.
 
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param cons: Buffer of primitive variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param axis: Spatial direction along which flux is calculated.
         :type axis: int
         :return: Numerical flux in axis direction.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         physical_flux = get_fluxes_xi(primes, cons, axis)
 

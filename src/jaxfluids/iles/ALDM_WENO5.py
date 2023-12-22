@@ -87,13 +87,13 @@ class ALDM_WENO5(SpatialReconstruction):
 
             ] for j in range(2)]
 
-    def get_adaptive_ideal_weights(self, j: int, fs: jnp.DeviceArray) -> Tuple[jnp.DeviceArray, jnp.DeviceArray, jnp.DeviceArray]:
+    def get_adaptive_ideal_weights(self, j: int, fs: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray]:
         d0 = self.dr_adlm_[j][0] + fs * (self.dr_[j][0] - self.dr_adlm_[j][0])
         d1 = self.dr_adlm_[j][1] + fs * (self.dr_[j][1] - self.dr_adlm_[j][1])
         d2 = self.dr_adlm_[j][2] + fs * (self.dr_[j][2] - self.dr_adlm_[j][2])
         return d0, d1, d2
 
-    def reconstruct_xi(self, primes: jnp.DeviceArray, axis: int, j: int, dx: float = None, fs: jnp.DeviceArray = 0) -> jnp.DeviceArray:
+    def reconstruct_xi(self, primes: jnp.ndarray, axis: int, j: int, dx: float = None, fs: jnp.ndarray = 0) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
         
         beta_0 = (primes[s1_[1]] - primes[s1_[0]]) * (primes[s1_[1]] - primes[s1_[0]]) \

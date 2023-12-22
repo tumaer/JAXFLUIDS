@@ -80,18 +80,18 @@ class HighOrderGodunov:
 
         self.cell_sizes = domain_information.cell_sizes
 
-    def compute_fluxes_xi(self, primes: jnp.DeviceArray, cons: jnp.DeviceArray, axis: int,
-        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None) -> jnp.DeviceArray:
+    def compute_fluxes_xi(self, primes: jnp.ndarray, cons: jnp.ndarray, axis: int,
+        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None) -> jnp.ndarray:
         """Computes the numerical flux in a specified spatial direction.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param cons: Buffer of conservative variables.
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param axis: Spatial direction along which flux is calculated.
         :type axis: int
         :return: Numerical flux in axis direction.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         if self.reconstruction_var == 'PRIMITIVE':
             primes_xi_L = self.reconstruction_stencil.reconstruct_xi(primes, axis, 0, dx=self.cell_sizes[axis],

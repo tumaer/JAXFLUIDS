@@ -117,14 +117,14 @@ class Initializer:
         if self.input_reader.is_turb_init:
             self.turb_init_manager = TurbInitManager(self.input_reader, self.domain_information, self.material_manager)
 
-    def initialization(self, user_prime_init: Union[np.ndarray, jnp.DeviceArray] = None) -> Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]:
+    def initialization(self, user_prime_init: Union[np.ndarray, jnp.ndarray] = None) -> Dict[str, Dict[str, Union[jnp.ndarray, float]]]:
         """Creates a dictionary of initial buffers. The buffers are either created from the case setup file 
         or from the user_prime_init argument.
 
         :param user_prime_init: User specified initial buffer for the primitive variables, defaults to None
-        :type user_prime_init: Union[np.ndarray, jnp.DeviceArray], optional
+        :type user_prime_init: Union[np.ndarray, jnp.ndarray], optional
         :return: Dictionary of initial buffers
-        :rtype: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]
+        :rtype: Dict[str, Dict[str, Union[jnp.ndarray, float]]]
         """
 
         # DOMAIN INFORMATION

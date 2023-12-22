@@ -33,20 +33,20 @@ from typing import Tuple
 
 import jax.numpy as jnp 
 
-def signal_speed_Arithmetic(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray,
-    *args, **kwargs) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+def signal_speed_Arithmetic(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray,
+    *args, **kwargs) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Arithmetic signal speed estimate
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
+    :type a_R: jnp.ndarray
     :return: Buffers of left and right going wave speed estimates.
-    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+    :rtype: Tuple[jnp.ndarray, jnp.ndarray]
     """
     u_mean = 0.5 * (u_L + u_R)
     a_mean = 0.5 * (a_L + a_R)
@@ -54,71 +54,71 @@ def signal_speed_Arithmetic(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp
     S_R = jnp.maximum(u_mean + a_mean, u_R + a_R)
     return S_L, S_R
 
-def signal_speed_Rusanov(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray,
-    *args, **kwargs) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+def signal_speed_Rusanov(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray,
+    *args, **kwargs) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Rusanov type signal speed estimate
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
+    :type a_R: jnp.ndarray
     :return: Buffers of left and right going wave speed estimates.
-    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+    :rtype: Tuple[jnp.ndarray, jnp.ndarray]
     """
     S_plus = jnp.maximum(jnp.abs(u_L) + a_L, jnp.abs(u_R) + a_R)
     S_L = - S_plus
     S_R = S_plus
     return S_L, S_R
 
-def signal_speed_Davis(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray,
-    *args, **kwargs) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+def signal_speed_Davis(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray,
+    *args, **kwargs) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Davis signal speed estimate
     See Toro Eq. (10.48)
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
+    :type a_R: jnp.ndarray
     :return: Buffers of left and right going wave speed estimates.
-    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+    :rtype: Tuple[jnp.ndarray, jnp.ndarray]
     """
     S_L = jnp.minimum( u_L - a_L, u_R - a_R )
     S_R = jnp.maximum( u_L + a_L, u_R + a_R )
     return S_L, S_R
 
-def signal_speed_Davis_2(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray,
-    rho_L: jnp.DeviceArray, rho_R: jnp.DeviceArray, H_L: jnp.DeviceArray, H_R: jnp.DeviceArray, gamma: float,
-    *args, **kwargs) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+def signal_speed_Davis_2(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray,
+    rho_L: jnp.ndarray, rho_R: jnp.ndarray, H_L: jnp.ndarray, H_R: jnp.ndarray, gamma: float,
+    *args, **kwargs) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Signal speed estimate according to Davis.
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
+    :type a_R: jnp.ndarray
     :param rho_L: Buffer with densitites in left neighboring cell.
-    :type rho_L: jnp.DeviceArray
+    :type rho_L: jnp.ndarray
     :param rho_R: Buffer with densitites in right neighboring cell.
-    :type rho_R: jnp.DeviceArray
+    :type rho_R: jnp.ndarray
     :param H_L: Buffer with total enthalpies in left neighboring cell.
-    :type H_L: jnp.DeviceArray
+    :type H_L: jnp.ndarray
     :param H_R: Buffer with enthalpies in right neighboring cell.
-    :type H_R: jnp.DeviceArray
+    :type H_R: jnp.ndarray
     :param gamma: Ratio of specific heats.
     :type gamma: float
     :return: Buffers of left and right going wave speed estimates.
-    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+    :rtype: Tuple[jnp.ndarray, jnp.ndarray]
     """
 
     one_dens = 1.0 / (jnp.sqrt(rho_L) + jnp.sqrt(rho_R))
@@ -129,21 +129,21 @@ def signal_speed_Davis_2(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.De
     S_R = u_Roe + a_Roe
     return S_L, S_R
 
-def signal_speed_Einfeldt(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray,
-    rho_L: jnp.DeviceArray, rho_R: jnp.DeviceArray, *args, **kwargs) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+def signal_speed_Einfeldt(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray,
+    rho_L: jnp.ndarray, rho_R: jnp.ndarray, *args, **kwargs) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Einfeldt signal speed estimate
     See Toro Eqs. (10.52) - (10.54) 
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
+    :type a_R: jnp.ndarray
     :return: Buffers of left and right going wave speed estimates.
-    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+    :rtype: Tuple[jnp.ndarray, jnp.ndarray]
     """
     one_dens = 1.0 / (jnp.sqrt(rho_L) + jnp.sqrt(rho_R))
     eta2 = 0.5 * jnp.sqrt(rho_L) * jnp.sqrt(rho_R) * one_dens * one_dens
@@ -153,21 +153,21 @@ def signal_speed_Einfeldt(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.D
     S_R = u_bar + d_bar
     return S_L, S_R
 
-def signal_speed_Toro(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray,
-    rho_L: jnp.DeviceArray, rho_R: jnp.DeviceArray, p_L: jnp.DeviceArray, p_R: jnp.DeviceArray, gamma: float, 
-    *args, **kwargs) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+def signal_speed_Toro(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray,
+    rho_L: jnp.ndarray, rho_R: jnp.ndarray, p_L: jnp.ndarray, p_R: jnp.ndarray, gamma: float, 
+    *args, **kwargs) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Toro signal speed estimate
     See Toro Eqs. (10.59) - (10.60) 
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
-    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+    :type a_R: jnp.ndarray
+    :rtype: Tuple[jnp.ndarray, jnp.ndarray]
     """
     p_star = estimate_pressure(u_L, u_R, a_L, a_R, rho_L, rho_R, p_L, p_R)
     gamma_ = (gamma + 1) * 0.5 / gamma
@@ -177,30 +177,30 @@ def signal_speed_Toro(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.Devic
     S_R = u_R + a_R * q_R
     return S_L, S_R
 
-def compute_sstar(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, p_L: jnp.DeviceArray, p_R: jnp.DeviceArray, 
-    rho_L: jnp.DeviceArray, rho_R: jnp.DeviceArray, S_L: jnp.DeviceArray, S_R: jnp.DeviceArray) -> jnp.DeviceArray:
+def compute_sstar(u_L: jnp.ndarray, u_R: jnp.ndarray, p_L: jnp.ndarray, p_R: jnp.ndarray, 
+    rho_L: jnp.ndarray, rho_R: jnp.ndarray, S_L: jnp.ndarray, S_R: jnp.ndarray) -> jnp.ndarray:
     """Computes the speed of the intermediate wave in a Riemann problem.
 
     See Toro Eq. (10.70)
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param p_L: Pressure of left neighboring cell.
-    :type p_L: jnp.DeviceArray
+    :type p_L: jnp.ndarray
     :param p_R: Pressure of right neighboring cells.
-    :type p_R: jnp.DeviceArray
+    :type p_R: jnp.ndarray
     :param rho_L: Density of left neighboring cell.
-    :type rho_L: jnp.DeviceArray
+    :type rho_L: jnp.ndarray
     :param rho_R: Density of right neighboring cell.
-    :type rho_R: jnp.DeviceArray
+    :type rho_R: jnp.ndarray
     :param S_L: Wave speed estimate left-going wave.
-    :type S_L: jnp.DeviceArray
+    :type S_L: jnp.ndarray
     :param S_R: Wave speed estimate right-going wave.
-    :type S_R: jnp.DeviceArray
+    :type S_R: jnp.ndarray
     :return: Speed of the intermediate wave in the Riemann problem.
-    :rtype: jnp.DeviceArray
+    :rtype: jnp.ndarray
     """
 
     delta_uL = S_L - u_L
@@ -209,31 +209,31 @@ def compute_sstar(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, p_L: jnp.DeviceArr
     S_star = 1.0 / rho_deltaSU * (p_R - p_L + rho_L * u_L * delta_uL - rho_R * u_R * delta_uR)
     return S_star
 
-def estimate_pressure(u_L: jnp.DeviceArray, u_R: jnp.DeviceArray, a_L: jnp.DeviceArray, a_R: jnp.DeviceArray, 
-    rho_L: jnp.DeviceArray, rho_R: jnp.DeviceArray, p_L: jnp.DeviceArray, p_R: jnp.DeviceArray) -> jnp.DeviceArray:
+def estimate_pressure(u_L: jnp.ndarray, u_R: jnp.ndarray, a_L: jnp.ndarray, a_R: jnp.ndarray, 
+    rho_L: jnp.ndarray, rho_R: jnp.ndarray, p_L: jnp.ndarray, p_R: jnp.ndarray) -> jnp.ndarray:
     """Estimates the pressure in the star region based on a 
     linearised solution in terms of primitive variables. 
 
     See Toro Eq. (9.28) or (10.67)
 
     :param u_L: Buffer with normal velocity in left neighboring cell.
-    :type u_L: jnp.DeviceArray
+    :type u_L: jnp.ndarray
     :param u_R: Buffer with normal velocity in right neighboring cell.
-    :type u_R: jnp.DeviceArray
+    :type u_R: jnp.ndarray
     :param a_L: Buffer with speed of sound in left neighboring cell.
-    :type a_L: jnp.DeviceArray
+    :type a_L: jnp.ndarray
     :param a_R: Buffer with speed of sound in right neighboring cell.
-    :type a_R: jnp.DeviceArray
+    :type a_R: jnp.ndarray
     :param rho_L: Densities of left neighboring cells.
-    :type rho_L: jnp.DeviceArray
+    :type rho_L: jnp.ndarray
     :param rho_R: Densities of right neighboring cells.
-    :type rho_R: jnp.DeviceArray
+    :type rho_R: jnp.ndarray
     :param p_L: Pressure of left neighboring cell.
-    :type p_L: jnp.DeviceArray
+    :type p_L: jnp.ndarray
     :param p_R: Pressure of right neighboring cells.
-    :type p_R: jnp.DeviceArray
+    :type p_R: jnp.ndarray
     :return: Pressure in the star region.
-    :rtype: jnp.DeviceArray
+    :rtype: jnp.ndarray
     """
     rho_bar = 0.5 * (rho_L + rho_R)
     a_bar = 0.5 * (a_L + a_R)

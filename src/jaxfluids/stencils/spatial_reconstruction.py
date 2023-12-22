@@ -61,11 +61,11 @@ class SpatialReconstruction(ABC):
         pass
 
     @abstractmethod
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, j: int, dx : float = None, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx : float = None, **kwargs) -> jnp.ndarray:
         """Reconstruction of buffer quantity along axis specified by axis. 
 
         :param buffer: Buffer that will be reconstructed
-        :type buffer: jnp.DeviceArray
+        :type buffer: jnp.ndarray
         :param axis: Spatial axis along which values are reconstructed
         :type axis: int
         :param j: integer which specifies whether to calculate reconstruction left (j=0) or right (j=1)
@@ -74,6 +74,6 @@ class SpatialReconstruction(ABC):
         :param dx: cell size, defaults to None
         :type dx: float, optional
         :return: Buffer with cell face reconstructed values
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         pass

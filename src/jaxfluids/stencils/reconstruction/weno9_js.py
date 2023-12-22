@@ -126,7 +126,7 @@ class WENO9(SpatialReconstruction):
                     jnp.s_[..., None:None, None:None, 8+j],    ],  
         ] for j in range(2)]
 
-    def reconstruct_xi(self, buffer: jnp.DeviceArray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.DeviceArray:
+    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.ndarray:
         s1_ = self._slices[j][axis]
         
         beta_0 = buffer[s1_[0]] * (22658   * buffer[s1_[0]] - 208501  * buffer[s1_[1]] + 364863  * buffer[s1_[2]] - 288007 * buffer[s1_[3]] + 86329 * buffer[s1_[4]]) \

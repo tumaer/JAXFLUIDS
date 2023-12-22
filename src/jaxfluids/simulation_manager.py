@@ -186,17 +186,17 @@ class SimulationManager:
 
         self.logger = Logger("", logging_level=self.numerical_setup["output"]["logging"]) 
 
-    def simulate(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]) -> None:
+    def simulate(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]) -> None:
         """Performs a conventional CFD simulation.
 
         :param buffer_dictionary: Dictionary containing the material field buffers,
         levelset quantitiy buffers, time control and mass flow forcing parameters
-        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]
+        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]
         """
         self.initialize(buffer_dictionary)
         self.advance(buffer_dictionary)
 
-    def initialize(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]) -> None:
+    def initialize(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]) -> None:
         """ Initializes the simulation, i.e., creates the output directory,
         logs the numerical and case setup, and writes the initial output.
 
@@ -225,7 +225,7 @@ class SimulationManager:
         self.output_writer.next_timestamp += current_time
         self.output_writer.write_output(buffer_dictionary, force_output=True)
 
-    def advance(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]) -> None:
+    def advance(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]) -> None:
         """ Advances the initial buffers in time.
 
         :param buffer_dictionary: ictionary containing the material field buffers,
@@ -335,8 +335,8 @@ class SimulationManager:
         self.logger.log_sim_finish(time.time() - start_loop)
 
     @partial(jax.jit, static_argnums=(0, 8, 11))
-    def do_integration_step(self, cons: jnp.DeviceArray, primes: jnp.DeviceArray, timestep_size: float, current_time: float,
-        levelset: Union[jnp.DeviceArray, None] = None, volume_fraction: Union[jnp.DeviceArray, None] = None, apertures: Union[List, None] = None,
+    def do_integration_step(self, cons: jnp.ndarray, primes: jnp.ndarray, timestep_size: float, current_time: float,
+        levelset: Union[jnp.ndarray, None] = None, volume_fraction: Union[jnp.ndarray, None] = None, apertures: Union[List, None] = None,
         reinitialize: bool = False, forcings_dictionary: Union[Dict, None] = None, 
         ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None, **kwargs) -> Tuple[Dict, Dict, Dict]:
         """Performs an integration step using the specified integration scheme. For twophase simulations 
@@ -357,17 +357,17 @@ class SimulationManager:
         10) Fill material boundaries
 
         :param cons: Buffer of conservative variables
-        :type cons: jnp.DeviceArray
+        :type cons: jnp.ndarray
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param timestep_size: Current physical time step size
         :type timestep_size: float
         :param current_time: Current physical simulation time
         :type current_time: float
         :param levelset: Levelset buffer, defaults to None
-        :type levelset: Union[jnp.DeviceArray, None], optional
+        :type levelset: Union[jnp.ndarray, None], optional
         :param volume_fraction: Volume fraction buffer, defaults to None
-        :type volume_fraction: Union[jnp.DeviceArray, None], optional
+        :type volume_fraction: Union[jnp.ndarray, None], optional
         :param apertures: Aperture buffers, defaults to None
         :type apertures: Union[List, None], optional
         :param reinitialize: Flag indicating whether to reinitialize levelset in the present time step, defaults to False
@@ -454,16 +454,16 @@ class SimulationManager:
         return material_fields, levelset_quantities, residuals
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_timestep(self, primes: jnp.DeviceArray, levelset: jnp.DeviceArray,
-            volume_fraction: jnp.DeviceArray, **kwargs) -> float:
+    def compute_timestep(self, primes: jnp.ndarray, levelset: jnp.ndarray,
+            volume_fraction: jnp.ndarray, **kwargs) -> float:
         """Computes the physical time step size depending on the active physics.
 
         :param primes: Buffer of primitive variables
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param levelset: Levelset buffer
-        :type levelset: jnp.DeviceArray
+        :type levelset: jnp.ndarray
         :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Time step size
         :rtype: float
         """
@@ -511,17 +511,17 @@ class SimulationManager:
 
         return dt
 
-    def _feed_forward(self, primes_init: jnp.DeviceArray, levelset_init: jnp.DeviceArray, n_steps: int, timestep_size: float, 
+    def _feed_forward(self, primes_init: jnp.ndarray, levelset_init: jnp.ndarray, n_steps: int, timestep_size: float, 
         t_start: float, output_freq: int = 1, ml_parameters_dict: Union[Dict, None] = None,
-        ml_networks_dict: Union[Dict, None] = None) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+        ml_networks_dict: Union[Dict, None] = None) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Advances the initial buffers in time for a fixed amount of steps and returns the
         entire trajectory. This function is differentiable and
         must therefore be used to end-to-end optimize ML models within the JAX-FLUIDS simulator.
 
         :param primes_init: Initial primitive variables buffer
-        :type primes_init: jnp.DeviceArray
+        :type primes_init: jnp.ndarray
         :param levelset_init: Initial levelset buffer
-        :type levelset_init: jnp.DeviceArray
+        :type levelset_init: jnp.ndarray
         :param n_steps: Number of time steps
         :type n_steps: int
         :param timestep_size: Physical time step size
@@ -535,7 +535,7 @@ class SimulationManager:
         :param ml_networks_dict: _description_, defaults to None
         :type ml_networks_dict: Union[Dict, None], optional
         :return: _description_
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
         # CREATE BUFFER
         nh               = self.domain_information.nh_conservatives
@@ -624,15 +624,15 @@ class SimulationManager:
         times_array    = jnp.stack(times_list)
         return solution_array, times_array
 
-    def feed_forward(self, batch_primes_init: jnp.DeviceArray, batch_levelset_init: jnp.DeviceArray, n_steps: int, timestep_size: float, 
+    def feed_forward(self, batch_primes_init: jnp.ndarray, batch_levelset_init: jnp.ndarray, n_steps: int, timestep_size: float, 
         t_start: float, output_freq: int = 1, ml_parameters_dict: Union[Dict, None] = None, 
-        ml_networks_dict: Union[Dict, None] = None) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+        ml_networks_dict: Union[Dict, None] = None) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Vectorized version of the _feed_forward() method.
 
         :param batch_primes_init: batch of initial primitive variable buffers
-        :type batch_primes_init: jnp.DeviceArray
+        :type batch_primes_init: jnp.ndarray
         :param batch_levelset_init: batch of initial levelset buffers
-        :type batch_levelset_init: jnp.DeviceArray
+        :type batch_levelset_init: jnp.ndarray
         :param n_steps: Number of integration steps
         :type n_steps: int
         :param timestep: Physical time step size
@@ -646,7 +646,7 @@ class SimulationManager:
         :param ml_networks_dict: NN architectures, defaults to None
         :type ml_networks_dict: Union[Dict, None], optional
         :return: _description_
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         return jax.vmap(self._feed_forward, in_axes=(0,0,None,None,None,None,None,None), out_axes=(0,0,))(

@@ -148,12 +148,12 @@ class OutputWriter:
 
         return save_path_case, save_path_domain
 
-    def write_output(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]], 
+    def write_output(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]], 
         force_output: bool, simulation_finish: bool = False) -> None:
         """Writes h5 and (optional) xdmf output.
 
         :param buffer_dictionary: Dictionary with flow field buffers
-        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.DeviceArray, float]]]
+        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]
         :param force_output: Flag which forces an output.
         :type force_output: bool
         :param simulation_finish: Flag that indicates the simulation finish -> 
@@ -176,7 +176,7 @@ class OutputWriter:
         if simulation_finish and self.is_xdmf:
             self.write_timeseries_xdmffile()
 
-    def write_h5file(self, buffer_dictionary: Dict[str, Dict[str, jnp.DeviceArray]]) -> None:
+    def write_h5file(self, buffer_dictionary: Dict[str, Dict[str, jnp.ndarray]]) -> None:
 
         current_time = buffer_dictionary["time_control"]["current_time"]
 
@@ -400,17 +400,17 @@ class OutputWriter:
         return xdmf
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_real_buffer(self, buffer: jnp.DeviceArray, volume_fraction: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_real_buffer(self, buffer: jnp.ndarray, volume_fraction: jnp.ndarray) -> jnp.ndarray:
         """ For two-phase simulations, merges the two separate phase buffers 
         into a single real buffer. Calculation is done as a arithmetic average 
         based on the volume fraction. 
 
         :param buffer: Data buffer.
-        :type buffer: jnp.DeviceArray
+        :type buffer: jnp.ndarray
         :param volume_fraction: Buffer of the volume fraction.
-        :type volume_fraction: jnp.DeviceArray
+        :type volume_fraction: jnp.ndarray
         :return: Combined data buffer of the 'real' fluid.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         
         volume_fraction    = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)       
@@ -418,18 +418,18 @@ class OutputWriter:
         return conservatives_real
 
     @partial(jax.jit, static_argnums=(0,2))
-    def compute_miscellaneous(self, primes: jnp.DeviceArray, quantity: str, volume_fraction: Union[jnp.DeviceArray, None]) -> jnp.DeviceArray:
+    def compute_miscellaneous(self, primes: jnp.ndarray, quantity: str, volume_fraction: Union[jnp.ndarray, None]) -> jnp.ndarray:
         """Compute miscellaneous output fields for h5 output.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param quantity: String identifier of the quantity to be computed.
         :type quantity: str
         :param volume_fraction: Buffer of the volume fraction field, 
             only for two-phase simulations. Otherwise None.
-        :type volume_fraction: Union[jnp.DeviceArray, None]
+        :type volume_fraction: Union[jnp.ndarray, None]
         :return: Computed phyiscal output quantity.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         if self.levelset_type == "FLUID-FLUID":
             primes_real = self.compute_real_buffer(primes[...,self.nhx__,self.nhy__,self.nhz__], volume_fraction)
@@ -450,13 +450,13 @@ class OutputWriter:
         return computed_quantity
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_absolute_velocity(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_absolute_velocity(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """Computes the absolute velocity field for h5 output.
 
         :param velocity: Buffer of velocities.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Buffer of absolute velocity.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         absolute_velocity = jnp.sqrt( jnp.sum( jnp.square(velocity), axis=0) )
         if self.levelset_type == "FLUID-FLUID":
@@ -466,15 +466,15 @@ class OutputWriter:
         return absolute_velocity
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_mach_number(self, primes: jnp.DeviceArray, volume_fraction: Union[jnp.DeviceArray, None]) -> jnp.DeviceArray:
+    def compute_mach_number(self, primes: jnp.ndarray, volume_fraction: Union[jnp.ndarray, None]) -> jnp.ndarray:
         """Computes the Mach number field for h5 output.
 
         :param primes: Buffer of primitive variables.
-        :type primes: jnp.DeviceArray
+        :type primes: jnp.ndarray
         :param volume_fraction: Buffer of volume fraction.
-        :type volume_fraction: Union[jnp.DeviceArray, None]
+        :type volume_fraction: Union[jnp.ndarray, None]
         :return: Buffer of Mach number.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         absolute_velocity   = jnp.sqrt( jnp.sum( jnp.square(primes[1:4]), axis=0) )
         speed_of_sound      = self.material_manager.get_speed_of_sound(primes[4], primes[0])
@@ -486,13 +486,13 @@ class OutputWriter:
         return mach_number            
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_schlieren(self, density: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_schlieren(self, density: jnp.ndarray) -> jnp.ndarray:
         """Computes numerical schlieren field for h5 output.
 
         :param density: Buffer of density.
-        :type density: jnp.DeviceArray
+        :type density: jnp.ndarray
         :return: Buffer of schlieren.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         schlieren = []
         for i in range(3):
@@ -504,13 +504,13 @@ class OutputWriter:
         return schlieren
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_vorticity(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_vorticity(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """Computes vorticity field for h5 output.
 
         :param velocity: Buffer of velocities.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Buffer of vorticity.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
 
         if self.levelset_type == "FLUID-FLUID":
@@ -531,13 +531,13 @@ class OutputWriter:
         return vorticity
 
     @partial(jax.jit, static_argnums=(0))
-    def compute_absolute_vorticity(self, velocity: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_absolute_vorticity(self, velocity: jnp.ndarray) -> jnp.ndarray:
         """Computes absolute vorticity field for h5 output.
 
         :param velocity: Buffer of velocities.
-        :type velocity: jnp.DeviceArray
+        :type velocity: jnp.ndarray
         :return: Buffer of absolute vorticity.
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         
         absolute_vorticity = jnp.linalg.norm(self.compute_vorticity(velocity), axis=0, ord=2)

@@ -57,22 +57,22 @@ class QuantityExtender:
         self.boundary_condition = boundary_condition
         self.is_interface       = is_interface
 
-    def extend(self, quantity: jnp.DeviceArray, normal: jnp.DeviceArray,
-            mask: jnp.DeviceArray, CFL: float, steps: int) -> Tuple[jnp.DeviceArray, float]:
+    def extend(self, quantity: jnp.ndarray, normal: jnp.ndarray,
+            mask: jnp.ndarray, CFL: float, steps: int) -> Tuple[jnp.ndarray, float]:
         """Extends the quantity in normal direction. 
 
         :param quantity: Quantity buffer
-        :type quantity: jnp.DeviceArray
+        :type quantity: jnp.ndarray
         :param normal: Normal buffer
-        :type normal: jnp.DeviceArray
+        :type normal: jnp.ndarray
         :param mask: Mask indicating where to extend
-        :type mask: jnp.DeviceArray
+        :type mask: jnp.ndarray
         :param CFL: CFL number
         :type CFL: float
         :param steps: Number of integration steps
         :type steps: int
         :return: Extended quantity buffer and corresponding residual
-        :rtype: Tuple[jnp.DeviceArray, float]
+        :rtype: Tuple[jnp.ndarray, float]
         """
         timestep_size = self.smallest_cell_size * CFL
         for i in range(steps):
@@ -80,20 +80,20 @@ class QuantityExtender:
             max_residual    = jnp.max(jnp.abs(rhs))
         return quantity, max_residual
 
-    def do_integration_step(self, quantity: jnp.DeviceArray, normal: jnp.DeviceArray,
-            mask: jnp.DeviceArray, timestep_size: float) -> Tuple[jnp.DeviceArray, jnp.DeviceArray]:
+    def do_integration_step(self, quantity: jnp.ndarray, normal: jnp.ndarray,
+            mask: jnp.ndarray, timestep_size: float) -> Tuple[jnp.ndarray, jnp.ndarray]:
         """Performs an integration step of the extension equation.
 
         :param quantity: Quantity buffer
-        :type quantity: jnp.DeviceArray
+        :type quantity: jnp.ndarray
         :param normal: Normal buffer
-        :type normal: jnp.DeviceArray
+        :type normal: jnp.ndarray
         :param mask: Mask indicating where to extend
-        :type mask: jnp.DeviceArray
+        :type mask: jnp.ndarray
         :param timestep_size: Fictitious time step size
         :type timestep_size: float
         :return: Integrated quantity buffer and corresponding right-hand-side buffer
-        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]
+        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
         """
 
         # FILL INIT
@@ -115,17 +115,17 @@ class QuantityExtender:
 
         return quantity, rhs
 
-    def compute_rhs(self, quantity: jnp.DeviceArray, normal: jnp.DeviceArray, mask: jnp.DeviceArray) -> jnp.DeviceArray:
+    def compute_rhs(self, quantity: jnp.ndarray, normal: jnp.ndarray, mask: jnp.ndarray) -> jnp.ndarray:
         """Computes the right-hand-side of the exension equation.
 
         :param quantity: Quantity buffer
-        :type quantity: jnp.DeviceArray
+        :type quantity: jnp.ndarray
         :param normal: Normal buffer
-        :type normal: jnp.DeviceArray
+        :type normal: jnp.ndarray
         :param mask: Mask indiciating where to extend
-        :type mask: jnp.DeviceArray
+        :type mask: jnp.ndarray
         :return: Right-hand-side of the extension equation
-        :rtype: jnp.DeviceArray
+        :rtype: jnp.ndarray
         """
         rhs = 0.0
         for axis in self.active_axis_indices:
