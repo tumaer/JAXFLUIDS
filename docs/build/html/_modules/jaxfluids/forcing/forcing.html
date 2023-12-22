@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.forcing.forcing &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.forcing.forcing</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.forcing.forcing</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -131,8 +138,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.levelset.levelset_handler</span> <span class="kn">import</span> <span class="n">LevelsetHandler</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.turb.turb_stats_manager</span> <span class="kn">import</span> <span class="n">TurbStatsManager</span>
 
-<div class="viewcode-block" id="Forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing">[docs]</a><span class="k">class</span> <span class="nc">Forcing</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Class that manages the computation of external forcing terms.</span>
+<div class="viewcode-block" id="Forcing">
+<a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing">[docs]</a>
+<span class="k">class</span> <span class="nc">Forcing</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class that manages the computation of external forcing terms.</span>
 
 <span class="sd">    Currently implemented are:</span>
 <span class="sd">    1) Mass flow rate forcing</span>
@@ -201,22 +210,24 @@
         <span class="c1"># TEMPERATURE FORCING</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">temperature_target</span> <span class="o">=</span> <span class="n">temperature_target</span>
     
-<div class="viewcode-block" id="Forcing.compute_forcings"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_forcings">[docs]</a>    <span class="k">def</span> <span class="nf">compute_forcings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        
-        <span class="sd">&quot;&quot;&quot;Computes forcings for temperature, mass flow and turbulence kinetic energy.</span>
+<div class="viewcode-block" id="Forcing.compute_forcings">
+<a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_forcings">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_forcings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes forcings for temperature, mass flow and turbulence kinetic energy.</span>
 
 <span class="sd">        :param primes: buffer of primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param primes_dash: buffer of primitive variables for next time step without forcing</span>
-<span class="sd">        :type primes_dash: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type primes_dash: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param cons: buffer of conservative variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: buffer of volume fractions</span>
-<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type volume_fraction: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param mask_real: mask indicating the real fluid</span>
-<span class="sd">        :type mask_real: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type mask_real: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param current_time: current physical simulation time</span>
 <span class="sd">        :type current_time: float</span>
 <span class="sd">        :param timestep_size: current physical time step size</span>
@@ -269,24 +280,27 @@
             <span class="p">})</span>
 
         <span class="k">return</span> <span class="n">forcings_dictionary</span></div>
+
         
-<div class="viewcode-block" id="Forcing.compute_temperature_forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_temperature_forcing">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">compute_temperature_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-            <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Computes temperature forcing.</span>
+<div class="viewcode-block" id="Forcing.compute_temperature_forcing">
+<a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_temperature_forcing">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_temperature_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+            <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes temperature forcing.</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables.</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param levelset: Buffer of level-set field.</span>
-<span class="sd">        :type levelset: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type levelset: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param volume_fraction: Buffer of volume fraction field.</span>
-<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type volume_fraction: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param current_time: Current simulation time.</span>
 <span class="sd">        :type current_time: float</span>
 <span class="sd">        :param timestep_size: Current integration time step.</span>
 <span class="sd">        :type timestep_size: float</span>
 <span class="sd">        :return: Buffer of the forcing vector and the mean absolute error wrt the temperature target.</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
        
         <span class="c1"># COMPUTE TEMPERATURE</span>
@@ -320,17 +334,20 @@
 
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">forcing</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">mean_absolute_error</span></div>
 
-<div class="viewcode-block" id="Forcing.compute_mass_flow_forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_mass_flow_forcing">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">compute_mass_flow_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> 
-        <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Computes mass flow forcing</span>
+
+<div class="viewcode-block" id="Forcing.compute_mass_flow_forcing">
+<a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_mass_flow_forcing">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_mass_flow_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> 
+        <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">PID_e_int</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes mass flow forcing</span>
 
 <span class="sd">        :param cons: Buffer of the conservative variables.</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Buffer of the primitive variables.</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Buffer of the volume fraction in two-phase flows.</span>
-<span class="sd">        :type volume_fraction: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type volume_fraction: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param current_time: Current simulation time.</span>
 <span class="sd">        :type current_time: float</span>
 <span class="sd">        :param timestep_size: Current time step.</span>
@@ -340,7 +357,7 @@
 <span class="sd">        :param PID_e_int: Current PID integral error</span>
 <span class="sd">        :type PID_e_int: float</span>
 <span class="sd">        :return: Buffer of the body force, current mass flow, mass flow target, PID error, PID integral error</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, float, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># COMPUTE MASS FLOW TARGET</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass_flow_target</span><span class="p">)</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">:</span>
@@ -368,19 +385,22 @@
 
         <span class="k">return</span> <span class="n">body_force</span><span class="p">,</span> <span class="n">mass_flow_current</span><span class="p">,</span> <span class="n">mass_flow_target</span><span class="p">,</span> <span class="n">PID_e_new</span><span class="p">,</span> <span class="n">PID_e_int</span></div>
 
-<div class="viewcode-block" id="Forcing.compute_turb_hit_forcing"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_turb_hit_forcing">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">compute_turb_hit_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes forcing for HIT </span>
+
+<div class="viewcode-block" id="Forcing.compute_turb_hit_forcing">
+<a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.compute_turb_hit_forcing">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_turb_hit_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes_dash</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes forcing for HIT </span>
 
 <span class="sd">        :param primes: Buffer of primitive variables.</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param primes_dash: Buffer of intermediate primitive variables which are obtained</span>
 <span class="sd">            by integrating primes without forcing term.</span>
-<span class="sd">        :type primes_dash: jnp.DeviceArray</span>
+<span class="sd">        :type primes_dash: jnp.ndarray</span>
 <span class="sd">        :param timestep: Current time step.</span>
 <span class="sd">        :type timestep: float</span>
 <span class="sd">        :return: Buffer of the forcing vector.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">primes</span>      <span class="o">=</span> <span class="n">primes</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
         <span class="n">primes_dash</span> <span class="o">=</span> <span class="n">primes_dash</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span>
@@ -395,20 +415,23 @@
         <span class="n">force</span> <span class="o">=</span> <span class="p">[</span><span class="n">s_0</span><span class="p">,</span> <span class="n">s_1</span><span class="p">,</span> <span class="n">s_2</span><span class="p">,</span> <span class="n">s_3</span><span class="p">,</span> <span class="n">s_4</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">force</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Forcing.calculate_velocity_forcing_vector"><a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.calculate_velocity_forcing_vector">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_velocity_forcing_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vels</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">vels_dash</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">eta_s</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the velocity forcing vector for HIT forcing.</span>
+
+<div class="viewcode-block" id="Forcing.calculate_velocity_forcing_vector">
+<a class="viewcode-back" href="../../../jaxfluids.forcing.html#jaxfluids.forcing.forcing.Forcing.calculate_velocity_forcing_vector">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_velocity_forcing_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vels</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vels_dash</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eta_s</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the velocity forcing vector for HIT forcing.</span>
 
 <span class="sd">        :param vels: Buffer of velocities.</span>
-<span class="sd">        :type vels: jnp.DeviceArray</span>
+<span class="sd">        :type vels: jnp.ndarray</span>
 <span class="sd">        :param vels_dash: Buffer of intermediate velocities which are obtained</span>
 <span class="sd">            by integrating primes without forcing term.</span>
-<span class="sd">        :type vels_dash: jnp.DeviceArray</span>
+<span class="sd">        :type vels_dash: jnp.ndarray</span>
 <span class="sd">        :param eta_s: Cut-off wavenumber up to which forcing is applied.</span>
 <span class="sd">        :type eta_s: int</span>
 <span class="sd">        :param timestep: Current time step.</span>
 <span class="sd">        :type timestep: float</span>
 <span class="sd">        :return: Buffer of the velocity forcing vector.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">vels_hat</span>      <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">vels</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
@@ -427,7 +450,9 @@
             <span class="o">-</span><span class="n">Cs</span> <span class="o">*</span> <span class="p">(</span><span class="n">vels_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_k2_field</span> <span class="o">*</span> <span class="n">div_u</span><span class="p">),</span>
         <span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">s_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span></div></div>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">s_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span></div>
+</div>
+
 
 </pre></div>
 

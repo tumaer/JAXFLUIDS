@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.levelset.quantity_extender &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.levelset.quantity_extender</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.levelset.quantity_extender</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -126,8 +133,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.time_integration.time_integrator</span> <span class="kn">import</span> <span class="n">TimeIntegrator</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.stencils.spatial_derivative</span> <span class="kn">import</span> <span class="n">SpatialDerivative</span>
 
-<div class="viewcode-block" id="QuantityExtender"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender">[docs]</a><span class="k">class</span> <span class="nc">QuantityExtender</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;The QuantiyExtender performs a zero-gradient extension in interface normal direction of an arbitrary quantity.</span>
+<div class="viewcode-block" id="QuantityExtender">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender">[docs]</a>
+<span class="k">class</span> <span class="nc">QuantityExtender</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The QuantiyExtender performs a zero-gradient extension in interface normal direction of an arbitrary quantity.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_information</span><span class="p">:</span> <span class="n">DomainInformation</span><span class="p">,</span> <span class="n">boundary_condition</span><span class="p">:</span> <span class="n">BoundaryCondition</span><span class="p">,</span>
@@ -143,22 +152,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">boundary_condition</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_interface</span>       <span class="o">=</span> <span class="n">is_interface</span>
 
-<div class="viewcode-block" id="QuantityExtender.extend"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender.extend">[docs]</a>    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">CFL</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Extends the quantity in normal direction. </span>
+<div class="viewcode-block" id="QuantityExtender.extend">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender.extend">[docs]</a>
+    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CFL</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extends the quantity in normal direction. </span>
 
 <span class="sd">        :param quantity: Quantity buffer</span>
-<span class="sd">        :type quantity: jnp.DeviceArray</span>
+<span class="sd">        :type quantity: jnp.ndarray</span>
 <span class="sd">        :param normal: Normal buffer</span>
-<span class="sd">        :type normal: jnp.DeviceArray</span>
+<span class="sd">        :type normal: jnp.ndarray</span>
 <span class="sd">        :param mask: Mask indicating where to extend</span>
-<span class="sd">        :type mask: jnp.DeviceArray</span>
+<span class="sd">        :type mask: jnp.ndarray</span>
 <span class="sd">        :param CFL: CFL number</span>
 <span class="sd">        :type CFL: float</span>
 <span class="sd">        :param steps: Number of integration steps</span>
 <span class="sd">        :type steps: int</span>
 <span class="sd">        :return: Extended quantity buffer and corresponding residual</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">timestep_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smallest_cell_size</span> <span class="o">*</span> <span class="n">CFL</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
@@ -166,20 +177,23 @@
             <span class="n">max_residual</span>    <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rhs</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">max_residual</span></div>
 
-<div class="viewcode-block" id="QuantityExtender.do_integration_step"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender.do_integration_step">[docs]</a>    <span class="k">def</span> <span class="nf">do_integration_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Performs an integration step of the extension equation.</span>
+
+<div class="viewcode-block" id="QuantityExtender.do_integration_step">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender.do_integration_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_integration_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs an integration step of the extension equation.</span>
 
 <span class="sd">        :param quantity: Quantity buffer</span>
-<span class="sd">        :type quantity: jnp.DeviceArray</span>
+<span class="sd">        :type quantity: jnp.ndarray</span>
 <span class="sd">        :param normal: Normal buffer</span>
-<span class="sd">        :type normal: jnp.DeviceArray</span>
+<span class="sd">        :type normal: jnp.ndarray</span>
 <span class="sd">        :param mask: Mask indicating where to extend</span>
-<span class="sd">        :type mask: jnp.DeviceArray</span>
+<span class="sd">        :type mask: jnp.ndarray</span>
 <span class="sd">        :param timestep_size: Fictitious time step size</span>
 <span class="sd">        :type timestep_size: float</span>
 <span class="sd">        :return: Integrated quantity buffer and corresponding right-hand-side buffer</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># FILL INIT</span>
@@ -201,17 +215,20 @@
 
         <span class="k">return</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">rhs</span></div>
 
-<div class="viewcode-block" id="QuantityExtender.compute_rhs"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender.compute_rhs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the right-hand-side of the exension equation.</span>
+
+<div class="viewcode-block" id="QuantityExtender.compute_rhs">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.quantity_extender.QuantityExtender.compute_rhs">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">normal</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the right-hand-side of the exension equation.</span>
 
 <span class="sd">        :param quantity: Quantity buffer</span>
-<span class="sd">        :type quantity: jnp.DeviceArray</span>
+<span class="sd">        :type quantity: jnp.ndarray</span>
 <span class="sd">        :param normal: Normal buffer</span>
-<span class="sd">        :type normal: jnp.DeviceArray</span>
+<span class="sd">        :type normal: jnp.ndarray</span>
 <span class="sd">        :param mask: Mask indiciating where to extend</span>
-<span class="sd">        :type mask: jnp.DeviceArray</span>
+<span class="sd">        :type mask: jnp.ndarray</span>
 <span class="sd">        :return: Right-hand-side of the extension equation</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rhs</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span><span class="p">:</span>
@@ -222,7 +239,9 @@
             <span class="n">mask_R</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">mask_L</span>
             <span class="n">rhs</span> <span class="o">-=</span> <span class="n">normal</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">mask_L</span> <span class="o">*</span> <span class="n">cell_state_L</span> <span class="o">+</span> <span class="n">mask_R</span> <span class="o">*</span> <span class="n">cell_state_R</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span>
         <span class="n">rhs</span> <span class="o">*=</span> <span class="n">mask</span>
-        <span class="k">return</span> <span class="n">rhs</span></div></div>
+        <span class="k">return</span> <span class="n">rhs</span></div>
+</div>
+
 </pre></div>
 
            </div>

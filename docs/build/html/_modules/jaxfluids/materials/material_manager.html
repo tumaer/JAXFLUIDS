@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.materials.material_manager &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.materials.material_manager</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.materials.material_manager</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -123,8 +130,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.materials.material</span> <span class="kn">import</span> <span class="n">Material</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.materials</span> <span class="kn">import</span> <span class="n">DICT_MATERIAL</span>
 
-<div class="viewcode-block" id="MaterialManager"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager">[docs]</a><span class="k">class</span> <span class="nc">MaterialManager</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;The MaterialManager class is a wrapper class that holds the materials. The main purpose of this class is to enable</span>
+<div class="viewcode-block" id="MaterialManager">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager">[docs]</a>
+<span class="k">class</span> <span class="nc">MaterialManager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The MaterialManager class is a wrapper class that holds the materials. The main purpose of this class is to enable</span>
 <span class="sd">    the computation of material parameters for two-phase flows, i.e., the presence of two (different) materials.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -154,7 +163,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>                      <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">gamma</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">R</span>                          <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">R</span>
 
-<div class="viewcode-block" id="MaterialManager.get_thermal_conductivity"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_thermal_conductivity">[docs]</a>    <span class="k">def</span> <span class="nf">get_thermal_conductivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">):</span>
+<div class="viewcode-block" id="MaterialManager.get_thermal_conductivity">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_thermal_conductivity">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_thermal_conductivity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">thermal_conductivity_1</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_thermal_conductivity</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">thermal_conductivity_2</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_thermal_conductivity</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -165,7 +176,10 @@
             <span class="n">thermal_conductivity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_thermal_conductivity</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">thermal_conductivity</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_dynamic_viscosity"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_dynamic_viscosity">[docs]</a>    <span class="k">def</span> <span class="nf">get_dynamic_viscosity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MaterialManager.get_dynamic_viscosity">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_dynamic_viscosity">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_dynamic_viscosity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">dynamic_viscosity_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_dynamic_viscosity</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="n">dynamic_viscosity_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="s2">&quot;negative&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_dynamic_viscosity</span><span class="p">(</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -176,7 +190,10 @@
             <span class="n">dynamic_viscosity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_dynamic_viscosity</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dynamic_viscosity</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_speed_of_sound"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_speed_of_sound">[docs]</a>    <span class="k">def</span> <span class="nf">get_speed_of_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_speed_of_sound">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_speed_of_sound">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_speed_of_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">speed_of_sound</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fluid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">):</span>
@@ -186,7 +203,10 @@
             <span class="n">speed_of_sound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_speed_of_sound</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">speed_of_sound</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_pressure"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_pressure">[docs]</a>    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_pressure">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_pressure">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">pressure</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fluid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">):</span>
@@ -196,7 +216,10 @@
             <span class="n">pressure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_pressure</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pressure</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_temperature"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_temperature">[docs]</a>    <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_temperature">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_temperature">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">temperature</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fluid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">):</span>
@@ -205,8 +228,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_temperature</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">temperature</span></div>
+
     
-<div class="viewcode-block" id="MaterialManager.get_energy"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+<div class="viewcode-block" id="MaterialManager.get_energy">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_energy">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="c1"># Specific internal energy</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="p">[]</span>
@@ -217,7 +243,10 @@
             <span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_total_energy"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_total_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_total_energy">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_total_energy">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="c1"># Total energy per unit volume</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">total_energy</span> <span class="o">=</span> <span class="p">[]</span>
@@ -228,7 +257,10 @@
             <span class="n">total_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">total_energy</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_total_enthalpy"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_total_enthalpy">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_enthalpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_total_enthalpy">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_total_enthalpy">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_total_enthalpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="c1"># Total specific enthalpy</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">total_enthalpy</span> <span class="o">=</span> <span class="p">[]</span>
@@ -239,7 +271,10 @@
             <span class="n">total_enthalpy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_total_enthalpy</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">total_enthalpy</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_psi"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_psi">[docs]</a>    <span class="k">def</span> <span class="nf">get_psi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_psi">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_psi">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_psi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">psi</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fluid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">):</span>
@@ -249,7 +284,10 @@
             <span class="n">psi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_psi</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">rho</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">psi</span></div>
 
-<div class="viewcode-block" id="MaterialManager.get_grueneisen"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_grueneisen">[docs]</a>    <span class="k">def</span> <span class="nf">get_grueneisen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MaterialManager.get_grueneisen">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material_manager.MaterialManager.get_grueneisen">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_grueneisen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">grueneisen</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fluid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">):</span>
@@ -259,7 +297,9 @@
                 <span class="n">grueneisen</span> <span class="o">=</span> <span class="n">grueneisen</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">grueneisen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">material</span><span class="o">.</span><span class="n">get_grueneisen</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">grueneisen</span></div></div>
+        <span class="k">return</span> <span class="n">grueneisen</span></div>
+</div>
+
 </pre></div>
 
            </div>

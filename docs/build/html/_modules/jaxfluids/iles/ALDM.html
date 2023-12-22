@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.iles.ALDM &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.iles.ALDM</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.iles.ALDM</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -127,8 +134,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.iles.ALDM_WENO3</span> <span class="kn">import</span> <span class="n">ALDM_WENO3</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.iles.ALDM_WENO5</span> <span class="kn">import</span> <span class="n">ALDM_WENO5</span>
 
-<div class="viewcode-block" id="ALDM"><a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM">[docs]</a><span class="k">class</span> <span class="nc">ALDM</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; Adaptive Local Deconvolution Method - ALDM - Hickel et al. 2014</span>
+<div class="viewcode-block" id="ALDM">
+<a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM">[docs]</a>
+<span class="k">class</span> <span class="nc">ALDM</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Adaptive Local Deconvolution Method - ALDM - Hickel et al. 2014</span>
 
 <span class="sd">    ALDM is a numerical scheme for computation of convective fluxes. It consits</span>
 <span class="sd">    of a combined reconstruction and flux-function. ALDM is optimized to model</span>
@@ -159,17 +168,19 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">shock_sensor</span> <span class="o">=</span> <span class="n">Ducros</span><span class="p">(</span><span class="n">domain_information</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ALDM.compute_fluxes_xi"><a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.compute_fluxes_xi">[docs]</a>    <span class="k">def</span> <span class="nf">compute_fluxes_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prime</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the numerical flux in the axis direction.</span>
+<div class="viewcode-block" id="ALDM.compute_fluxes_xi">
+<a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.compute_fluxes_xi">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_fluxes_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prime</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the numerical flux in the axis direction.</span>
 
 <span class="sd">        :param prime: Buffer of primitive variables.</span>
-<span class="sd">        :type prime: jnp.DeviceArray</span>
+<span class="sd">        :type prime: jnp.ndarray</span>
 <span class="sd">        :param cons: Buffer of conservative variables.</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param axis: Spatial direction in which the flux is computed.</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :return: Numerical flux in specified direction.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Evaluate shock sensor</span>
         <span class="n">fs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shock_sensor</span><span class="o">.</span><span class="n">compute_sensor_function</span><span class="p">(</span><span class="n">prime</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">axis</span><span class="p">)</span>
@@ -186,31 +197,34 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">solve_riemann_problem_xi</span><span class="p">(</span><span class="n">phi_L</span><span class="p">,</span> <span class="n">phi_R</span><span class="p">,</span> <span class="n">p3_L</span><span class="p">,</span> <span class="n">p3_R</span><span class="p">,</span> <span class="n">alpha_3</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ALDM.solve_riemann_problem_xi"><a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.solve_riemann_problem_xi">[docs]</a>    <span class="k">def</span> <span class="nf">solve_riemann_problem_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">phi_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> 
-        <span class="n">p3_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p3_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">alpha_3</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> 
-        <span class="n">fs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Solves the Riemann problem, i.e., calculates the numerical flux, in </span>
+
+<div class="viewcode-block" id="ALDM.solve_riemann_problem_xi">
+<a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.solve_riemann_problem_xi">[docs]</a>
+    <span class="k">def</span> <span class="nf">solve_riemann_problem_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">phi_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+        <span class="n">p3_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p3_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha_3</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+        <span class="n">fs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solves the Riemann problem, i.e., calculates the numerical flux, in </span>
 <span class="sd">        the direction specified by axis.</span>
 
 <span class="sd">        phi = [rho, u1, u2, u3, p, rho_e]</span>
 <span class="sd">        p3_K is third-order pressure reconstruction</span>
 
 <span class="sd">        :param phi_L: Phi vector of left neighboring state</span>
-<span class="sd">        :type phi_L: jnp.DeviceArray</span>
+<span class="sd">        :type phi_L: jnp.ndarray</span>
 <span class="sd">        :param phi_R: Phi vector of right neighboring state</span>
-<span class="sd">        :type phi_R: jnp.DeviceArray</span>
+<span class="sd">        :type phi_R: jnp.ndarray</span>
 <span class="sd">        :param p3_L: Third-order pressure reconstruction of left neighboring state</span>
-<span class="sd">        :type p3_L: jnp.DeviceArray</span>
+<span class="sd">        :type p3_L: jnp.ndarray</span>
 <span class="sd">        :param p3_R: Third-order pressure reconstruction of right neighboring state</span>
-<span class="sd">        :type p3_R: jnp.DeviceArray</span>
+<span class="sd">        :type p3_R: jnp.ndarray</span>
 <span class="sd">        :param alpha_3: Third-order reconstruction weight</span>
-<span class="sd">        :type alpha_3: jnp.DeviceArray</span>
+<span class="sd">        :type alpha_3: jnp.ndarray</span>
 <span class="sd">        :param fs: Shock sensor.</span>
-<span class="sd">        :type fs: jnp.DeviceArray</span>
+<span class="sd">        :type fs: jnp.ndarray</span>
 <span class="sd">        :param axis: Spatial direction along which flux is calculated.</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :return: Numerical flux in axis drection.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="n">phi_delta</span> <span class="o">=</span> <span class="n">phi_R</span> <span class="o">-</span> <span class="n">phi_L</span>
@@ -256,21 +270,24 @@
 
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">fluxes_xi</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ALDM.reconstruct_xi"><a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.reconstruct_xi">[docs]</a>    <span class="k">def</span> <span class="nf">reconstruct_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">alpha_1</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">alpha_2</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">alpha_3</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> 
-        <span class="n">fs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Reconstructs the phi vector along the axis direction. Reconstruction is done</span>
+
+<div class="viewcode-block" id="ALDM.reconstruct_xi">
+<a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.reconstruct_xi">[docs]</a>
+    <span class="k">def</span> <span class="nf">reconstruct_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha_1</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha_2</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha_3</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+        <span class="n">fs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstructs the phi vector along the axis direction. Reconstruction is done</span>
 <span class="sd">        via a convex combination of modified WENO1, WENO3 and WENO5.</span>
 
 <span class="sd">        :param phi: Buffer of phi vector.</span>
-<span class="sd">        :type phi: jnp.DeviceArray</span>
+<span class="sd">        :type phi: jnp.ndarray</span>
 <span class="sd">        :param alpha_1: First-order reconstruction weight.</span>
-<span class="sd">        :type alpha_1: jnp.DeviceArray</span>
+<span class="sd">        :type alpha_1: jnp.ndarray</span>
 <span class="sd">        :param alpha_2: Second-order reconstruction weight.</span>
-<span class="sd">        :type alpha_2: jnp.DeviceArray</span>
+<span class="sd">        :type alpha_2: jnp.ndarray</span>
 <span class="sd">        :param alpha_3: Third-order reconstruction weight.</span>
-<span class="sd">        :type alpha_3: jnp.DeviceArray</span>
+<span class="sd">        :type alpha_3: jnp.ndarray</span>
 <span class="sd">        :param fs: Shock sensor.</span>
-<span class="sd">        :type fs: jnp.DeviceArray</span>
+<span class="sd">        :type fs: jnp.ndarray</span>
 <span class="sd">        :param axis: Spatial direction along which reconstruction is done.</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :param j: Bit indicating whether reconstruction is left (j=0) or right (j=1)</span>
@@ -279,7 +296,7 @@
 <span class="sd">        :param dx: Vector of cell sizes in axis direction, defaults to None</span>
 <span class="sd">        :type dx: float, optional</span>
 <span class="sd">        :return: Reconstructed phi vector and reconstructed third-oder pressure value.</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cell_state_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALDM_WENO1</span><span class="o">.</span><span class="n">reconstruct_xi</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>             <span class="c1"># WENO 1</span>
         <span class="n">cell_state_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALDM_WENO3</span><span class="o">.</span><span class="n">reconstruct_xi</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>             <span class="c1"># WENO 3</span>
@@ -289,23 +306,28 @@
 
         <span class="k">return</span> <span class="n">cell_state_xi_j</span><span class="p">,</span> <span class="n">cell_state_3</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="ALDM.compute_phi"><a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.compute_phi">[docs]</a>    <span class="k">def</span> <span class="nf">compute_phi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the phi vector which is the quantity that is reconstructed</span>
+
+<div class="viewcode-block" id="ALDM.compute_phi">
+<a class="viewcode-back" href="../../../jaxfluids.iles.html#jaxfluids.iles.ALDM.ALDM.compute_phi">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_phi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the phi vector which is the quantity that is reconstructed</span>
 <span class="sd">        in the ALDM scheme.</span>
 
 <span class="sd">        phi vector notation different from paper,</span>
 <span class="sd">            \bar{phi} = {\bar{rho}, \bar{u1}, \bar{u2}, \bar{u3}, \bar{p}, \bar{rho_e}}</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables.</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param cons: Buffer of conservative variables.</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of the phi vector.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rho_e</span> <span class="o">=</span> <span class="n">cons</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">primes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">primes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">primes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">primes</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
         <span class="n">phi</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">primes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">primes</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rho_e</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">phi</span></div></div>
+        <span class="k">return</span> <span class="n">phi</span></div>
+</div>
+
 </pre></div>
 
            </div>

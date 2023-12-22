@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.boundary_condition &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.boundary_condition</li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.boundary_condition</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -126,8 +133,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.unit_handler</span> <span class="kn">import</span> <span class="n">UnitHandler</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.utilities</span> <span class="kn">import</span> <span class="n">get_conservatives_from_primitives</span>
 
-<div class="viewcode-block" id="BoundaryCondition"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition">[docs]</a><span class="k">class</span> <span class="nc">BoundaryCondition</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; The BoundaryCondition class implements functionality to enforce user-</span>
+<div class="viewcode-block" id="BoundaryCondition">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition">[docs]</a>
+<span class="k">class</span> <span class="nc">BoundaryCondition</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; The BoundaryCondition class implements functionality to enforce user-</span>
 <span class="sd">    specified boundary conditions. Boundary conditions are enforced on the </span>
 <span class="sd">    primitive variables and the level-set field (for two-phase simulations</span>
 <span class="sd">    only).</span>
@@ -502,8 +511,10 @@
         <span class="p">}</span>
 
 
-<div class="viewcode-block" id="BoundaryCondition.assign_corners"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.assign_corners">[docs]</a>    <span class="k">def</span> <span class="nf">assign_corners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Identifies the boundary type pairs at the corners (2D) / edges (3D) of </span>
+<div class="viewcode-block" id="BoundaryCondition.assign_corners">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.assign_corners">[docs]</a>
+    <span class="k">def</span> <span class="nf">assign_corners</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Identifies the boundary type pairs at the corners (2D) / edges (3D) of </span>
 <span class="sd">        computational domain. This is necessary to fill the halo cells that are located at</span>
 <span class="sd">        the diagonal extension of the domain.</span>
 
@@ -566,18 +577,21 @@
         <span class="k">return</span> <span class="n">corners</span></div>
 
 
-<div class="viewcode-block" id="BoundaryCondition.fill_boundary_primes"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_primes">[docs]</a>    <span class="k">def</span> <span class="nf">fill_boundary_primes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffers.</span>
+
+<div class="viewcode-block" id="BoundaryCondition.fill_boundary_primes">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_primes">[docs]</a>
+    <span class="k">def</span> <span class="nf">fill_boundary_primes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffers.</span>
 
 <span class="sd">        :param cons: Buffer of conservative variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Buffer of primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param current_time: Current physical simulation time</span>
 <span class="sd">        :type current_time: float</span>
 <span class="sd">        :return: Primitive and conservative variable buffer with filled halo cells</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># FILL BOUNDARIES</span>
@@ -637,13 +651,16 @@
 
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.fill_boundary_levelset"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_levelset">[docs]</a>    <span class="k">def</span> <span class="nf">fill_boundary_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the levelset buffer halo cells.</span>
+
+<div class="viewcode-block" id="BoundaryCondition.fill_boundary_levelset">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_boundary_levelset">[docs]</a>
+    <span class="k">def</span> <span class="nf">fill_boundary_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the levelset buffer halo cells.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :return: Levelset buffer with filled halo cells</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">boundary_location</span><span class="p">,</span> <span class="n">boundary_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary_types_levelset</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -658,13 +675,16 @@
 
         <span class="k">return</span> <span class="n">levelset</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.fill_corners_levelset"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_corners_levelset">[docs]</a>    <span class="k">def</span> <span class="nf">fill_corners_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the levelset buffer halo cells that are located at the diagional extension of the domain.</span>
+
+<div class="viewcode-block" id="BoundaryCondition.fill_corners_levelset">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_corners_levelset">[docs]</a>
+    <span class="k">def</span> <span class="nf">fill_corners_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the levelset buffer halo cells that are located at the diagional extension of the domain.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :return: Levelset buffer with filled halo cells at the corners</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">location_fill</span><span class="p">,</span> <span class="n">combinations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corners</span><span class="p">[</span><span class="s2">&quot;levelset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -698,13 +718,16 @@
 
         <span class="k">return</span> <span class="n">levelset</span>    </div>
 
-<div class="viewcode-block" id="BoundaryCondition.fill_corners_primes"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_corners_primes">[docs]</a>    <span class="k">def</span> <span class="nf">fill_corners_primes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the prime buffer halo cells that are located at the diagonal extension of the domain.</span>
+
+<div class="viewcode-block" id="BoundaryCondition.fill_corners_primes">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.fill_corners_primes">[docs]</a>
+    <span class="k">def</span> <span class="nf">fill_corners_primes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the prime buffer halo cells that are located at the diagonal extension of the domain.</span>
 
 <span class="sd">        :param primes: Buffer of the primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :return: Primitive variables buffer with filled halo cells at the corners</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">location_fill</span><span class="p">,</span> <span class="n">combinations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corners</span><span class="p">[</span><span class="s2">&quot;primes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -761,15 +784,18 @@
 
         <span class="k">return</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.wall"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.wall">[docs]</a>    <span class="k">def</span> <span class="nf">wall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer at the specified</span>
+
+<div class="viewcode-block" id="BoundaryCondition.wall">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.wall">[docs]</a>
+    <span class="k">def</span> <span class="nf">wall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">functions</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer at the specified</span>
 <span class="sd">        location according to the no-slip wall boundary condition.</span>
 
 <span class="sd">        :param cons: Conservative variable buffer</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Primitive variable buffer</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
 <span class="sd">        :param functions: Wall velocity functions</span>
@@ -779,7 +805,7 @@
 <span class="sd">        :param b_range: List containing the spatial range of the boundary at the specified location</span>
 <span class="sd">        :type b_range: List</span>
 <span class="sd">        :return: Primitive and conservative variable buffers with filled halos at specified location</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -819,16 +845,19 @@
 
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.dirichlet"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.dirichlet">[docs]</a>    <span class="k">def</span> <span class="nf">dirichlet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">functions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer at the specified location </span>
+
+<div class="viewcode-block" id="BoundaryCondition.dirichlet">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.dirichlet">[docs]</a>
+    <span class="k">def</span> <span class="nf">dirichlet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">functions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer at the specified location </span>
 <span class="sd">        according to the dirichlet boundary condition.</span>
 
 
 <span class="sd">        :param cons: Conservative variable buffer</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Primitive variable buffer</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
 <span class="sd">        :param functions: Dirichlet functions</span>
@@ -838,7 +867,7 @@
 <span class="sd">        :param b_range: List containing the spatial range of the boundary at the specified location</span>
 <span class="sd">        :type b_range: List</span>
 <span class="sd">        :return: Primitive and conservative variable buffers with filled halos at specified location</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># GET SLICE OBJECTS</span>
@@ -886,15 +915,18 @@
 
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.neumann"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.neumann">[docs]</a>    <span class="k">def</span> <span class="nf">neumann</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">functions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer at the specified</span>
+
+<div class="viewcode-block" id="BoundaryCondition.neumann">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.neumann">[docs]</a>
+    <span class="k">def</span> <span class="nf">neumann</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">functions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer at the specified</span>
 <span class="sd">        location according to the neumann boundary condition. </span>
 
 <span class="sd">        :param cons: Conservative variable buffer</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Primitive variable buffer</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
 <span class="sd">        :param functions: Neumann functions</span>
@@ -904,7 +936,7 @@
 <span class="sd">        :param b_range: List containing the spatial range of the boundary at the specified location</span>
 <span class="sd">        :type b_range: List</span>
 <span class="sd">        :return: Primitive and conservative variable buffers with filled halos at specified location</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="c1"># GET SLICE OBJECTS</span>
@@ -954,21 +986,24 @@
 
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.symmetry"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.symmetry">[docs]</a>    <span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer</span>
+
+<div class="viewcode-block" id="BoundaryCondition.symmetry">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.symmetry">[docs]</a>
+    <span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the halo cells of the primitive and conservative variable buffer</span>
 <span class="sd">        at the specified location according to the symmetric boundary condition.</span>
 
 <span class="sd">        :param cons: Conservative variable buffer</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Primitive variable buffer</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
 <span class="sd">        :param b_range: List containing the spatial range of the boundary at the specified location</span>
 <span class="sd">        :type b_range: List</span>
 <span class="sd">        :return: Primitive and conservative variable buffers with filled halos at specified location</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -987,20 +1022,23 @@
 
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.periodic"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.periodic">[docs]</a>    <span class="k">def</span> <span class="nf">periodic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Fills the halos of the conservative and primitive variable buffer at</span>
+
+<div class="viewcode-block" id="BoundaryCondition.periodic">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.periodic">[docs]</a>
+    <span class="k">def</span> <span class="nf">periodic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fills the halos of the conservative and primitive variable buffer at</span>
 <span class="sd">        the specified location according to the periodic boundary condition.</span>
 
 <span class="sd">        :param cons: Conservative variable buffer</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Primitive variable buffer</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
 <span class="sd">        :param b_range: List containing the spatial range of the boundary at the specified location</span>
 <span class="sd">        :type b_range: List</span>
 <span class="sd">        :return: Primitive and conservative variable buffers with filled halos at specified location</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -1015,8 +1053,11 @@
 
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.get_slices_fill"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.get_slices_fill">[docs]</a>    <span class="k">def</span> <span class="nf">get_slices_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the slice objects to fill the halos depending on the range at the specified boundary location.</span>
+
+<div class="viewcode-block" id="BoundaryCondition.get_slices_fill">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.get_slices_fill">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_slices_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the slice objects to fill the halos depending on the range at the specified boundary location.</span>
 
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
@@ -1033,8 +1074,11 @@
         <span class="n">slices</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">spatial_axis_to_index_for_slices</span><span class="p">[</span><span class="n">axis</span><span class="p">]]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.get_slices_retrieve"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.get_slices_retrieve">[docs]</a>    <span class="k">def</span> <span class="nf">get_slices_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">boundary_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the slice objects to retrieve the values depending on the range at the specified boundary location.</span>
+
+<div class="viewcode-block" id="BoundaryCondition.get_slices_retrieve">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.get_slices_retrieve">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_slices_retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">boundary_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_range</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the slice objects to retrieve the values depending on the range at the specified boundary location.</span>
 
 <span class="sd">        :param location: Boundary location</span>
 <span class="sd">        :type location: str</span>
@@ -1053,17 +1097,25 @@
         <span class="n">slices</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">spatial_axis_to_index_for_slices</span><span class="p">[</span><span class="n">axis</span><span class="p">]]</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">s_</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">slices</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BoundaryCondition.symmetry_levelset"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.symmetry_levelset">[docs]</a>    <span class="k">def</span> <span class="nf">symmetry_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+
+<div class="viewcode-block" id="BoundaryCondition.symmetry_levelset">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.symmetry_levelset">[docs]</a>
+    <span class="k">def</span> <span class="nf">symmetry_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">slices_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slices_retrieve</span><span class="p">[</span><span class="s2">&quot;symmetry&quot;</span><span class="p">][</span><span class="n">location</span><span class="p">]</span>
         <span class="n">slices_fill</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slices_fill</span><span class="p">[</span><span class="n">location</span><span class="p">]</span>
         <span class="n">levelset</span> <span class="o">=</span> <span class="n">levelset</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">slices_fill</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">levelset</span><span class="p">[</span><span class="n">slices_retrieve</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">levelset</span></div>
+
         
-<div class="viewcode-block" id="BoundaryCondition.periodic_levelset"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.periodic_levelset">[docs]</a>    <span class="k">def</span> <span class="nf">periodic_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="BoundaryCondition.periodic_levelset">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.boundary_condition.BoundaryCondition.periodic_levelset">[docs]</a>
+    <span class="k">def</span> <span class="nf">periodic_levelset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">slices_retrieve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slices_retrieve</span><span class="p">[</span><span class="s2">&quot;periodic&quot;</span><span class="p">][</span><span class="n">location</span><span class="p">]</span>
         <span class="n">slices_fill</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slices_fill</span><span class="p">[</span><span class="n">location</span><span class="p">]</span>
         <span class="n">levelset</span> <span class="o">=</span> <span class="n">levelset</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">slices_fill</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">levelset</span><span class="p">[</span><span class="n">slices_retrieve</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">levelset</span></div></div>
+        <span class="k">return</span> <span class="n">levelset</span></div>
+</div>
+
 </pre></div>
 
            </div>

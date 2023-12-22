@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.solvers.flux_splitting_scheme &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.solvers.flux_splitting_scheme</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.solvers.flux_splitting_scheme</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -123,8 +130,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.stencils.spatial_reconstruction</span> <span class="kn">import</span> <span class="n">SpatialReconstruction</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.utilities</span> <span class="kn">import</span> <span class="n">get_fluxes_xi</span>
 
-<div class="viewcode-block" id="FluxSplittingScheme"><a class="viewcode-back" href="../../../jaxfluids.solvers.html#jaxfluids.solvers.flux_splitting_scheme.FluxSplittingScheme">[docs]</a><span class="k">class</span> <span class="nc">FluxSplittingScheme</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Base class for the Flux-Splitting Scheme. The flux-splitting schemes</span>
+<div class="viewcode-block" id="FluxSplittingScheme">
+<a class="viewcode-back" href="../../../jaxfluids.solvers.html#jaxfluids.solvers.flux_splitting_scheme.FluxSplittingScheme">[docs]</a>
+<span class="k">class</span> <span class="nc">FluxSplittingScheme</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for the Flux-Splitting Scheme. The flux-splitting schemes</span>
 <span class="sd">    transforms conservative variables and physical fluxes into the characteristic</span>
 <span class="sd">    space, performs a flux-splitting in characteristic space, and transforms</span>
 <span class="sd">    the final flux back to physical space.</span>
@@ -148,17 +157,19 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cell_sizes</span> <span class="o">=</span> <span class="n">domain_information</span><span class="o">.</span><span class="n">cell_sizes</span>
 
-<div class="viewcode-block" id="FluxSplittingScheme.compute_fluxes_xi"><a class="viewcode-back" href="../../../jaxfluids.solvers.html#jaxfluids.solvers.flux_splitting_scheme.FluxSplittingScheme.compute_fluxes_xi">[docs]</a>    <span class="k">def</span> <span class="nf">compute_fluxes_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the numerical flux in axis direction.</span>
+<div class="viewcode-block" id="FluxSplittingScheme.compute_fluxes_xi">
+<a class="viewcode-back" href="../../../jaxfluids.solvers.html#jaxfluids.solvers.flux_splitting_scheme.FluxSplittingScheme.compute_fluxes_xi">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_fluxes_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the numerical flux in axis direction.</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param cons: Buffer of primitive variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param axis: Spatial direction along which flux is calculated.</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :return: Numerical flux in axis direction.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">physical_flux</span> <span class="o">=</span> <span class="n">get_fluxes_xi</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">cons</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
 
@@ -181,7 +192,9 @@
 
         <span class="n">fluxes_xi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigendecomposition</span><span class="o">.</span><span class="n">transformtophysical</span><span class="p">(</span><span class="n">char_flux_xi</span><span class="p">,</span> <span class="n">right_eigs</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">fluxes_xi</span></div></div>
+        <span class="k">return</span> <span class="n">fluxes_xi</span></div>
+</div>
+
 </pre></div>
 
            </div>

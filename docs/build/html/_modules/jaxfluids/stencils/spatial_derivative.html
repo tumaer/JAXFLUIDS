@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.stencils.spatial_derivative &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.stencils.spatial_derivative</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.stencils.spatial_derivative</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -120,8 +127,10 @@
 
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 
-<div class="viewcode-block" id="SpatialDerivative"><a class="viewcode-back" href="../../../jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative">[docs]</a><span class="k">class</span> <span class="nc">SpatialDerivative</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Abstract parent class for the computation of spatial derivatives.</span>
+<div class="viewcode-block" id="SpatialDerivative">
+<a class="viewcode-back" href="../../../jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative">[docs]</a>
+<span class="k">class</span> <span class="nc">SpatialDerivative</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract parent class for the computation of spatial derivatives.</span>
 
 <span class="sd">    Calculates either the first spatial derivative wrt to axis direction (derivative_xi),</span>
 <span class="sd">    or calculates the second spatial derivative wrt to axis1 and axis2 directions (</span>
@@ -138,38 +147,45 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
 
-<div class="viewcode-block" id="SpatialDerivative.derivative_xi"><a class="viewcode-back" href="../../../jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative.derivative_xi">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">derivative_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">dxi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the derivative in the direction indicated by axis.</span>
+<div class="viewcode-block" id="SpatialDerivative.derivative_xi">
+<a class="viewcode-back" href="../../../jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative.derivative_xi">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">derivative_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dxi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the derivative in the direction indicated by axis.</span>
 
 <span class="sd">        :param buffer: Buffer for which the derivative will be calculated</span>
-<span class="sd">        :type buffer: jnp.DeviceArray</span>
+<span class="sd">        :type buffer: jnp.ndarray</span>
 <span class="sd">        :param dxi: Cell sizes along axis direction</span>
-<span class="sd">        :type dxi: jnp.DeviceArray</span>
+<span class="sd">        :type dxi: jnp.ndarray</span>
 <span class="sd">        :param axis: Spatial axis along which derivative is calculated</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :return: Buffer with numerical derivative</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="SpatialDerivative.derivative_xi_xj"><a class="viewcode-back" href="../../../jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative.derivative_xi_xj">[docs]</a>    <span class="k">def</span> <span class="nf">derivative_xi_xj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">dxi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">dxj</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the second derivative in the directions indicated by i and j.</span>
+
+<div class="viewcode-block" id="SpatialDerivative.derivative_xi_xj">
+<a class="viewcode-back" href="../../../jaxfluids.stencils.html#jaxfluids.stencils.spatial_derivative.SpatialDerivative.derivative_xi_xj">[docs]</a>
+    <span class="k">def</span> <span class="nf">derivative_xi_xj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dxi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dxj</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the second derivative in the directions indicated by i and j.</span>
 
 <span class="sd">        :param buffer: Buffer for which the second derivative will be calculated</span>
-<span class="sd">        :type buffer: jnp.DeviceArray</span>
+<span class="sd">        :type buffer: jnp.ndarray</span>
 <span class="sd">        :param dxi: Cell sizes along i direction</span>
-<span class="sd">        :type dxi: jnp.DeviceArray</span>
+<span class="sd">        :type dxi: jnp.ndarray</span>
 <span class="sd">        :param dxj: Cell sizes along j direction</span>
-<span class="sd">        :type dxj: jnp.DeviceArray</span>
+<span class="sd">        :type dxj: jnp.ndarray</span>
 <span class="sd">        :param i: Spatial axis along which derivative is calculated</span>
 <span class="sd">        :type i: int</span>
 <span class="sd">        :param j: Spatial axis along which derivative is calculated</span>
 <span class="sd">        :type j: int</span>
 <span class="sd">        :return: Buffer with numerical derivative</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+        <span class="k">pass</span></div>
+</div>
+
 </pre></div>
 
            </div>

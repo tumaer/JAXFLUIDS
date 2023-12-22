@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.levelset.levelset_handler &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.levelset.levelset_handler</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.levelset.levelset_handler</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -137,9 +144,11 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.stencils</span> <span class="kn">import</span> <span class="n">DICT_FIRST_DERIVATIVE_CENTER</span><span class="p">,</span> <span class="n">DICT_SECOND_DERIVATIVE_CENTER</span><span class="p">,</span> <span class="n">DICT_DERIVATIVE_LEVELSET_ADVECTION</span><span class="p">,</span> <span class="n">DICT_DERIVATIVE_QUANTITY_EXTENDER</span><span class="p">,</span> <span class="n">DICT_DERIVATIVE_REINITIALIZATION</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.time_integration</span> <span class="kn">import</span> <span class="n">DICT_TIME_INTEGRATION</span>
 
-<div class="viewcode-block" id="LevelsetHandler"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler">[docs]</a><span class="k">class</span> <span class="nc">LevelsetHandler</span><span class="p">():</span>
+<div class="viewcode-block" id="LevelsetHandler">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">LevelsetHandler</span><span class="p">():</span>
 
-    <span class="sd">&quot;&quot;&quot; The LevelsetHandler class manages computations to perform two-phase simulations using the levelset method.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; The LevelsetHandler class manages computations to perform two-phase simulations using the levelset method.</span>
 <span class="sd">    The main functionality includes</span>
 <span class="sd">        - Transformation of the conservative states from volume-averages to actual conserved quantities according to the volume fraction</span>
 <span class="sd">        - Weighting of the cell face fluxes according to the apertures</span>
@@ -253,28 +262,33 @@
             <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span> <span class="ow">and</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_axis_indices</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">index_pairs_mixing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_cut_cell_mask"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_cut_cell_mask">[docs]</a>    <span class="k">def</span> <span class="nf">compute_cut_cell_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the cut cell mask, i.e., cells where the volume fraction is &gt; 0.0 and &lt; 1.0</span>
+<div class="viewcode-block" id="LevelsetHandler.compute_cut_cell_mask">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_cut_cell_mask">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_cut_cell_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the cut cell mask, i.e., cells where the volume fraction is &gt; 0.0 and &lt; 1.0</span>
 
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :return: Cut cell mask</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mask_cut_cells</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="p">(</span><span class="n">volume_fraction</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">volume_fraction</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mask_cut_cells</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_masks"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_masks">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">compute_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the real mask and the cut cell mask</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_masks">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_masks">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the real mask and the cut cell mask</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :return: Tuple containing the real mask and the cut cell mask</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">mask_positive</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span> <span class="n">levelset</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz__</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="p">)</span>
@@ -289,37 +303,43 @@
             <span class="n">mask_real</span>       <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">mask_positive</span><span class="p">,</span> <span class="n">mask_cut_cells</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mask_real</span><span class="p">,</span> <span class="n">mask_cut_cells</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_volume_fraction_and_apertures"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_volume_fraction_and_apertures">[docs]</a>    <span class="k">def</span> <span class="nf">compute_volume_fraction_and_apertures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">List</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the volume fraction and apertures via linear interface reconstruction</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_volume_fraction_and_apertures">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_volume_fraction_and_apertures">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_volume_fraction_and_apertures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the volume fraction and apertures via linear interface reconstruction</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :return: Tuple containing the volume fraction buffer and the aperture buffers</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, List]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, List]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry_calculator</span><span class="o">.</span><span class="n">linear_interface_reconstruction</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.extend_primes"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.extend_primes">[docs]</a>    <span class="k">def</span> <span class="nf">extend_primes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-            <span class="n">mask_small_cells</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Extends the primitives from the real fluid cells into the ghost fluid cells within the narrow_band_compute.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.extend_primes">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.extend_primes">[docs]</a>
+    <span class="k">def</span> <span class="nf">extend_primes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">mask_small_cells</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extends the primitives from the real fluid cells into the ghost fluid cells within the narrow_band_compute.</span>
 <span class="sd">        Subsequently, the corresponding conservatives are computed from the extended primitives.</span>
 
 <span class="sd">        :param cons: Buffer of conservative variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: Buffer of primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :param current_time: Current physical simulation time</span>
 <span class="sd">        :type current_time: float</span>
 <span class="sd">        :param mask_small_cells: Mask indicating small negative cells, defaults to None</span>
-<span class="sd">        :type mask_small_cells: jnp.DeviceArray, optional</span>
+<span class="sd">        :type mask_small_cells: jnp.ndarray, optional</span>
 <span class="sd">        :return: Tuple of primitive and conservative buffer and maximum extension residual</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="c1"># GEOMETRICAL QUANTITIES - WE EXTEND INTO GHOST CELLS PLUS SMALL CELLS INSIDE THE NARROW BAND</span>
@@ -356,34 +376,40 @@
         <span class="n">cons</span> <span class="o">=</span> <span class="n">cons</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask_extend</span><span class="p">)</span>
         <span class="n">cons</span> <span class="o">=</span> <span class="n">cons</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cons_in_extend</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">primes</span><span class="p">,</span> <span class="n">max_residual</span></div>
+
         
-<div class="viewcode-block" id="LevelsetHandler.transform_to_conservatives"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_conservatives">[docs]</a>    <span class="k">def</span> <span class="nf">transform_to_conservatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Transforms the volume-averaged conservatives to actual conservatives that can be integrated</span>
+<div class="viewcode-block" id="LevelsetHandler.transform_to_conservatives">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_conservatives">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_to_conservatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transforms the volume-averaged conservatives to actual conservatives that can be integrated</span>
 <span class="sd">        according to the volume fraction.</span>
 
 <span class="sd">        :param cons: Buffer of conservative variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of actual conservative variables</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">volume_fraction</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">volume_fraction</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">volume_fraction</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">cons</span> <span class="o">=</span> <span class="n">cons</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">volume_fraction</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">cons</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.transform_to_volume_averages"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_volume_averages">[docs]</a>    <span class="k">def</span> <span class="nf">transform_to_volume_averages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Transforms the mixed conservatives to volume-averaged conservatives.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.transform_to_volume_averages">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.transform_to_volume_averages">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_to_volume_averages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transforms the mixed conservatives to volume-averaged conservatives.</span>
 <span class="sd">        Emtpy cells are filled with eps. Negative small cells (which may occur after mixing) are filled with eps.</span>
 <span class="sd">        We extend the integrated primitive state into the negative small cells cells.</span>
 
 <span class="sd">        :param cons: Buffer of mixed conservative variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :return: Volume-averaged conservatives</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span> 
@@ -400,62 +426,74 @@
 
         <span class="k">return</span> <span class="n">cons</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.weight_cell_face_flux_xi"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_cell_face_flux_xi">[docs]</a>    <span class="k">def</span> <span class="nf">weight_cell_face_flux_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flux_xi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">apertures</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Weights the cell face fluxes according to the apertures.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.weight_cell_face_flux_xi">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_cell_face_flux_xi">[docs]</a>
+    <span class="k">def</span> <span class="nf">weight_cell_face_flux_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flux_xi</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">apertures</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Weights the cell face fluxes according to the apertures.</span>
 
 <span class="sd">        :param flux_xi: Cell face flux at xi</span>
-<span class="sd">        :type flux_xi: jnp.DeviceArray</span>
+<span class="sd">        :type flux_xi: jnp.ndarray</span>
 <span class="sd">        :param apertures: Aperture buffer</span>
-<span class="sd">        :type apertures: jnp.DeviceArray</span>
+<span class="sd">        :type apertures: jnp.ndarray</span>
 <span class="sd">        :return: Weighted cell face flux at xi</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span> 
             <span class="n">apertures</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">apertures</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">apertures</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">flux_xi</span> <span class="o">*=</span> <span class="n">apertures</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">flux_xi</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.weight_volume_force"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_volume_force">[docs]</a>    <span class="k">def</span> <span class="nf">weight_volume_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_force</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Weights the volume forces according to the volume fraction.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.weight_volume_force">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.weight_volume_force">[docs]</a>
+    <span class="k">def</span> <span class="nf">weight_volume_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_force</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Weights the volume forces according to the volume fraction.</span>
 
 <span class="sd">        :param volume_force: Volume force buffer</span>
-<span class="sd">        :type volume_force: jnp.DeviceArray</span>
+<span class="sd">        :type volume_force: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :return: Weighted volume force</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">levelset_type</span> <span class="o">==</span> <span class="s2">&quot;FLUID-FLUID&quot;</span><span class="p">:</span>
             <span class="n">volume_fraction</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">volume_fraction</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">volume_fraction</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">volume_force</span> <span class="o">*=</span> <span class="n">volume_fraction</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz_</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">volume_force</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_solid_interface_velocity"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_solid_interface_velocity">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">compute_solid_interface_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the interface velocity for FLUID-SOLID-DYNAMIC interface interaction.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_solid_interface_velocity">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_solid_interface_velocity">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_solid_interface_velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the interface velocity for FLUID-SOLID-DYNAMIC interface interaction.</span>
 
 <span class="sd">        :param current_time: Current physical simulation time</span>
 <span class="sd">        :type current_time: float</span>
 <span class="sd">        :return: Interface velocity buffer</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">interface_velocity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_quantity_computer</span><span class="o">.</span><span class="n">compute_solid_interface_velocity</span><span class="p">(</span><span class="n">current_time</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">interface_velocity</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_interface_quantities"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_quantities">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">compute_interface_quantities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Computes interface velocity and pressure for FLUID-FLUID interface interaction and</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_interface_quantities">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_quantities">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">compute_interface_quantities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes interface velocity and pressure for FLUID-FLUID interface interaction and</span>
 <span class="sd">        extends the values into the narrow_band_compute.</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: Volume fractio buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :return: Tuple of interface velocity, interface pressure and maximum residual of the extension</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># GEOMTRICAL QUANTITIES</span>
@@ -479,42 +517,48 @@
 
         <span class="k">return</span> <span class="n">interface_quantities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interface_quantities</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">max_residual</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_interface_flux_xi"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_flux_xi">[docs]</a>    <span class="k">def</span> <span class="nf">compute_interface_flux_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">interface_velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">interface_pressure</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">apertures</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the interface flux depending on the present interface interaction type.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_interface_flux_xi">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_interface_flux_xi">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_interface_flux_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">interface_velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">interface_pressure</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">apertures</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the interface flux depending on the present interface interaction type.</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param interface_velocity: Interface velocity buffer</span>
-<span class="sd">        :type interface_velocity: jnp.DeviceArray</span>
+<span class="sd">        :type interface_velocity: jnp.ndarray</span>
 <span class="sd">        :param interface_pressure: Interface pressure buffer</span>
-<span class="sd">        :type interface_pressure: Union[jnp.DeviceArray, None]</span>
+<span class="sd">        :type interface_pressure: Union[jnp.ndarray, None]</span>
 <span class="sd">        :param volume_fraction: Volume fraction buffer</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :param apertures: Aperture buffer</span>
-<span class="sd">        :type apertures: jnp.DeviceArray</span>
+<span class="sd">        :type apertures: jnp.ndarray</span>
 <span class="sd">        :param axis: Current axis</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :return: Interface fluxes</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">normal</span>              <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry_calculator</span><span class="o">.</span><span class="n">compute_normal</span><span class="p">(</span><span class="n">levelset</span><span class="p">)</span>
         <span class="n">interface_flux_xi</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface_flux_computer</span><span class="o">.</span><span class="n">compute_interface_flux_xi</span><span class="p">(</span><span class="n">primes</span><span class="p">,</span> <span class="n">interface_velocity</span><span class="p">,</span> <span class="n">interface_pressure</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">,</span> <span class="n">apertures</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">interface_flux_xi</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_levelset_advection_rhs"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_levelset_advection_rhs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_levelset_advection_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">interface_velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the right-hand-side of the levelset advection equation.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_levelset_advection_rhs">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_levelset_advection_rhs">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_levelset_advection_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">interface_velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the right-hand-side of the levelset advection equation.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param interface_velocity: Interface velocity buffer</span>
-<span class="sd">        :type interface_velocity: jnp.DeviceArray</span>
+<span class="sd">        :type interface_velocity: jnp.ndarray</span>
 <span class="sd">        :param axis: Current axis</span>
 <span class="sd">        :type axis: int</span>
 <span class="sd">        :return: right-hand-side contribution for current axis</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="c1"># GEOMETRICAL QUANTITIES</span>
@@ -539,9 +583,12 @@
 
         <span class="k">return</span> <span class="n">rhs_contribution</span></div>
 
+
     <span class="c1"># @partial(jax.jit, static_argnums=(0, 2))</span>
-<div class="viewcode-block" id="LevelsetHandler.reinitialize"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.reinitialize">[docs]</a>    <span class="k">def</span> <span class="nf">reinitialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">initializer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Reinitializes the levelset buffer and subsequently applies cut off </span>
+<div class="viewcode-block" id="LevelsetHandler.reinitialize">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.reinitialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">reinitialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">initializer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reinitializes the levelset buffer and subsequently applies cut off </span>
 <span class="sd">        to values that lie outside the narrow_band_cutoff. If the initializer flag is True,</span>
 <span class="sd">        cut cells are always reinitialized. This is required to initialize</span>
 <span class="sd">        levelset fields that are provided as no signed distance functions, e.g., an ellipse.</span>
@@ -549,12 +596,12 @@
 <span class="sd">        The residual is only computed in the narrow_band_computations.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param initializer: Bool indicating if the reinitialization is performed in the</span>
 <span class="sd">            jaxfluids initializer or the jaxfluids simulation manager</span>
 <span class="sd">        :type initializer: bool</span>
 <span class="sd">        :return: Reinitialized levelset buffer and the corresponding maximum residual</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="c1"># TODO SPLIT UP INITIAL REINITIALIZATION AND SET CUT OFF</span>
@@ -585,23 +632,26 @@
 
         <span class="k">return</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">max_residual</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.mixing"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.mixing">[docs]</a>    <span class="k">def</span> <span class="nf">mixing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset_new</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">volume_fraction_old</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot; Performs a mixing procedure on the integrated conservatives enabling stable integration of</span>
+
+<div class="viewcode-block" id="LevelsetHandler.mixing">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.mixing">[docs]</a>
+    <span class="k">def</span> <span class="nf">mixing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset_new</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume_fraction_new</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">volume_fraction_old</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Performs a mixing procedure on the integrated conservatives enabling stable integration of</span>
 <span class="sd">        small cut cells with the CFL criterion for full cells. For small cells that are in the process of vanishing </span>
 <span class="sd">        (becoming ghost cells), this procedure may produce negative mass/energy. To prevent numerical instability,</span>
 <span class="sd">        we track these cells with the mask_small_cells buffer and perform a prime extension into these cells.</span>
 
 <span class="sd">        :param cons: Buffer of integrated conservative variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param levelset_new: Integrated levelset buffer</span>
-<span class="sd">        :type levelset_new: jnp.DeviceArray</span>
+<span class="sd">        :type levelset_new: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction_new: Integrated volume fraction buffer</span>
-<span class="sd">        :type volume_fraction_new: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction_new: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction_old: Volume fraction buffer of previous time step (RK stage)</span>
-<span class="sd">        :type volume_fraction_old: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction_old: jnp.ndarray</span>
 <span class="sd">        :return: Tuple containing the mixed conservatives and a mask indicating small cells with negative energy/mass.</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># GEOMETRICAL QUANTITIES</span>
@@ -694,22 +744,25 @@
         
         <span class="k">return</span> <span class="n">cons</span><span class="p">,</span> <span class="n">mask_small_cells</span></div>
 
-<div class="viewcode-block" id="LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid">[docs]</a>    <span class="k">def</span> <span class="nf">compute_primitives_from_conservatives_in_real_fluid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">mask_small_cells</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the primitive variables from the mixed conservatives within the real fluid.</span>
+
+<div class="viewcode-block" id="LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_handler.LevelsetHandler.compute_primitives_from_conservatives_in_real_fluid">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_primitives_from_conservatives_in_real_fluid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask_small_cells</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the primitive variables from the mixed conservatives within the real fluid.</span>
 
 <span class="sd">        :param cons: Buffer of primitive variables</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param primes: _description_</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :param levelset: _description_</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param volume_fraction: _description_</span>
-<span class="sd">        :type volume_fraction: jnp.DeviceArray</span>
+<span class="sd">        :type volume_fraction: jnp.ndarray</span>
 <span class="sd">        :param mask_small_cells: _description_</span>
-<span class="sd">        :type mask_small_cells: jnp.DeviceArray</span>
+<span class="sd">        :type mask_small_cells: jnp.ndarray</span>
 <span class="sd">        :return: _description_</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># WE COMPUTE PRIMES ONLY IN REAL CELLS IN WHICH WE DO NOT EXTEND, I.E. REAL CELLS MINUS SMALL CELLS</span>
         <span class="n">mask_real</span><span class="p">,</span> <span class="n">_</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_masks</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">volume_fraction</span><span class="p">)</span>
@@ -718,7 +771,9 @@
         <span class="n">primes_in_real</span>  <span class="o">=</span> <span class="n">get_primitives_from_conservatives</span><span class="p">(</span><span class="n">cons</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">material_manager</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask_real</span>
         <span class="n">primes</span>          <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">mask_ghost</span><span class="p">)</span>
         <span class="n">primes</span>          <span class="o">=</span> <span class="n">primes</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">primes_in_real</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">primes</span></div></div>
+        <span class="k">return</span> <span class="n">primes</span></div>
+</div>
+
 </pre></div>
 
            </div>

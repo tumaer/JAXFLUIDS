@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.turb.turb_stats_manager &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.turb.turb_stats_manager</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.turb.turb_stats_manager</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -122,8 +129,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.domain_information</span> <span class="kn">import</span> <span class="n">DomainInformation</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.materials.material_manager</span> <span class="kn">import</span> <span class="n">MaterialManager</span>
 
-<div class="viewcode-block" id="TurbStatsManager"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager">[docs]</a><span class="k">class</span> <span class="nc">TurbStatsManager</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot; Provides functionality to calculate statistics of turbulent flows.</span>
+<div class="viewcode-block" id="TurbStatsManager">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager">[docs]</a>
+<span class="k">class</span> <span class="nc">TurbStatsManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Provides functionality to calculate statistics of turbulent flows.</span>
 <span class="sd">    The TurbStatsManager provides turbulent statistics of the initial flow </span>
 <span class="sd">    field as well as cumulative statistics over the course of a simulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -141,7 +150,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">()</span>
 
-<div class="viewcode-block" id="TurbStatsManager.initialize"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="TurbStatsManager.initialize">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.initialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_real_wavenumber_grid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nx</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k2_field</span>       <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">one_k2_field</span>   <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k2_field</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
@@ -150,13 +161,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">shell</span>          <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_mag_field</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fact</span>           <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nx</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nx</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_get_real_wavenumber_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Initializes wavenumber grid and wavenumber vector.</span>
+
+    <span class="k">def</span> <span class="nf">_get_real_wavenumber_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes wavenumber grid and wavenumber vector.</span>
 
 <span class="sd">        :param N: Resolution.</span>
 <span class="sd">        :type N: int</span>
 <span class="sd">        :return: Wavenumber grid and wavenumber vector.</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">Nf</span> <span class="o">=</span> <span class="n">N</span><span class="o">//</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
@@ -166,13 +178,15 @@
         <span class="n">k_field</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">kx</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">k_field</span><span class="p">,</span> <span class="n">k</span> 
 
-<div class="viewcode-block" id="TurbStatsManager.energy_spectrum_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.energy_spectrum_spectral">[docs]</a>    <span class="k">def</span> <span class="nf">energy_spectrum_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the three-dimensional spectral energy spectrum of the input velocity.</span>
+<div class="viewcode-block" id="TurbStatsManager.energy_spectrum_spectral">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.energy_spectrum_spectral">[docs]</a>
+    <span class="k">def</span> <span class="nf">energy_spectrum_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the three-dimensional spectral energy spectrum of the input velocity.</span>
 
 <span class="sd">        :param velocity_hat: Velocity vector in spectral space.</span>
-<span class="sd">        :type velocity_hat: jnp.DeviceArray</span>
+<span class="sd">        :type velocity_hat: jnp.ndarray</span>
 <span class="sd">        :return: Spectral energy spectrum.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">ek</span>          <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nx</span><span class="p">)</span>
@@ -186,35 +200,44 @@
         <span class="n">ek</span> <span class="o">=</span> <span class="n">ek</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_vec</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_samples</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nx</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nx</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> 
         <span class="k">return</span> <span class="n">ek</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.energy_spectrum_physical"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.energy_spectrum_physical">[docs]</a>    <span class="k">def</span> <span class="nf">energy_spectrum_physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the three-dimensional spectral energy spectrum of the input velocity.</span>
+
+<div class="viewcode-block" id="TurbStatsManager.energy_spectrum_physical">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.energy_spectrum_physical">[docs]</a>
+    <span class="k">def</span> <span class="nf">energy_spectrum_physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the three-dimensional spectral energy spectrum of the input velocity.</span>
 <span class="sd">        Wrapper around self.energy_spectrum_spectral</span>
 
 <span class="sd">        :param velocity: Velocity vector in physical space.</span>
-<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :type velocity: jnp.ndarray</span>
 <span class="sd">        :return: Spectral energy spectrum.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy_spectrum_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.get_turbulent_statistics"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.get_turbulent_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">get_turbulent_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the turbulent statistics for the given primitive buffer.</span>
+
+<div class="viewcode-block" id="TurbStatsManager.get_turbulent_statistics">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.get_turbulent_statistics">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_turbulent_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the turbulent statistics for the given primitive buffer.</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables.</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :return: Dictionary with turbulent statistics.</span>
 <span class="sd">        :rtype: Dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO Include other setups besides HIT</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hit_statistics</span><span class="p">(</span><span class="n">primes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.hit_statistics"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.hit_statistics">[docs]</a>    <span class="k">def</span> <span class="nf">hit_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates statistics for homogeneous isotropic turbulence.</span>
+
+<div class="viewcode-block" id="TurbStatsManager.hit_statistics">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.hit_statistics">[docs]</a>
+    <span class="k">def</span> <span class="nf">hit_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">primes</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates statistics for homogeneous isotropic turbulence.</span>
 
 <span class="sd">        :param primes: Buffer of primitive variables.</span>
-<span class="sd">        :type primes: jnp.DeviceArray</span>
+<span class="sd">        :type primes: jnp.ndarray</span>
 <span class="sd">        :return: Dictionary with information on the HIT statistics.</span>
 <span class="sd">        :rtype: Dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -334,16 +357,19 @@
 
         <span class="k">return</span> <span class="n">turb_stats_dict</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_vorticity_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_vorticity_spectral">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_vorticity_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the vortiticy of the input velocity field. Calculation done in </span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_vorticity_spectral">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_vorticity_spectral">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_vorticity_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the vortiticy of the input velocity field. Calculation done in </span>
 <span class="sd">        spectral space.</span>
 
 <span class="sd">        omega = (du3/dx2 - du2/dx3, du1/dx3 - du3/dx1, du2/dx1 - du1/dx2)</span>
 
 <span class="sd">        :param velocity_hat: Buffer of velocities in spectral space.</span>
-<span class="sd">        :type velocity_hat: jnp.DeviceArray</span>
+<span class="sd">        :type velocity_hat: jnp.ndarray</span>
 <span class="sd">        :return: Vorticity vector in physical space.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">omega_0</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
@@ -352,8 +378,11 @@
         <span class="n">omega</span>   <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">omega_0</span><span class="p">,</span> <span class="n">omega_1</span><span class="p">,</span> <span class="n">omega_2</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">omega</span> </div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_vorticity"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_vorticity">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_vorticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the vortiticy of the input velocity field. Calculation done in </span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_vorticity">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_vorticity">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_vorticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the vortiticy of the input velocity field. Calculation done in </span>
 <span class="sd">        spectral space.</span>
 
 <span class="sd">        omega = [   du3/dx2 - du2/dx3</span>
@@ -361,23 +390,26 @@
 <span class="sd">                    du2/dx1 - du1/dx2]</span>
 
 <span class="sd">        :param velocity: Buffer of velocities in physical space.</span>
-<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :type velocity: jnp.ndarray</span>
 <span class="sd">        :return: Vorticity vector in physical space.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_vorticity_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_sheartensor_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_sheartensor_spectral">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_sheartensor_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the shear tensor in spectral space.</span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_sheartensor_spectral">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_sheartensor_spectral">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_sheartensor_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the shear tensor in spectral space.</span>
 
 <span class="sd">        dui/dxj = IFFT ( 1j * k_j * u_i_hat  )</span>
 
 <span class="sd">        :param velocity_hat: Buffer of velocities in spectral space.</span>
-<span class="sd">        :type velocity_hat: jnp.DeviceArray</span>
+<span class="sd">        :type velocity_hat: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of the shear tensor.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">duidj</span> <span class="o">=</span> <span class="p">[[],</span> <span class="p">[],</span> <span class="p">[]]</span>
@@ -386,8 +418,11 @@
                 <span class="n">duidj</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">duidj</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_sheartensor"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_sheartensor">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_sheartensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the shear tensor in spectral space. Wrapper around </span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_sheartensor">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_sheartensor">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_sheartensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the shear tensor in spectral space. Wrapper around </span>
 <span class="sd">        self.calculate_sheartensor_spectral().</span>
 
 <span class="sd">        duidj = [</span>
@@ -397,29 +432,35 @@
 <span class="sd">        ]</span>
 
 <span class="sd">        :param velocity: Buffer of velocities in physical space.</span>
-<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :type velocity: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of the shear tensor.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
     
         <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_sheartensor_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_dilatation_spectral"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_dilatation_spectral">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_dilatation_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the dilatation of the given velocity field in spectral space.</span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_dilatation_spectral">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_dilatation_spectral">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_dilatation_spectral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity_hat</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the dilatation of the given velocity field in spectral space.</span>
 
 <span class="sd">        :param velocity_hat: Buffer of velocities in spectral space.</span>
-<span class="sd">        :type velocity_hat: jnp.DeviceArray</span>
+<span class="sd">        :type velocity_hat: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of the dilatational field.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">dilatation_spectral</span> <span class="o">=</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k_field</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">velocity_hat</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
         <span class="n">dilatation_real</span>     <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">irfftn</span><span class="p">(</span><span class="n">dilatation_spectral</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">dilatation_real</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_dilatation"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_dilatation">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_dilatation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;_summary_</span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_dilatation">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_dilatation">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_dilatation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
 
 <span class="sd">        Calculates dilatation in spectral space </span>
 
@@ -429,25 +470,30 @@
 <span class="sd">        dilatation = du1/dx1 + du2/dx2 + du3/dx3</span>
 
 <span class="sd">        :param velocity: Buffer of velocities in physical space.</span>
-<span class="sd">        :type velocity: jnp.DeviceArray</span>
+<span class="sd">        :type velocity: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of dilatational field.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="n">velocity_hat</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">jnp</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">velocity</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_dilatation_spectral</span><span class="p">(</span><span class="n">velocity_hat</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TurbStatsManager.calculate_strain"><a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_strain">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_strain</span><span class="p">(</span><span class="n">duidj</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Calculates the strain given the velocity gradient tensor.</span>
+
+<div class="viewcode-block" id="TurbStatsManager.calculate_strain">
+<a class="viewcode-back" href="../../../jaxfluids.turb.html#jaxfluids.turb.turb_stats_manager.TurbStatsManager.calculate_strain">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_strain</span><span class="p">(</span><span class="n">duidj</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the strain given the velocity gradient tensor.</span>
 
 <span class="sd">        :param duidj: Buffer of velocity gradient.</span>
-<span class="sd">        :type duidj: jnp.DeviceArray</span>
+<span class="sd">        :type duidj: jnp.ndarray</span>
 <span class="sd">        :return: Buffer of strain tensor.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">S_ij</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span> <span class="n">duidj</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">duidj</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="p">)</span>
-        <span class="k">return</span> <span class="n">S_ij</span></div></div>
+        <span class="k">return</span> <span class="n">S_ij</span></div>
+</div>
+
 </pre></div>
 
            </div>

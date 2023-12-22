@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.levelset.levelset_reinitializer &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.levelset.levelset_reinitializer</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.levelset.levelset_reinitializer</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -126,8 +133,10 @@
 <span class="kn">from</span> <span class="nn">jaxfluids.time_integration.time_integrator</span> <span class="kn">import</span> <span class="n">TimeIntegrator</span>
 <span class="kn">from</span> <span class="nn">jaxfluids.stencils.spatial_derivative</span> <span class="kn">import</span> <span class="n">SpatialDerivative</span>
 
-<div class="viewcode-block" id="LevelsetReinitializer"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer">[docs]</a><span class="k">class</span> <span class="nc">LevelsetReinitializer</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;The LevelsetReinitializer class implements functionality to reinitialize the levelset buffer.</span>
+<div class="viewcode-block" id="LevelsetReinitializer">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer">[docs]</a>
+<span class="k">class</span> <span class="nc">LevelsetReinitializer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The LevelsetReinitializer class implements functionality to reinitialize the levelset buffer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">eps</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
@@ -148,22 +157,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">derivative_stencil</span>         <span class="o">=</span> <span class="n">derivative_stencil</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">boundary_condition</span>         <span class="o">=</span> <span class="n">boundary_condition</span>
 
-<div class="viewcode-block" id="LevelsetReinitializer.reinitialize"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.reinitialize">[docs]</a>    <span class="k">def</span> <span class="nf">reinitialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">mask_reinitialize</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">mask_residual</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">CFL</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Reinitializes the levelset buffer.</span>
+<div class="viewcode-block" id="LevelsetReinitializer.reinitialize">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.reinitialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">reinitialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask_reinitialize</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">mask_residual</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">CFL</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reinitializes the levelset buffer.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param mask_reinitialize: Mask indicating which cells to reinitialize</span>
-<span class="sd">        :type mask_reinitialize: jnp.DeviceArray</span>
+<span class="sd">        :type mask_reinitialize: jnp.ndarray</span>
 <span class="sd">        :param mask_residual: Mask indicating where to compute the maximum residual of the reinitialization equation </span>
-<span class="sd">        :type mask_residual: jnp.DeviceArray</span>
+<span class="sd">        :type mask_residual: jnp.ndarray</span>
 <span class="sd">        :param CFL: CFL number</span>
 <span class="sd">        :type CFL: float</span>
 <span class="sd">        :param steps: Number of integration steps</span>
 <span class="sd">        :type steps: int</span>
 <span class="sd">        :return: Reinitialized levelset buffer and maximum residual of the reinitialization equation </span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">levelset_0</span>      <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">levelset</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">timestep_size</span>   <span class="o">=</span> <span class="n">CFL</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">smallest_cell_size</span>
@@ -173,20 +184,23 @@
             <span class="n">max_residual</span>        <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mask_residual</span><span class="o">*</span><span class="n">residual</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">max_residual</span></div>
 
-<div class="viewcode-block" id="LevelsetReinitializer.do_integration_step"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.do_integration_step">[docs]</a>    <span class="k">def</span> <span class="nf">do_integration_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset_0</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Performs an integration step of the levelset reinitialization equation.</span>
+
+<div class="viewcode-block" id="LevelsetReinitializer.do_integration_step">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.do_integration_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_integration_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset_0</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep_size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs an integration step of the levelset reinitialization equation.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param levelset_0: Levelset buffer at fictitious time = 0.0</span>
-<span class="sd">        :type levelset_0: jnp.DeviceArray</span>
+<span class="sd">        :type levelset_0: jnp.ndarray</span>
 <span class="sd">        :param mask: Mask for right-hand-side</span>
-<span class="sd">        :type mask: jnp.DeviceArray</span>
+<span class="sd">        :type mask: jnp.ndarray</span>
 <span class="sd">        :param timestep_size: Timestep size</span>
 <span class="sd">        :type timestep_size: float</span>
 <span class="sd">        :return: Tuple containing integrated levelset buffer and signed distance residual</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># FILL INIT</span>
@@ -205,19 +219,22 @@
 
         <span class="k">return</span> <span class="n">levelset</span><span class="p">,</span> <span class="n">residual</span></div>
 
-<div class="viewcode-block" id="LevelsetReinitializer.compute_rhs"><a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.compute_rhs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">levelset_0</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-        
-        <span class="sd">&quot;&quot;&quot;Computes the right-hand-side of the levelset reinitialization equation.</span>
+
+<div class="viewcode-block" id="LevelsetReinitializer.compute_rhs">
+<a class="viewcode-back" href="../../../jaxfluids.levelset.html#jaxfluids.levelset.levelset_reinitializer.LevelsetReinitializer.compute_rhs">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_rhs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">levelset_0</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+            <span class="n">mask</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the right-hand-side of the levelset reinitialization equation.</span>
 
 <span class="sd">        :param levelset: Levelset buffer</span>
-<span class="sd">        :type levelset: jnp.DeviceArray</span>
+<span class="sd">        :type levelset: jnp.ndarray</span>
 <span class="sd">        :param levelset_0: Levelset buffer at fictitious time = 0.0</span>
-<span class="sd">        :type levelset_0: jnp.DeviceArray</span>
+<span class="sd">        :type levelset_0: jnp.ndarray</span>
 <span class="sd">        :param mask: Mask for right-hand-side</span>
-<span class="sd">        :type mask: jnp.DeviceArray</span>
+<span class="sd">        :type mask: jnp.ndarray</span>
 <span class="sd">        :return: Tuple of right-hand-side and signed distance residual</span>
-<span class="sd">        :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">        :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># TODO STENCILS IN __INIT__ FOR MASK CUT CELL AND DISTANCE</span>
@@ -297,7 +314,9 @@
         <span class="n">rhs</span> <span class="o">=</span> <span class="o">-</span><span class="n">smooth_sign</span><span class="o">*</span><span class="n">signed_distance_residual</span>
         <span class="n">rhs</span> <span class="o">*=</span> <span class="n">mask</span>
 
-        <span class="k">return</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">signed_distance_residual</span></div></div>
+        <span class="k">return</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">signed_distance_residual</span></div>
+</div>
+
 </pre></div>
 
            </div>

@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installation &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=01f34227"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -28,14 +31,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -79,8 +86,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Installation</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,54 +97,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <ul class="simple">
 <li><p>It is recommended to use a conda virtual environment for this project. Conda can be installed following these <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">instructions</a>. After successfully installing conda, the environment for this project can be created and activated:</p></li>
 </ul>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda create --name venv_jaxfluids <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
-<span class="gp">$ </span>conda activate venv_jaxfluids
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>venv_jaxfluids<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
+<span class="gp">$ </span>conda<span class="w"> </span>activate<span class="w"> </span>venv_jaxfluids
 </pre></div>
 </div>
 <section id="cpu-only-support">
-<h2>CPU-only support<a class="headerlink" href="#cpu-only-support" title="Permalink to this headline"></a></h2>
+<h2>CPU-only support<a class="headerlink" href="#cpu-only-support" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>To install the CPU-only version of JAX-Fluids, you can run</p></li>
 </ul>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/tumaer/JAXFLUIDS.git <span class="c1"># For ssh</span>
-<span class="gp">$ </span>git clone https://github.com/tumaer/JAXFLUIDS.git <span class="c1"># For https</span>
-<span class="gp">$ </span><span class="nb">cd</span> JAXFLUIDS
-<span class="gp">$ </span>pip install .
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/tumaer/JAXFLUIDS.git<span class="w"> </span><span class="c1"># For ssh</span>
+<span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/tumaer/JAXFLUIDS.git<span class="w"> </span><span class="c1"># For https</span>
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>JAXFLUIDS
+<span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>This clones the JAX-Fluids repository and installs the package via pip. If you want to install JAX-Fluids in editable mode, e.g., for code development on your local machine, run</p></li>
 </ul>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip install --editable .
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>--editable<span class="w"> </span>.
 </pre></div>
 </div>
 <div class="admonition note">
@@ -146,20 +129,20 @@
 </div>
 </section>
 <section id="gpu-and-cpu-support">
-<h2>GPU and CPU support<a class="headerlink" href="#gpu-and-cpu-support" title="Permalink to this headline"></a></h2>
+<h2>GPU and CPU support<a class="headerlink" href="#gpu-and-cpu-support" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>If you want to install JAX-Fluids with CPU and GPU support, you must first install <a class="reference external" href="https://developer.nvidia.com/cuda-downloads">CUDA</a> - we have tested JAX-Fluids with CUDA 11.1 or newer. After installing CUDA, run the following</p></li>
 </ul>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/tumaer/JAXFLUIDS.git
-<span class="gp">$ </span><span class="nb">cd</span> JAXFLUIDS
-<span class="gp">$ </span>pip install .<span class="o">[</span>cuda<span class="o">]</span> -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/tumaer/JAXFLUIDS.git
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>JAXFLUIDS
+<span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>.<span class="o">[</span>cuda<span class="o">]</span><span class="w"> </span>-f<span class="w"> </span>https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>In case a GPU is available, <code class="docutils literal notranslate"><span class="pre">jaxfluids</span></code> uses it automatically. Nevertheless, it is possible to switch to CPU mode, or to select a specific GPU. This can be done using the following commands:</p></li>
 </ul>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span> <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;&quot;</span> <span class="c1"># For CPU mode</span>
-<span class="gp">$ </span><span class="nb">export</span> <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;number&quot;</span> <span class="c1"># For GPU mode, where number is the ID of the GPU that should be used</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># For CPU mode</span>
+<span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="w"> </span><span class="c1"># For GPU mode, where number is the ID of the GPU that should be used</span>
 </pre></div>
 </div>
 <div class="admonition note">

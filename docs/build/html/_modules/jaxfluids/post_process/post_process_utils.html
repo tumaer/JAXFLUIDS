@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.post_process.post_process_utils &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.post_process.post_process_utils</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.post_process.post_process_utils</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -125,10 +132,12 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="kn">import</span> <span class="n">make_axes_locatable</span>
 
-<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quantities</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="load_data">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.load_data">[docs]</a>
+<span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quantities</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]:</span>
 
-    <span class="sd">&quot;&quot;&quot;Loads .h5 result files generated by a jaxfluids simulation.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads .h5 result files generated by a jaxfluids simulation.</span>
 
 <span class="sd">    :param path: Path to the folder containing the .h5 files for the time snapshots</span>
 <span class="sd">    :type path: str</span>
@@ -287,11 +296,14 @@
     <span class="k">return</span> <span class="n">cell_centers</span><span class="p">,</span> <span class="n">cell_sizes</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">data_dictionary</span></div>
 
 
-<div class="viewcode-block" id="create_contourplot"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_contourplot">[docs]</a><span class="k">def</span> <span class="nf">create_contourplot</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+
+<div class="viewcode-block" id="create_contourplot">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_contourplot">[docs]</a>
+<span class="k">def</span> <span class="nf">create_contourplot</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plane</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;xy&quot;</span><span class="p">,</span>
         <span class="n">plane_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">static_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_anim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a subplot of 2D pcolormesh plots and subsequently creates an animation.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a subplot of 2D pcolormesh plots and subsequently creates an animation.</span>
 <span class="sd">    If the levelset argument is provided, the interface</span>
 <span class="sd">    will be visualized as an isoline. If the static_time argument is provided, no animation is created,</span>
 <span class="sd">    but a plot at this time will be shown.</span>
@@ -383,10 +395,13 @@
 
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="create_lineplot"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_lineplot">[docs]</a><span class="k">def</span> <span class="nf">create_lineplot</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span>
+
+<div class="viewcode-block" id="create_lineplot">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_lineplot">[docs]</a>
+<span class="k">def</span> <span class="nf">create_lineplot</span><span class="p">(</span><span class="n">data_dictionary</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">cell_centers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span>
         <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">static_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_fig</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">save_anim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">dpi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a subplot of 1D line plots. If the levelset argument is provided, the interface</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a subplot of 1D line plots. If the levelset argument is provided, the interface</span>
 <span class="sd">    will be visualized as an isoline. If the static_time argument is provided, no animation is created,</span>
 <span class="sd">    but a plot at this time will be shown.</span>
 
@@ -471,9 +486,12 @@
 
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="update_2D"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.update_2D">[docs]</a><span class="k">def</span> <span class="nf">update_2D</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+
+<div class="viewcode-block" id="update_2D">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.update_2D">[docs]</a>
+<span class="k">def</span> <span class="nf">update_2D</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">axes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">pciset_list</span><span class="p">:</span><span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Update function for FuncAnimation for the create_contourplot() function.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update function for FuncAnimation for the create_contourplot() function.</span>
 
 <span class="sd">    :param i: Time snapshot index</span>
 <span class="sd">    :type i: int</span>
@@ -510,8 +528,11 @@
 
     <span class="k">return</span> <span class="n">list_of_collections</span></div>
 
-<div class="viewcode-block" id="update_1D"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.update_1D">[docs]</a><span class="k">def</span> <span class="nf">update_1D</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Update function for FuncAnimation for the create_lineplot() function.</span>
+
+<div class="viewcode-block" id="update_1D">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.update_1D">[docs]</a>
+<span class="k">def</span> <span class="nf">update_1D</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update function for FuncAnimation for the create_lineplot() function.</span>
 
 <span class="sd">    :param i: Time snapshot index</span>
 <span class="sd">    :type i: int</span>
@@ -528,7 +549,10 @@
         <span class="n">list_of_collections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">list_of_collections</span></div>
 
-<div class="viewcode-block" id="create_figure_2D"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_figure_2D">[docs]</a><span class="k">def</span> <span class="nf">create_figure_2D</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">titles</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+
+<div class="viewcode-block" id="create_figure_2D">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_figure_2D">[docs]</a>
+<span class="k">def</span> <span class="nf">create_figure_2D</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">titles</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
         <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">minmax</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
 
     <span class="c1"># CREATE SUBFIGURE</span>
@@ -572,9 +596,12 @@
     <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">quadmesh_list</span><span class="p">,</span> <span class="n">pciset_list</span></div>
 
 
-<div class="viewcode-block" id="generate_png"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.generate_png">[docs]</a><span class="k">def</span> <span class="nf">generate_png</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+
+<div class="viewcode-block" id="generate_png">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.generate_png">[docs]</a>
+<span class="k">def</span> <span class="nf">generate_png</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">save_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">levelset</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nrows_ncols</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Generates a subplot of pcolormesh and saves it as png. If the levelset argument is provided,</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a subplot of pcolormesh and saves it as png. If the levelset argument is provided,</span>
 <span class="sd">    the interface is plotted as an isoline. </span>
 
 <span class="sd">    :param X: X meshgrid</span>
@@ -636,8 +663,11 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
         <span class="k">del</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
 
-<div class="viewcode-block" id="create_xdmf_from_h5"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_xdmf_from_h5">[docs]</a><span class="k">def</span> <span class="nf">create_xdmf_from_h5</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates .xdmf files from .h5 files for Paraview visualization.</span>
+
+<div class="viewcode-block" id="create_xdmf_from_h5">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.create_xdmf_from_h5">[docs]</a>
+<span class="k">def</span> <span class="nf">create_xdmf_from_h5</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates .xdmf files from .h5 files for Paraview visualization.</span>
 
 <span class="sd">    :param path: Path to .h5 files.</span>
 <span class="sd">    :type path: str</span>
@@ -718,9 +748,12 @@
         <span class="n">xdmf_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">xdmf_str_start</span><span class="p">]</span> <span class="o">+</span> <span class="n">xdmf_quants</span> <span class="o">+</span> <span class="p">[</span><span class="n">xdmf_str_end</span><span class="p">])</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">xdmffile_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">xdmf_file</span><span class="p">:</span>
             <span class="n">xdmf_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xdmf_str</span><span class="p">)</span></div>
+
     
 
-<div class="viewcode-block" id="get_xdmf"><a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.get_xdmf">[docs]</a><span class="k">def</span> <span class="nf">get_xdmf</span><span class="p">(</span><span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Nx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Ny</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Nz</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="get_xdmf">
+<a class="viewcode-back" href="../../../jaxfluids.post_process.html#jaxfluids.post_process.post_process_utils.get_xdmf">[docs]</a>
+<span class="k">def</span> <span class="nf">get_xdmf</span><span class="p">(</span><span class="n">group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Nx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Ny</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Nz</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">quant</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;velocity&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">,</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">,</span> <span class="s2">&quot;normal&quot;</span><span class="p">]:</span>
         <span class="n">xdmf</span> <span class="o">=</span><span class="s1">&#39;&#39;&#39;&lt;Attribute Name=&quot;</span><span class="si">%s</span><span class="s1">&quot; AttributeType=&quot;Vector&quot; Center=&quot;Cell&quot;&gt;</span>
 <span class="s1">        &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&lt;/DataItem&gt;</span>
@@ -730,6 +763,7 @@
 <span class="s1">            &lt;DataItem Format=&quot;HDF&quot; NumberType=&quot;Float&quot; Precision=&quot;</span><span class="si">%i</span><span class="s1">&quot; Dimensions=&quot;</span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1"> </span><span class="si">%i</span><span class="s1">&quot;&gt;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">&lt;/DataItem&gt;</span>
 <span class="s1">        &lt;/Attribute&gt;&#39;&#39;&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">quant</span><span class="p">,</span> <span class="mi">8</span> <span class="p">,</span> <span class="n">Nz</span><span class="p">,</span> <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">h5file_name</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">quant</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">xdmf</span></div>
+
 </pre></div>
 
            </div>

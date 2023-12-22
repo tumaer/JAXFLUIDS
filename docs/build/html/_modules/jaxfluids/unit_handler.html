@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.unit_handler &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.unit_handler</li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.unit_handler</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -122,8 +129,10 @@
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<div class="viewcode-block" id="UnitHandler"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler">[docs]</a><span class="k">class</span> <span class="nc">UnitHandler</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;The UnitHandler class implements functionaly to solve the NSE in non-dimensional form.</span>
+<div class="viewcode-block" id="UnitHandler">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">UnitHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The UnitHandler class implements functionaly to solve the NSE in non-dimensional form.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">density_reference</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">length_reference</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">velocity_reference</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
         <span class="n">temperature_reference</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -143,7 +152,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mass_flow_reference</span>                    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass_reference</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_reference</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">surface_tension_coefficient_reference</span>  <span class="o">=</span> <span class="n">density_reference</span> <span class="o">*</span> <span class="n">velocity_reference</span> <span class="o">*</span> <span class="n">velocity_reference</span> <span class="o">*</span> <span class="n">length_reference</span>
 
-<div class="viewcode-block" id="UnitHandler.non_dimensionalize_domain_size"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler.non_dimensionalize_domain_size">[docs]</a>    <span class="k">def</span> <span class="nf">non_dimensionalize_domain_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_size</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<div class="viewcode-block" id="UnitHandler.non_dimensionalize_domain_size">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler.non_dimensionalize_domain_size">[docs]</a>
+    <span class="k">def</span> <span class="nf">non_dimensionalize_domain_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_size</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="n">domain_size_nondim</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">domain_size</span><span class="p">:</span>
             <span class="n">domain_size_nondim</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
@@ -152,16 +163,19 @@
                 <span class="p">]</span>
         <span class="k">return</span> <span class="n">domain_size_nondim</span></div>
 
-<div class="viewcode-block" id="UnitHandler.non_dimensionalize"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler.non_dimensionalize">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">non_dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Non-dimensionalizes the given buffer w.r.t. the specified quantity.</span>
+
+<div class="viewcode-block" id="UnitHandler.non_dimensionalize">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler.non_dimensionalize">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">non_dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Non-dimensionalizes the given buffer w.r.t. the specified quantity.</span>
 
 <span class="sd">        :param value: Dimensional quantity buffer</span>
-<span class="sd">        :type value: Union[jnp.DeviceArray, float]</span>
+<span class="sd">        :type value: Union[jnp.ndarray, float]</span>
 <span class="sd">        :param quantity: Quantity name</span>
 <span class="sd">        :type quantity: str</span>
 <span class="sd">        :return: Non-dimensional quantity buffer</span>
-<span class="sd">        :rtype: Union[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Union[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="c1"># NAME CONVERSION</span>
@@ -221,17 +235,20 @@
             <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Quantity </span><span class="si">%s</span><span class="s2"> is unknown&quot;</span> <span class="o">%</span> <span class="n">quantity</span>
 
         <span class="k">return</span> <span class="n">value</span></div>
+
         
-<div class="viewcode-block" id="UnitHandler.dimensionalize"><a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler.dimensionalize">[docs]</a>    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Dimensionalizes the given quantity buffer w.r.t. the specified quanty.</span>
+<div class="viewcode-block" id="UnitHandler.dimensionalize">
+<a class="viewcode-back" href="../../jaxfluids.html#jaxfluids.unit_handler.UnitHandler.dimensionalize">[docs]</a>
+    <span class="nd">@partial</span><span class="p">(</span><span class="n">jax</span><span class="o">.</span><span class="n">jit</span><span class="p">,</span> <span class="n">static_argnums</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">dimensionalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">quantity</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dimensionalizes the given quantity buffer w.r.t. the specified quanty.</span>
 
 <span class="sd">        :param value: Non-dimensional quantity buffer</span>
-<span class="sd">        :type value: Union[jnp.DeviceArray, float]</span>
+<span class="sd">        :type value: Union[jnp.ndarray, float]</span>
 <span class="sd">        :param quantity: Quantity name</span>
 <span class="sd">        :type quantity: str</span>
 <span class="sd">        :return: Dimensional quantity buffer</span>
-<span class="sd">        :rtype: Union[jnp.DeviceArray, float]</span>
+<span class="sd">        :rtype: Union[jnp.ndarray, float]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># NAME CONVERSION</span>
@@ -290,7 +307,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Quantity </span><span class="si">%s</span><span class="s2"> is unknown&quot;</span> <span class="o">%</span> <span class="n">quantity</span>
 
-        <span class="k">return</span> <span class="n">value</span></div></div>
+        <span class="k">return</span> <span class="n">value</span></div>
+</div>
+
         
 </pre></div>
 

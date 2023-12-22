@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.time_integration.time_integrator &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.time_integration.time_integrator</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.time_integration.time_integrator</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -122,8 +129,10 @@
 <span class="kn">import</span> <span class="nn">jax</span>
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
 
-<div class="viewcode-block" id="TimeIntegrator"><a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator">[docs]</a><span class="k">class</span> <span class="nc">TimeIntegrator</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Abstract base class for explicit time integration schemes.</span>
+<div class="viewcode-block" id="TimeIntegrator">
+<a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator">[docs]</a>
+<span class="k">class</span> <span class="nc">TimeIntegrator</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for explicit time integration schemes.</span>
 <span class="sd">    All time intergration schemes are derived from TimeIntegrator.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -137,13 +146,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">timestep_multiplier</span> <span class="o">=</span> <span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timestep_increment_factor</span> <span class="o">=</span> <span class="p">()</span>
 
-<div class="viewcode-block" id="TimeIntegrator.integrate_conservatives"><a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator.integrate_conservatives">[docs]</a>    <span class="k">def</span> <span class="nf">integrate_conservatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Integrates the conservative variables.</span>
+<div class="viewcode-block" id="TimeIntegrator.integrate_conservatives">
+<a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator.integrate_conservatives">[docs]</a>
+    <span class="k">def</span> <span class="nf">integrate_conservatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Integrates the conservative variables.</span>
 
 <span class="sd">        :param cons: conservative variables buffer before integration</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param rhs: right-hand side buffer </span>
-<span class="sd">        :type rhs: jnp.DeviceArray</span>
+<span class="sd">        :type rhs: jnp.ndarray</span>
 <span class="sd">        :param timestep: timestep adjusted according to sub-stage in Runge-Kutta</span>
 <span class="sd">        :type timestep: float</span>
 <span class="sd">        :return: conservative variables buffer after integration</span>
@@ -152,16 +163,19 @@
         <span class="n">cons</span> <span class="o">=</span> <span class="n">cons</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nhz</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">timestep</span> <span class="o">*</span> <span class="n">rhs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cons</span></div>
 
-<div class="viewcode-block" id="TimeIntegrator.integrate"><a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator.integrate">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Wrapper function around integrate_conservatives. Adjusts the timestep</span>
+
+<div class="viewcode-block" id="TimeIntegrator.integrate">
+<a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator.integrate">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">timestep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapper function around integrate_conservatives. Adjusts the timestep</span>
 <span class="sd">        according to current RK stage and calls integrate_conservatives.</span>
 <span class="sd">        Implementation in child class.</span>
 
 <span class="sd">        :param cons: conservative variables buffer before integration</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param rhs: right-hand side buffer </span>
-<span class="sd">        :type rhs: jnp.DeviceArray</span>
+<span class="sd">        :type rhs: jnp.ndarray</span>
 <span class="sd">        :param timestep: timestep to be integrated</span>
 <span class="sd">        :type timestep: float</span>
 <span class="sd">        :return: conservative variables buffer after integration</span>
@@ -169,20 +183,25 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="TimeIntegrator.prepare_buffer_for_integration"><a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator.prepare_buffer_for_integration">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_buffer_for_integration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">init</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;In multi-stage Runge-Kutta methods, prepares the buffer for integration.</span>
+
+<div class="viewcode-block" id="TimeIntegrator.prepare_buffer_for_integration">
+<a class="viewcode-back" href="../../../jaxfluids.time_integration.html#jaxfluids.time_integration.time_integrator.TimeIntegrator.prepare_buffer_for_integration">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepare_buffer_for_integration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cons</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">init</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;In multi-stage Runge-Kutta methods, prepares the buffer for integration.</span>
 <span class="sd">        Implementation in child class.</span>
 
 <span class="sd">        :param cons: Buffer of conservative variables.</span>
-<span class="sd">        :type cons: jnp.DeviceArray</span>
+<span class="sd">        :type cons: jnp.ndarray</span>
 <span class="sd">        :param init: Initial conservative buffer.</span>
-<span class="sd">        :type init: jnp.DeviceArray</span>
+<span class="sd">        :type init: jnp.ndarray</span>
 <span class="sd">        :param stage: Current stage of the RK time integrator.</span>
 <span class="sd">        :type stage: int</span>
 <span class="sd">        :return: Sum of initial buffer and current buffer.</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div></div>
+        <span class="k">pass</span></div>
+</div>
+
 </pre></div>
 
            </div>

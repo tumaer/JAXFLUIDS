@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.materials.material &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.materials.material</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.materials.material</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -124,8 +131,10 @@
 
 <span class="kn">from</span> <span class="nn">jaxfluids.unit_handler</span> <span class="kn">import</span> <span class="n">UnitHandler</span>
 
-<div class="viewcode-block" id="Material"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material">[docs]</a><span class="k">class</span> <span class="nc">Material</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;The Material class implements an abstract class for a material, i.e., the computation of</span>
+<div class="viewcode-block" id="Material">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material">[docs]</a>
+<span class="k">class</span> <span class="nc">Material</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The Material class implements an abstract class for a material, i.e., the computation of</span>
 <span class="sd">    the dynamic viscosity, bulk viscosity and the thermal conductivity. The equation of states are </span>
 <span class="sd">    implemented in the corresonding child classes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -176,126 +185,151 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Thermal conductivity not implemented&quot;</span>
 
-<div class="viewcode-block" id="Material.get_speed_of_sound"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_speed_of_sound">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_speed_of_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes speed of sound from pressure and density.</span>
+<div class="viewcode-block" id="Material.get_speed_of_sound">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_speed_of_sound">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_speed_of_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes speed of sound from pressure and density.</span>
 <span class="sd">        c = c(p, rho)</span>
 
 <span class="sd">        :param p: Pressure buffer</span>
-<span class="sd">        :type p: jnp.DeviceArray</span>
+<span class="sd">        :type p: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :return: Speed of sound buffer</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Material.get_pressure"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_pressure">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes pressure from internal energy and density.</span>
+
+<div class="viewcode-block" id="Material.get_pressure">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_pressure">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_pressure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes pressure from internal energy and density.</span>
 <span class="sd">        p = p(e, rho)</span>
 
 <span class="sd">        :param e: Specific internal energy buffer</span>
-<span class="sd">        :type e: jnp.DeviceArray</span>
+<span class="sd">        :type e: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :return: Pressue buffer</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Material.get_temperature"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_temperature">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes temperature from pressure and density.</span>
+
+<div class="viewcode-block" id="Material.get_temperature">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_temperature">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_temperature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes temperature from pressure and density.</span>
 <span class="sd">        T = T(p, rho)</span>
 
 <span class="sd">        :param p: Pressure buffer</span>
-<span class="sd">        :type p: jnp.DeviceArray</span>
+<span class="sd">        :type p: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :return: Temperature buffer</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
+
     
-<div class="viewcode-block" id="Material.get_energy"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_energy">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes specific internal energy</span>
+<div class="viewcode-block" id="Material.get_energy">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_energy">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes specific internal energy</span>
 <span class="sd">        e = e(p, rho)</span>
 
 <span class="sd">        :param p: Pressure buffer</span>
-<span class="sd">        :type p: jnp.DeviceArray</span>
+<span class="sd">        :type p: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :return: Specific internal energy buffer</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Material.get_total_energy"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_total_energy">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes total energy per unit volume from pressure, density, and velocities.</span>
+
+<div class="viewcode-block" id="Material.get_total_energy">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_total_energy">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_total_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes total energy per unit volume from pressure, density, and velocities.</span>
 <span class="sd">        E = E(p, rho, velX, velY, velZ)</span>
 
 <span class="sd">        :param p: Pressure buffer</span>
-<span class="sd">        :type p: jnp.DeviceArray</span>
+<span class="sd">        :type p: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :param u: Velocity in x direction</span>
-<span class="sd">        :type u: jnp.DeviceArray</span>
+<span class="sd">        :type u: jnp.ndarray</span>
 <span class="sd">        :param v: Velocity in y direction</span>
-<span class="sd">        :type v: jnp.DeviceArray</span>
+<span class="sd">        :type v: jnp.ndarray</span>
 <span class="sd">        :param w: Velocity in z direction</span>
-<span class="sd">        :type w: jnp.DeviceArray</span>
+<span class="sd">        :type w: jnp.ndarray</span>
 <span class="sd">        :return: Total energy per unit volume</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Material.get_total_enthalpy"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_total_enthalpy">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_total_enthalpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes total specific enthalpy from pressure, density, and velocities.</span>
+
+<div class="viewcode-block" id="Material.get_total_enthalpy">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_total_enthalpy">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_total_enthalpy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes total specific enthalpy from pressure, density, and velocities.</span>
 <span class="sd">        H = H(p, rho, velX, velY, velZ)</span>
 
 <span class="sd">        :param p: Pressure buffer</span>
-<span class="sd">        :type p: jnp.DeviceArray</span>
+<span class="sd">        :type p: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :param u: Velocity in x direction</span>
-<span class="sd">        :type u: jnp.DeviceArray</span>
+<span class="sd">        :type u: jnp.ndarray</span>
 <span class="sd">        :param v: Velocity in y direction</span>
-<span class="sd">        :type v: jnp.DeviceArray</span>
+<span class="sd">        :type v: jnp.ndarray</span>
 <span class="sd">        :param w: Velocity in z direction</span>
-<span class="sd">        :type w: jnp.DeviceArray</span>
+<span class="sd">        :type w: jnp.ndarray</span>
 <span class="sd">        :return: Total specific enthalpy buffer</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Material.get_psi"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_psi">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_psi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes psi from pressure and density.</span>
+
+<div class="viewcode-block" id="Material.get_psi">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_psi">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_psi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes psi from pressure and density.</span>
 <span class="sd">        psi = p_rho; p_rho is partial derivative of pressure wrt density.</span>
 
 <span class="sd">        :param p: Pressure buffer</span>
-<span class="sd">        :type p: jnp.DeviceArray</span>
+<span class="sd">        :type p: jnp.ndarray</span>
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :return: Psi</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
+<span class="sd">        :rtype: jnp.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Material.get_grueneisen"><a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_grueneisen">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">get_grueneisen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Computes the Grueneisen coefficient from density.</span>
+
+<div class="viewcode-block" id="Material.get_grueneisen">
+<a class="viewcode-back" href="../../../jaxfluids.materials.html#jaxfluids.materials.material.Material.get_grueneisen">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_grueneisen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the Grueneisen coefficient from density.</span>
 <span class="sd">        Gamma = p_e / rho; p_e is partial derivative of pressure wrt internal specific energy.</span>
 
 <span class="sd">        :param rho: Density buffer</span>
-<span class="sd">        :type rho: jnp.DeviceArray</span>
+<span class="sd">        :type rho: jnp.ndarray</span>
 <span class="sd">        :return: Grueneisen</span>
-<span class="sd">        :rtype: jnp.DeviceArray</span>
-<span class="sd">        &quot;&quot;&quot;</span></div></div>
+<span class="sd">        :rtype: jnp.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+</div>
+
 </pre></div>
 
            </div>

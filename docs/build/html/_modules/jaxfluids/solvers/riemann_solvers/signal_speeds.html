@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>jaxfluids.solvers.riemann_solvers.signal_speeds &mdash; jaxfluids 0.1.0 documentation</title>
-      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -25,14 +28,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../../index.html" class="icon icon-home"> jaxfluids
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            jaxfluids
           </a>
               <div class="version">
                 0.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -72,9 +79,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../../index.html">Module code</a> &raquo;</li>
-      <li>jaxfluids.solvers.riemann_solvers.signal_speeds</li>
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">jaxfluids.solvers.riemann_solvers.signal_speeds</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -119,20 +126,22 @@
 
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span> 
 
-<div class="viewcode-block" id="signal_speed_Arithmetic"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Arithmetic">[docs]</a><span class="k">def</span> <span class="nf">signal_speed_Arithmetic</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Arithmetic signal speed estimate</span>
+<div class="viewcode-block" id="signal_speed_Arithmetic">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Arithmetic">[docs]</a>
+<span class="k">def</span> <span class="nf">signal_speed_Arithmetic</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Arithmetic signal speed estimate</span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
 <span class="sd">    :return: Buffers of left and right going wave speed estimates.</span>
-<span class="sd">    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">    :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">u_mean</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_L</span> <span class="o">+</span> <span class="n">u_R</span><span class="p">)</span>
     <span class="n">a_mean</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a_L</span> <span class="o">+</span> <span class="n">a_R</span><span class="p">)</span>
@@ -140,71 +149,80 @@
     <span class="n">S_R</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">u_mean</span> <span class="o">+</span> <span class="n">a_mean</span><span class="p">,</span> <span class="n">u_R</span> <span class="o">+</span> <span class="n">a_R</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">S_L</span><span class="p">,</span> <span class="n">S_R</span></div>
 
-<div class="viewcode-block" id="signal_speed_Rusanov"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Rusanov">[docs]</a><span class="k">def</span> <span class="nf">signal_speed_Rusanov</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Rusanov type signal speed estimate</span>
+
+<div class="viewcode-block" id="signal_speed_Rusanov">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Rusanov">[docs]</a>
+<span class="k">def</span> <span class="nf">signal_speed_Rusanov</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rusanov type signal speed estimate</span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
 <span class="sd">    :return: Buffers of left and right going wave speed estimates.</span>
-<span class="sd">    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">    :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">S_plus</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_L</span><span class="p">)</span> <span class="o">+</span> <span class="n">a_L</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u_R</span><span class="p">)</span> <span class="o">+</span> <span class="n">a_R</span><span class="p">)</span>
     <span class="n">S_L</span> <span class="o">=</span> <span class="o">-</span> <span class="n">S_plus</span>
     <span class="n">S_R</span> <span class="o">=</span> <span class="n">S_plus</span>
     <span class="k">return</span> <span class="n">S_L</span><span class="p">,</span> <span class="n">S_R</span></div>
 
-<div class="viewcode-block" id="signal_speed_Davis"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis">[docs]</a><span class="k">def</span> <span class="nf">signal_speed_Davis</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Davis signal speed estimate</span>
+
+<div class="viewcode-block" id="signal_speed_Davis">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis">[docs]</a>
+<span class="k">def</span> <span class="nf">signal_speed_Davis</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Davis signal speed estimate</span>
 <span class="sd">    See Toro Eq. (10.48)</span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
 <span class="sd">    :return: Buffers of left and right going wave speed estimates.</span>
-<span class="sd">    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">    :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">S_L</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span> <span class="n">u_L</span> <span class="o">-</span> <span class="n">a_L</span><span class="p">,</span> <span class="n">u_R</span> <span class="o">-</span> <span class="n">a_R</span> <span class="p">)</span>
     <span class="n">S_R</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span> <span class="n">u_L</span> <span class="o">+</span> <span class="n">a_L</span><span class="p">,</span> <span class="n">u_R</span> <span class="o">+</span> <span class="n">a_R</span> <span class="p">)</span>
     <span class="k">return</span> <span class="n">S_L</span><span class="p">,</span> <span class="n">S_R</span></div>
 
-<div class="viewcode-block" id="signal_speed_Davis_2"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis_2">[docs]</a><span class="k">def</span> <span class="nf">signal_speed_Davis_2</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">H_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">H_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Signal speed estimate according to Davis.</span>
+
+<div class="viewcode-block" id="signal_speed_Davis_2">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Davis_2">[docs]</a>
+<span class="k">def</span> <span class="nf">signal_speed_Davis_2</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">H_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">H_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal speed estimate according to Davis.</span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
 <span class="sd">    :param rho_L: Buffer with densitites in left neighboring cell.</span>
-<span class="sd">    :type rho_L: jnp.DeviceArray</span>
+<span class="sd">    :type rho_L: jnp.ndarray</span>
 <span class="sd">    :param rho_R: Buffer with densitites in right neighboring cell.</span>
-<span class="sd">    :type rho_R: jnp.DeviceArray</span>
+<span class="sd">    :type rho_R: jnp.ndarray</span>
 <span class="sd">    :param H_L: Buffer with total enthalpies in left neighboring cell.</span>
-<span class="sd">    :type H_L: jnp.DeviceArray</span>
+<span class="sd">    :type H_L: jnp.ndarray</span>
 <span class="sd">    :param H_R: Buffer with enthalpies in right neighboring cell.</span>
-<span class="sd">    :type H_R: jnp.DeviceArray</span>
+<span class="sd">    :type H_R: jnp.ndarray</span>
 <span class="sd">    :param gamma: Ratio of specific heats.</span>
 <span class="sd">    :type gamma: float</span>
 <span class="sd">    :return: Buffers of left and right going wave speed estimates.</span>
-<span class="sd">    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">    :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">one_dens</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rho_L</span><span class="p">)</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rho_R</span><span class="p">))</span>
@@ -215,21 +233,24 @@
     <span class="n">S_R</span> <span class="o">=</span> <span class="n">u_Roe</span> <span class="o">+</span> <span class="n">a_Roe</span>
     <span class="k">return</span> <span class="n">S_L</span><span class="p">,</span> <span class="n">S_R</span></div>
 
-<div class="viewcode-block" id="signal_speed_Einfeldt"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Einfeldt">[docs]</a><span class="k">def</span> <span class="nf">signal_speed_Einfeldt</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Einfeldt signal speed estimate</span>
+
+<div class="viewcode-block" id="signal_speed_Einfeldt">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Einfeldt">[docs]</a>
+<span class="k">def</span> <span class="nf">signal_speed_Einfeldt</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Einfeldt signal speed estimate</span>
 <span class="sd">    See Toro Eqs. (10.52) - (10.54) </span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
 <span class="sd">    :return: Buffers of left and right going wave speed estimates.</span>
-<span class="sd">    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">    :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">one_dens</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rho_L</span><span class="p">)</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rho_R</span><span class="p">))</span>
     <span class="n">eta2</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rho_L</span><span class="p">)</span> <span class="o">*</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rho_R</span><span class="p">)</span> <span class="o">*</span> <span class="n">one_dens</span> <span class="o">*</span> <span class="n">one_dens</span>
@@ -239,21 +260,24 @@
     <span class="n">S_R</span> <span class="o">=</span> <span class="n">u_bar</span> <span class="o">+</span> <span class="n">d_bar</span>
     <span class="k">return</span> <span class="n">S_L</span><span class="p">,</span> <span class="n">S_R</span></div>
 
-<div class="viewcode-block" id="signal_speed_Toro"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Toro">[docs]</a><span class="k">def</span> <span class="nf">signal_speed_Toro</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span>
-    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
-    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Toro signal speed estimate</span>
+
+<div class="viewcode-block" id="signal_speed_Toro">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.signal_speed_Toro">[docs]</a>
+<span class="k">def</span> <span class="nf">signal_speed_Toro</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> 
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Toro signal speed estimate</span>
 <span class="sd">    See Toro Eqs. (10.59) - (10.60) </span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
-<span class="sd">    :rtype: Tuple[jnp.DeviceArray, jnp.DeviceArray]</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
+<span class="sd">    :rtype: Tuple[jnp.ndarray, jnp.ndarray]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">p_star</span> <span class="o">=</span> <span class="n">estimate_pressure</span><span class="p">(</span><span class="n">u_L</span><span class="p">,</span> <span class="n">u_R</span><span class="p">,</span> <span class="n">a_L</span><span class="p">,</span> <span class="n">a_R</span><span class="p">,</span> <span class="n">rho_L</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">,</span> <span class="n">p_L</span><span class="p">,</span> <span class="n">p_R</span><span class="p">)</span>
     <span class="n">gamma_</span> <span class="o">=</span> <span class="p">(</span><span class="n">gamma</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">gamma</span>
@@ -263,30 +287,33 @@
     <span class="n">S_R</span> <span class="o">=</span> <span class="n">u_R</span> <span class="o">+</span> <span class="n">a_R</span> <span class="o">*</span> <span class="n">q_R</span>
     <span class="k">return</span> <span class="n">S_L</span><span class="p">,</span> <span class="n">S_R</span></div>
 
-<div class="viewcode-block" id="compute_sstar"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.compute_sstar">[docs]</a><span class="k">def</span> <span class="nf">compute_sstar</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> 
-    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">S_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">S_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Computes the speed of the intermediate wave in a Riemann problem.</span>
+
+<div class="viewcode-block" id="compute_sstar">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.compute_sstar">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_sstar</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">S_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">S_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the speed of the intermediate wave in a Riemann problem.</span>
 
 <span class="sd">    See Toro Eq. (10.70)</span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param p_L: Pressure of left neighboring cell.</span>
-<span class="sd">    :type p_L: jnp.DeviceArray</span>
+<span class="sd">    :type p_L: jnp.ndarray</span>
 <span class="sd">    :param p_R: Pressure of right neighboring cells.</span>
-<span class="sd">    :type p_R: jnp.DeviceArray</span>
+<span class="sd">    :type p_R: jnp.ndarray</span>
 <span class="sd">    :param rho_L: Density of left neighboring cell.</span>
-<span class="sd">    :type rho_L: jnp.DeviceArray</span>
+<span class="sd">    :type rho_L: jnp.ndarray</span>
 <span class="sd">    :param rho_R: Density of right neighboring cell.</span>
-<span class="sd">    :type rho_R: jnp.DeviceArray</span>
+<span class="sd">    :type rho_R: jnp.ndarray</span>
 <span class="sd">    :param S_L: Wave speed estimate left-going wave.</span>
-<span class="sd">    :type S_L: jnp.DeviceArray</span>
+<span class="sd">    :type S_L: jnp.ndarray</span>
 <span class="sd">    :param S_R: Wave speed estimate right-going wave.</span>
-<span class="sd">    :type S_R: jnp.DeviceArray</span>
+<span class="sd">    :type S_R: jnp.ndarray</span>
 <span class="sd">    :return: Speed of the intermediate wave in the Riemann problem.</span>
-<span class="sd">    :rtype: jnp.DeviceArray</span>
+<span class="sd">    :rtype: jnp.ndarray</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">delta_uL</span> <span class="o">=</span> <span class="n">S_L</span> <span class="o">-</span> <span class="n">u_L</span>
@@ -295,37 +322,41 @@
     <span class="n">S_star</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">rho_deltaSU</span> <span class="o">*</span> <span class="p">(</span><span class="n">p_R</span> <span class="o">-</span> <span class="n">p_L</span> <span class="o">+</span> <span class="n">rho_L</span> <span class="o">*</span> <span class="n">u_L</span> <span class="o">*</span> <span class="n">delta_uL</span> <span class="o">-</span> <span class="n">rho_R</span> <span class="o">*</span> <span class="n">u_R</span> <span class="o">*</span> <span class="n">delta_uR</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">S_star</span></div>
 
-<div class="viewcode-block" id="estimate_pressure"><a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.estimate_pressure">[docs]</a><span class="k">def</span> <span class="nf">estimate_pressure</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> 
-    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">,</span> <span class="n">p_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">DeviceArray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Estimates the pressure in the star region based on a </span>
+
+<div class="viewcode-block" id="estimate_pressure">
+<a class="viewcode-back" href="../../../../jaxfluids.solvers.riemann_solvers.html#jaxfluids.solvers.riemann_solvers.signal_speeds.estimate_pressure">[docs]</a>
+<span class="k">def</span> <span class="nf">estimate_pressure</span><span class="p">(</span><span class="n">u_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">u_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">a_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+    <span class="n">rho_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">rho_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p_L</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">p_R</span><span class="p">:</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates the pressure in the star region based on a </span>
 <span class="sd">    linearised solution in terms of primitive variables. </span>
 
 <span class="sd">    See Toro Eq. (9.28) or (10.67)</span>
 
 <span class="sd">    :param u_L: Buffer with normal velocity in left neighboring cell.</span>
-<span class="sd">    :type u_L: jnp.DeviceArray</span>
+<span class="sd">    :type u_L: jnp.ndarray</span>
 <span class="sd">    :param u_R: Buffer with normal velocity in right neighboring cell.</span>
-<span class="sd">    :type u_R: jnp.DeviceArray</span>
+<span class="sd">    :type u_R: jnp.ndarray</span>
 <span class="sd">    :param a_L: Buffer with speed of sound in left neighboring cell.</span>
-<span class="sd">    :type a_L: jnp.DeviceArray</span>
+<span class="sd">    :type a_L: jnp.ndarray</span>
 <span class="sd">    :param a_R: Buffer with speed of sound in right neighboring cell.</span>
-<span class="sd">    :type a_R: jnp.DeviceArray</span>
+<span class="sd">    :type a_R: jnp.ndarray</span>
 <span class="sd">    :param rho_L: Densities of left neighboring cells.</span>
-<span class="sd">    :type rho_L: jnp.DeviceArray</span>
+<span class="sd">    :type rho_L: jnp.ndarray</span>
 <span class="sd">    :param rho_R: Densities of right neighboring cells.</span>
-<span class="sd">    :type rho_R: jnp.DeviceArray</span>
+<span class="sd">    :type rho_R: jnp.ndarray</span>
 <span class="sd">    :param p_L: Pressure of left neighboring cell.</span>
-<span class="sd">    :type p_L: jnp.DeviceArray</span>
+<span class="sd">    :type p_L: jnp.ndarray</span>
 <span class="sd">    :param p_R: Pressure of right neighboring cells.</span>
-<span class="sd">    :type p_R: jnp.DeviceArray</span>
+<span class="sd">    :type p_R: jnp.ndarray</span>
 <span class="sd">    :return: Pressure in the star region.</span>
-<span class="sd">    :rtype: jnp.DeviceArray</span>
+<span class="sd">    :rtype: jnp.ndarray</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rho_bar</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">rho_L</span> <span class="o">+</span> <span class="n">rho_R</span><span class="p">)</span>
     <span class="n">a_bar</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a_L</span> <span class="o">+</span> <span class="n">a_R</span><span class="p">)</span>
     <span class="n">p_pvrs</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">p_L</span> <span class="o">+</span> <span class="n">p_R</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">u_R</span> <span class="o">-</span> <span class="n">u_L</span><span class="p">)</span> <span class="o">*</span> <span class="n">rho_bar</span> <span class="o">*</span> <span class="n">a_bar</span>
     <span class="n">p_star</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">p_pvrs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">p_star</span></div>
+
 </pre></div>
 
            </div>
