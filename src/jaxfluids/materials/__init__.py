@@ -1,11 +1,14 @@
-from jaxfluids.materials.ideal_gas import IdealGas
-from jaxfluids.materials.safe_ideal_gas import SafeIdealGas
-from jaxfluids.materials.stiffened_gas import StiffenedGas
-from jaxfluids.materials.tait import Tait
+from jaxfluids.materials.single_materials import DICT_MATERIAL
+from jaxfluids.materials.mixture_materials import DICT_MIXTURE
 
-DICT_MATERIAL = {
-    'IdealGas': IdealGas,
-    'SafeIdealGas': SafeIdealGas,
-    'StiffenedGas': StiffenedGas,
-    'Tait': Tait,
-}
+DYNAMIC_VISCOSITY_MODELS = (
+    "CUSTOM", "SUTHERLAND", "CHAPMAN-ENSKOG")
+
+THERMAL_CONDUCTIVITY_MODELS = (
+    "CUSTOM", "SUTHERLAND", "CHAPMAN-ENSKOG", "PRANDTL")
+
+MASS_DIFFUSIVITY_MODELS = (
+    "CUSTOM", "CHAPMAN-ENSKOG")
+
+HEAT_CAPACITY_MODELS = (
+    "CONSTANT", "NASA7", "NASA9")

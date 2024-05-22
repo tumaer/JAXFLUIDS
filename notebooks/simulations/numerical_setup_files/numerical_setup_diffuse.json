@@ -1,0 +1,90 @@
+{
+    "conservatives": {
+        "halo_cells": 4,
+        "time_integration": {
+            "integrator": "RK3",
+            "CFL": 0.5
+        },
+        "convective_fluxes": {
+            "convective_solver": "GODUNOV",
+            "riemann_solver": "HLLC",
+            "signal_speed": "EINFELDT",
+            "reconstruction_stencil": "WENO5-Z",
+            "reconstruction_variable": "CHAR-PRIMITIVE",
+            "frozen_state": "ARITHMETIC"
+        },
+        "dissipative_fluxes": {
+            "reconstruction_stencil": "CENTRAL4",
+            "derivative_stencil_center": "CENTRAL4",
+            "derivative_stencil_face": "CENTRAL4"
+        },
+        "positivity": {
+            "flux_limiter": "NASA",
+            "is_interpolation_limiter": true,
+            "is_thinc_interpolation_limiter": true,
+            "is_volume_fraction_limiter": true,
+            "is_acdi_flux_limiter": false
+        }
+    },
+    "diffuse_interface": {
+        "model": "5EQM",
+        "halo_cells": 2,
+        "geometry_calculation": {
+            "derivative_stencil_curvature": "CENTRAL2",
+            "derivative_stencil_center": "CENTRAL2",
+            "reconstruction_stencil": "CENTRAL2",
+            "derivative_stencil_face": "CENTRAL2",
+            "steps_curvature": 5,
+            "interface_smoothing": 0.1
+        },
+        "interface_compression": {
+            "is_interface_compression": false,
+            "time_integrator": "EULER",
+            "CFL": 0.1,
+            "interval": 1,
+            "steps": 0,
+            "heaviside_parameter": 0.01,
+            "interface_thickness_parameter": 0.72
+        },
+        "thinc": {
+            "is_thinc_reconstruction": true,
+            "thinc_type": "PRIMITIVE",
+            "interface_treatment": "PRIMITIVE",
+            "interface_projection": "NORM_1",
+            "interface_parameter": 1.0,
+            "volume_fraction_threshold": 1e-4
+        },
+        "diffusion_sharpening": {
+            "is_diffusion_sharpening": false,
+            "model": "ACDI",
+            "density_model": "COMPRESSIBLE",
+            "incompressible_density": [1000.0, 1.0],
+            "interface_thickness_parameter": 0.51,
+            "interface_velocity_parameter": 1.0
+        }
+    },
+    "active_physics": {
+        "is_convective_flux": true,
+        "is_viscous_flux": false,
+        "is_heat_flux": false,
+        "is_volume_force": false,
+        "is_surface_tension": false
+    },
+    "active_forcings": { 
+        "is_mass_flow_forcing": false,
+        "is_temperature_forcing": false,
+        "is_turb_hit_forcing": false
+    },
+    "precision": {
+        "is_double_precision_compute": true,
+        "is_double_precision_output": true,
+        "spatial_stencil_epsilon": 1e-40
+    },
+    "output": {
+        "derivative_stencil": "CENTRAL4",
+        "is_xdmf": false,
+        "logging": {
+            "frequency": 1
+        }
+    }
+}

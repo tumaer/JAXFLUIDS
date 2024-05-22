@@ -1,0 +1,111 @@
+{
+    "general": {
+        "case_name": "blasius",
+        "end_time": 1.0,
+        "save_path": "./results",
+        "save_dt": 1e-1
+    },
+    "domain": {
+        "x": {
+            "cells": 200,
+            "range": [
+                1.0,
+                1.5
+            ]
+        },
+        "y": {
+            "cells": 100,
+            "range": [
+                0.0,
+                0.4
+            ],
+            "stretching": {
+                "type": "BOUNDARY_LAYER",
+                "parameters": {
+                    "tanh_value": 2.0
+                }
+            }
+        },
+        "z": {
+            "cells": 1,
+            "range": [
+                0.0,
+                1.0
+            ]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
+        }
+    },
+    "boundary_conditions": {
+        "east": {
+            "type": "ZEROGRADIENT"
+        },
+        "west": {
+            "type": "DIRICHLET",
+            "h5file_path": "blasius_inlet.h5",
+            "primitives_callable_": {
+                "rho": 1.0,
+                "u": 2.662235902394827,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 1.0
+            }
+        },
+        "north": {
+            "type": "ZEROGRADIENT"
+        },
+        "south": {
+            "type": "WALL",
+            "wall_temperature_callable": "lambda x,t: 1.0 * jnp.ones_like(x)",
+            "wall_velocity_callable": {
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0
+            }
+        },
+        "top": {
+            "type": "INACTIVE"
+        },
+        "bottom": {
+            "type": "INACTIVE"
+        }
+    },
+    "initial_condition": {
+        "rho": 1.0,
+        "u": 2.662235902394827,
+        "v": 0.0,
+        "w": 0.0,
+        "p": 1.0
+    },
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "transport": {
+            "dynamic_viscosity": {
+                "model": "SUTHERLAND",
+                "value": 1e-4,
+                "sutherland_parameters": [1e-4, 1.0, 0.0]
+            },
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": {
+                "model": "PRANDTL",
+                "prandtl_number": 0.72
+            }
+        }
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure", "temperature"]
+    }
+}

@@ -1,39 +1,9 @@
-#*------------------------------------------------------------------------------*
-#* JAX-FLUIDS -                                                                 *
-#*                                                                              *
-#* A fully-differentiable CFD solver for compressible two-phase flows.          *
-#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *
-#*                                                                              *
-#* This program is free software: you can redistribute it and/or modify         *
-#* it under the terms of the GNU General Public License as published by         *
-#* the Free Software Foundation, either version 3 of the License, or            *
-#* (at your option) any later version.                                          *
-#*                                                                              *
-#* This program is distributed in the hope that it will be useful,              *
-#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *
-#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
-#* GNU General Public License for more details.                                 *
-#*                                                                              *
-#* You should have received a copy of the GNU General Public License            *
-#* along with this program.  If not, see <https://www.gnu.org/licenses/>.       *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* CONTACT                                                                      *
-#*                                                                              *
-#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* Munich, April 15th, 2022                                                     *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-
 from functools import partial
 from typing import List, Tuple
 
 import jax
 import jax.numpy as jnp
+from jax import Array
 
 class PIDControl:
     """Standard PID controller.
@@ -42,18 +12,32 @@ class PIDControl:
     u = K_s * (K_p * e + K_i * e_int + K_d de/dt)
     """
     
-    def __init__(self, K_static: float = 1.0, K_P: float = 1.0, K_I: float = 1.0, K_D: float = 0.0, T_N: float = 0.5, T_V: float = 0.5) -> None:
+    def __init__(
+            self,
+            K_static: float = 1.0,
+            K_P: float = 1.0,
+            K_I: float = 1.0,
+            K_D: float = 0.0,
+            T_N: float = 0.5,
+            T_V: float = 0.5
+            ) -> None:
         
-        self.K_static   = K_static
-        self.K_P        = K_P
-        self.K_I        = K_I
-        self.K_D        = K_D
+        self.K_static = K_static
+        self.K_P = K_P
+        self.K_I = K_I
+        self.K_D = K_D
 
         self.T_N = T_N
         self.T_V = T_V
 
-    @partial(jax.jit, static_argnums=(0))
-    def compute_output(self, current_value: float, target_value: float, dt: float, e_old: float, e_int: float) -> Tuple[float, float, float]:
+    def compute_output(
+            self,
+            current_value: float,
+            target_value: float,
+            dt: float,
+            e_old: float,
+            e_int: float
+            ) -> Tuple[float, float, float]:
         """Computes the control variable based on a standard PID controller.
 
         :param current_value: Current value of the control variable.

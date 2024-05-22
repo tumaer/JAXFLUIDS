@@ -1,14 +1,17 @@
 # JAX-Fluids: A Differentiable Fluid Dynamics Package
 
-JAX-Fluids is a fully-differentiable CFD solver for 3D, compressible two-phase flows.
-We developed this package with the intention to push and facilitate research at the intersection
+JAX-Fluids is a fully-differentiable CFD solver for 3D, compressible single-phase and two-phase flows.
+We developed this package with the intention to facilitate research at the intersection
 of ML and CFD. It is easy to use - running a simulation only requires a couple 
 lines of code. Written entirely in JAX, the solver runs on CPU/GPU/TPU and 
 enables automatic differentiation for end-to-end optimization 
-of numerical models.
+of numerical models. JAX-Fluids is parallelized using JAX primitives and 
+scales efficiently on state-of-the-art HPC clusters (tested on up to 512 NVIDIA A100 GPUs
+and on up to 2048 TPU-v3 cores).
 
 To learn more about implementation details and details on numerical methods provided 
-by JAX-Fluids, feel free to read [our paper](https://www.sciencedirect.com/science/article/abs/pii/S0010465522002466).
+by JAX-Fluids, feel free to read our papers [here](https://www.sciencedirect.com/science/article/abs/pii/S0010465522002466)
+and [here](https://arxiv.org/abs/2402.05193).
 And also check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.html) of JAX-Fluids.
 
 Authors:
@@ -19,20 +22,6 @@ Authors:
 
 Correspondence via [mail](mailto:aaron.buhendwa@tum.de,mailto:deniz.bezgin@tum.de).
 
-## JAX-FLUIDS 2.0 IS COMING IN 2024!
-
-JAX-Fluids 2.0 is coming in 2024! Here, is a short overview on what JAX-Fluids 2.0 will 
-bring to the table:
-- Support for parallel simulations
-- Diffuse-interface model for two-phase simulations
-- Many new & robust high-order numerics
-- New boundary conditions
-- Performance improvements for forward simulations and backward passes
-- Completely updated & more intuitive I/O
-- And many more...
-
-Stay tuned and feel free to reach out!
-
 ## Physical models and numerical methods
 
 JAX-Fluids solves the Navier-Stokes-equations using the finite-volume-method on a Cartesian grid. 
@@ -41,11 +30,13 @@ The current version provides the following features:
 - High-order adaptive spatial reconstruction (WENO-3/5/7, WENO-CU6, WENO-3NN, TENO)
 - Riemann solvers (Lax-Friedrichs, Rusanov, HLL, HLLC, Roe)
 - Implicit turbulence sub-grid scale model ALDM
-- Two-phase simulations via level-set method
+- Two-phase simulations via level-set method and diffuse-interface method
 - Immersed solid boundaries via level-set method
+- Positivity-preserving techniques
 - Forcings for temperature, mass flow rate and kinetic energy spectrum
 - Boundary conditions: Symmetry, Periodic, Wall, Dirichlet, Neumann
 - CPU/GPU/TPU capability
+- Parallel simulations on GPU & TPU
 
 ## Example simulations
 Space shuttle at Mach 2 - Immersed solid boundary method via level-set
@@ -66,7 +57,7 @@ https://www.youtube.com/watch?v=mt8HjZhm60U
 
 ## Pip Installation
 Before installing JAX-Fluids, please ensure that you have
-an updated and upgraded pip version.
+an up-to-date version of pip.
 ```bash
 pip install --upgrade pip
 ```
@@ -74,6 +65,7 @@ pip install --upgrade pip
 ### CPU-only support
 To install the CPU-only version of JAX-Fluids, you can run
 ```bash
+pip install --upgrade "jax[cpu]"
 git clone https://github.com/tumaer/JAXFLUIDS.git
 cd JAXFLUIDS
 pip install .
@@ -81,7 +73,7 @@ pip install .
 Note: if you want to install JAX-Fluids in editable mode,
 e.g., for code development on your local machine, run
 ```bash
-pip install --editable .
+pip install -e .
 ```
 
 Note: if you want to use jaxlib on a Mac with M1 chip, check the discussion [here](https://github.com/google/jax/issues/5501).
@@ -89,25 +81,14 @@ Note: if you want to use jaxlib on a Mac with M1 chip, check the discussion [her
 ### GPU and CPU support
 If you want to install JAX-Fluids with CPU AND GPU support, you must
 first install JAX with GPU support. There are two ways to do this:
-1) installing CUDA & CUDNN via pip,
-2) installing CUDA & CUDNN yourself.
+1) installing CUDA & cuDNN via pip,
+2) installing CUDA & cuDNN by yourself.
 
 See [JAX installation](https://jax.readthedocs.io/en/latest/installation.html) for details.
 
-We recommend using CUDA & CUDNN using pip wheels:
+We recommend installing CUDA & cuDNN using pip wheels:
 ```bash
-pip install --upgrade pip
-
-# CUDA 12 installation
-# Note: wheels only available on linux.
-pip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-
-# CUDA 11 installation
-# Note: wheels only available on linux.
-pip install --upgrade "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-```
-After having installed CUDA, run the following to install JAX-Fluids
-```bash
+pip install --upgrade "jax[cuda12]"
 git clone https://github.com/tumaer/JAXFLUIDS.git
 cd JAXFLUIDS
 pip install -e .
@@ -118,14 +99,9 @@ on JAX on GPU please refer to the [github of JAX](https://github.com/google/jax)
 ## Quickstart
 This github contains five [jupyter-notebooks](https://github.com/tumaer/JAXFLUIDS/tree/main/notebooks) which will get you started quickly.
 They demonstrate how to run simple simulations like a 1D sod shock tube or 
-a 2D supersonic cylinder flow. Furthermore, they show how you can easily
+a 2D air-helium shock-bubble interaction. Furthermore, they show how you can easily
 switch the numerical and/or case setup in order to, e.g., increase the order
 of the spatial reconstruction stencil or decrease the resolution of the simulation.
-
-## Upcoming features 
-- 5-Equation diffuse interface model for multiphase flows 
-- CPU/GPU/TPU parallelization based on homogenous domain decomposition
-- Lagrangian particles
 
 ## Documentation
 Check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.html) of JAX-Fluids.
@@ -134,6 +110,18 @@ Check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.
 We gratefully acknowledge access to TPU compute resources granted by Google's TRC program.
 
 ## Citation
+JAX-Fluids 2.0: Towards HPC for Differentiable CFD of Compressible Two-phase Flows
+https://arxiv.org/abs/2402.05193
+```
+@article{bezgin2024jax,
+  title={JAX-Fluids 2.0: Towards HPC for Differentiable CFD of Compressible Two-phase Flows},
+  author={Bezgin, Deniz A and Buhendwa, Aaron B and Adams, Nikolaus A},
+  journal={arXiv preprint arXiv:2402.05193},
+  year={2024}
+}
+```
+
+JAX-Fluids: A fully-differentiable high-order computational fluid dynamics solver for compressible two-phase flows
 https://doi.org/10.1016/j.cpc.2022.108527
 
 ```

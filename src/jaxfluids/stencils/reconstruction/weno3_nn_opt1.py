@@ -1,40 +1,9 @@
-#*------------------------------------------------------------------------------*
-#* JAX-FLUIDS -                                                                 *
-#*                                                                              *
-#* A fully-differentiable CFD solver for compressible two-phase flows.          *
-#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *
-#*                                                                              *
-#* This program is free software: you can redistribute it and/or modify         *
-#* it under the terms of the GNU General Public License as published by         *
-#* the Free Software Foundation, either version 3 of the License, or            *
-#* (at your option) any later version.                                          *
-#*                                                                              *
-#* This program is distributed in the hope that it will be useful,              *
-#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *
-#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
-#* GNU General Public License for more details.                                 *
-#*                                                                              *
-#* You should have received a copy of the GNU General Public License            *
-#* along with this program.  If not, see <https://www.gnu.org/licenses/>.       *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* CONTACT                                                                      *
-#*                                                                              *
-#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* Munich, April 15th, 2022                                                     *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-
-from functools import partial
 from typing import List
 
-import haiku as hk
+import flax.linen as nn
 import jax
 import jax.numpy as jnp
+from jax import Array
 
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 
@@ -44,73 +13,29 @@ class WENO3NNOPT1(SpatialReconstruction):
     Bezgin et al. - 2021 - 
     """
     
-    def __init__(self, nh: int, inactive_axis: List) -> None:
-        super(WENO3NNOPT1, self).__init__(nh=nh, inactive_axis=inactive_axis)
+    def __init__(self, 
+            nh: int, 
+            inactive_axes: List, 
+            offset: int = 0,
+            **kwargs) -> None:
+        super(WENO3NNOPT1, self).__init__(nh=nh, inactive_axes=inactive_axes, offset=offset)
         
-        self.dr_ = [
-            [1/3, 2/3],
-            [2/3, 1/3],
-        ]
+        self.dr_ = [1/3, 2/3]
+
         self.cr_ = [
-            [[-0.5, 1.5], [0.5, 0.5]],
-            [[-0.5, 1.5], [0.5, 0.5]],
+            [-0.5, 1.5], 
+            [0.5, 0.5]
         ]
 
         self._c_eno = 2e-4
 
         self._stencil_size = 4
-
-        self._slices = [
-            [
-                [   jnp.s_[:, self.n-2+j:-self.n-1+j, self.nhy, self.nhz],  
-                    jnp.s_[:, self.n-1+j:-self.n+j,   self.nhy, self.nhz],  
-                    jnp.s_[:, self.n+j:-self.n+1+j,   self.nhy, self.nhz], ],  
-
-                [   jnp.s_[:, self.nhx, self.n-2+j:-self.n-1+j, self.nhz],  
-                    jnp.s_[:, self.nhx, self.n-1+j:-self.n+j,   self.nhz],  
-                    jnp.s_[:, self.nhx, self.n+j:-self.n+1+j,   self.nhz], ],   
-
-                [   jnp.s_[:, self.nhx, self.nhy, self.n-2+j:-self.n-1+j,],  
-                    jnp.s_[:, self.nhx, self.nhy, self.n-1+j:-self.n+j,  ],  
-                    jnp.s_[:, self.nhx, self.nhy, self.n+j:-self.n+1+j,  ], ],
-
-            ] for j in range(2)]
-
+        self.array_slices([range(-2, 1, 1), range(1, -2, -1)])
+        self.stencil_slices([range(0, 3, 1), range(3, 0, -1)])
         self._get_nn()
 
-    def set_slices_stencil(self) -> None:
-        self._slices = [
-            [
-                [   jnp.s_[..., 0, None:None, None:None],  
-                    jnp.s_[..., 1, None:None, None:None],  
-                    jnp.s_[..., 2, None:None, None:None], ],   
-
-                [   jnp.s_[..., None:None, 0, None:None],  
-                    jnp.s_[..., None:None, 1, None:None],  
-                    jnp.s_[..., None:None, 2, None:None], ],
-
-                [   jnp.s_[..., None:None, None:None, 0],  
-                    jnp.s_[..., None:None, None:None, 1],  
-                    jnp.s_[..., None:None, None:None, 2], ],
-            ],
-
-            [
-                [   jnp.s_[..., 3, None:None, None:None],  
-                    jnp.s_[..., 2, None:None, None:None],  
-                    jnp.s_[..., 1, None:None, None:None], ],   
-
-                [   jnp.s_[..., None:None, 3, None:None],  
-                    jnp.s_[..., None:None, 2, None:None],  
-                    jnp.s_[..., None:None, 1, None:None], ],
-
-                [   jnp.s_[..., None:None, None:None, 3],  
-                    jnp.s_[..., None:None, None:None, 2],  
-                    jnp.s_[..., None:None, None:None, 1], ],
-            ],
-        ]
-
-    def reconstruct_xi(self, buffer: jnp.ndarray, axis: int, j: int, dx: float = None, **kwargs) -> jnp.ndarray:
-        s1_ = self._slices[j][axis]
+    def reconstruct_xi(self, buffer: Array, axis: int, j: int, dx: float = None, **kwargs) -> Array:
+        s1_ = self.s_[j][axis]
 
         dx1 = jnp.abs( buffer[s1_[1]] - buffer[s1_[0]] )
         dx2 = jnp.abs( buffer[s1_[2]] - buffer[s1_[1]] )
@@ -118,16 +43,17 @@ class WENO3NNOPT1(SpatialReconstruction):
         dx4 = jnp.abs( buffer[s1_[0]] - 2*buffer[s1_[1]] + buffer[s1_[2]] )
 
         x = jnp.stack([dx1, dx2, dx3, dx4], axis=-1) 
-        x /= (jnp.maximum(x[:,:,:,:,:1], x[:,:,:,:,1:2]) + self.eps)
+        x /= (jnp.maximum(x[...,:1], x[...,1:2]) + self.eps)
 
-        omega_z_ = self.net.apply(self.params, x)
+        omega_z_ = self.net.apply(self.variables, x)
         omega_z_ = jax.nn.relu(omega_z_ - self._c_eno)
         omega_z_ /= jnp.sum(omega_z_, axis=-1, keepdims=True)
 
-        p_0 = self.cr_[j][0][0] * buffer[s1_[0]] + self.cr_[j][0][1] * buffer[s1_[1]] 
-        p_1 = self.cr_[j][1][0] * buffer[s1_[1]] + self.cr_[j][1][1] * buffer[s1_[2]]
+        p_0 = self.cr_[0][0] * buffer[s1_[0]] + self.cr_[0][1] * buffer[s1_[1]] 
+        p_1 = self.cr_[1][0] * buffer[s1_[1]] + self.cr_[1][1] * buffer[s1_[2]]
 
-        cell_state_xi_j = omega_z_[:,:,:,:,1] * p_0 + omega_z_[:,:,:,:,0] * p_1
+
+        cell_state_xi_j = omega_z_[...,1] * p_0 + omega_z_[...,0] * p_1
 
         return cell_state_xi_j
 
@@ -213,23 +139,18 @@ class WENO3NNOPT1(SpatialReconstruction):
             0.03510259928999757, -0.03510259928999723
             ], dtype=jnp.float64)
 
-        params = {
-            'linear': {'w': w, 'b': b,},
-            'linear_1': {'w': w1, 'b': b1,},
-            'linear_2': {'w': w2, 'b': b2,},
-            'linear_3': {'w': w3, 'b': b3,},
+        self.variables = {
+            "params": {
+                "layers_0": {"kernel": w0, "bias": b0,},
+                "layers_2": {"kernel": w1, "bias": b1,},
+                "layers_4": {"kernel": w2, "bias": b2,},
+                "layers_6": {"kernel": w3, "bias": b3,},
+            }
         }
 
-        self.params = hk.data_structures.to_immutable_dict(params)
-
-        @jax.jit
-        def net_fn(x):
-            mlp = hk.Sequential([
-                hk.Linear(16), jax.nn.swish,
-                hk.Linear(16), jax.nn.swish,
-                hk.Linear(16), jax.nn.swish,
-                hk.Linear(2), jax.nn.softmax,
-            ])
-            return mlp(x)
-
-        self.net = hk.without_apply_rng(hk.transform(net_fn))
+        self.net = nn.Sequential([
+            nn.Dense(16), nn.swish,
+            nn.Dense(16), nn.swish,
+            nn.Dense(16), nn.swish,
+            nn.Dense(2), nn.softmax,
+        ])

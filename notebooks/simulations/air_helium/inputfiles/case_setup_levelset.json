@@ -1,0 +1,110 @@
+{
+    "general": {
+        "case_name": "levelset",
+        "end_time": 1e-3,
+        "save_path": "./results",
+        "save_dt": 1e-4
+    },
+    "restart": {
+        "flag": false,
+        "file_path": ""
+    },
+    "domain": {
+        "x": {
+            "cells": 256,
+            "range": [-0.09, 0.266]
+        },
+        "y": {
+            "cells": 64,
+            "range": [-0.0445, 0.0445]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
+        }
+    },
+    "boundary_conditions": {
+        "primitives": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {"type": "ZEROGRADIENT"},
+            "north": {"type": "SYMMETRY"},
+            "south": {"type": "SYMMETRY"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        },
+        "levelset": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {"type": "ZEROGRADIENT"},
+            "north": {"type": "SYMMETRY"},
+            "south": {"type": "SYMMETRY"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        }
+    },
+    "initial_condition": {
+        "primitives": {
+            "positive": {
+                "rho": 0.166,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 101325.0
+            },
+            "negative" : {
+                "rho": "lambda x,y: jnp.where(x < -0.03, 1.6573, 1.2041)",
+                "u":   "lambda x,y: jnp.where(x < -0.03, 114.5, 0.0)",
+                "v": 0.0,
+                "w": 0.0,
+                "p":   "lambda x,y: jnp.where(x < -0.03, 159056.0, 101325.0)"
+            }
+        },
+        "levelset": "lambda x,y: 0.025 - jnp.sqrt(x**2 + y**2)"
+    },
+    "material_properties": {
+        "positive": {
+            "equation_of_state": {
+                "model": "IdealGas",
+                "specific_heat_ratio": 1.67,
+                "specific_gas_constant": 1.0
+            }
+        },
+        "negative": {
+            "equation_of_state": {
+                "model": "IdealGas",
+                "specific_heat_ratio": 1.4,
+                "specific_gas_constant": 1.0
+            }
+        },
+        "pairing" : {
+            "surface_tension_coefficient": 0.0
+        }
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 0.025,
+        "velocity_reference": 100.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": [
+            "density",
+            "velocity",
+            "pressure"
+        ],
+        "real_fluid": [
+            "density",
+            "velocity",
+            "pressure"
+        ],
+        "levelset": [
+            "levelset",
+            "volume_fraction"
+        ],
+        "miscellaneous": ["mach_number", "schlieren"]
+    }
+}

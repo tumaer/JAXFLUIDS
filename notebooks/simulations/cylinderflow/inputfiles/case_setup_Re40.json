@@ -1,0 +1,108 @@
+{
+    "general": {
+        "case_name": "cylinderflow_Re40",
+        "end_time": 200.0,
+        "save_path": "./results",
+        "save_dt": 10.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": ""
+    },
+    "domain": {
+        "x": {
+            "cells": 400,
+            "range": [
+                -4.0,
+                8.0
+            ]
+        },
+        "y": {
+            "cells": 200,
+            "range": [
+                -4.0,
+                4.0
+            ]
+        },
+        "z": {
+            "cells": 1,
+            "range": [
+                0.0,
+                1.0
+            ]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
+        }
+    },
+    "boundary_conditions": {
+        "primitives": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {
+                "type": "DIRICHLET",
+                "primitives_callable": {
+                    "rho": 1.0,
+                    "u": 0.23664319132398464,
+                    "v": 0.0,
+                    "w": 0.0,
+                    "p": 1.0
+                }
+            },
+            "north": {"type": "SYMMETRY"},
+            "south": {"type": "SYMMETRY"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        },
+        "levelset": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {"type": "ZEROGRADIENT"},
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        }
+    },
+    "initial_condition": {
+        "primitives": {
+            "rho": 1.0,
+            "u": 0.23664319132398464,
+            "v": 0.0,
+            "w": 0.0,
+            "p": 1.0
+        },
+        "levelset": "lambda x,y: - 0.5 + jnp.sqrt(x**2 + y**2)"
+    },
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "transport": {
+            "dynamic_viscosity": {
+                "model": "CUSTOM",
+                "value": 0.005916079783099616
+            },
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": {
+                "model": "CUSTOM",
+                "value": 0.0
+            }
+        }
+    },
+    "forcings": {
+        "temperature_target": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure"],
+        "levelset": ["levelset", "volume_fraction"]
+    }
+}

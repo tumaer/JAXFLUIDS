@@ -1,65 +1,37 @@
-#*------------------------------------------------------------------------------*
-#* JAX-FLUIDS -                                                                 *
-#*                                                                              *
-#* A fully-differentiable CFD solver for compressible two-phase flows.          *
-#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *
-#*                                                                              *
-#* This program is free software: you can redistribute it and/or modify         *
-#* it under the terms of the GNU General Public License as published by         *
-#* the Free Software Foundation, either version 3 of the License, or            *
-#* (at your option) any later version.                                          *
-#*                                                                              *
-#* This program is distributed in the hope that it will be useful,              *
-#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *
-#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
-#* GNU General Public License for more details.                                 *
-#*                                                                              *
-#* You should have received a copy of the GNU General Public License            *
-#* along with this program.  If not, see <https://www.gnu.org/licenses/>.       *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* CONTACT                                                                      *
-#*                                                                              *
-#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* Munich, April 15th, 2022                                                     *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-
 from functools import partial
 import time
 from typing import List, Tuple, Union, Dict
 
 import jax
-from jax.config import config
 import jax.numpy as jnp
+from jax import Array
+import numpy as np
 
-from jaxfluids.boundary_condition import BoundaryCondition
-from jaxfluids.domain_information import DomainInformation
+from jaxfluids.callbacks.base_callback import Callback
+from jaxfluids.data_types.buffers import ForcingBuffers, IntegrationBuffers, IntegrationBuffers, \
+    SimulationBuffers, MaterialFieldBuffers, LevelsetFieldBuffers, ForcingParameters, \
+    TimeControlVariables
+from jaxfluids.data_types.information import LevelsetResidualInformation, StepInformation, \
+    WallClockTimes, TurbulentStatisticsInformation
+from jaxfluids.data_types.numerical_setup import NumericalSetup
+from jaxfluids.data_types.case_setup import CaseSetup
+from jaxfluids.diffuse_interface.diffuse_interface_handler import DiffuseInterfaceHandler
+from jaxfluids.feedforward_utils import configure_multistep, initialize_fields_for_feedforward
 from jaxfluids.forcing.forcing import Forcing
-from jaxfluids.input_reader import InputReader
-from jaxfluids.io_utils.logger import Logger
+from jaxfluids.input.input_manager import InputManager
 from jaxfluids.io_utils.output_writer import OutputWriter
-from jaxfluids.levelset.interface_quantity_computer import InterfaceQuantityComputer
-from jaxfluids.materials.material_manager import Material
-from jaxfluids.materials.material_manager import MaterialManager
-from jaxfluids.solvers.riemann_solvers.eigendecomposition import Eigendecomposition
-from jaxfluids.solvers.riemann_solvers.riemann_solver import RiemannSolver
-from jaxfluids.levelset.levelset_handler import LevelsetHandler 
-from jaxfluids.levelset.levelset_reinitializer import LevelsetReinitializer
-from jaxfluids.levelset.geometry_calculator import GeometryCalculator
+from jaxfluids.io_utils.logger import Logger
+from jaxfluids.levelset.geometry_calculator import compute_fluid_masks, compute_cut_cell_mask
+from jaxfluids.levelset.levelset_handler import LevelsetHandler
 from jaxfluids.space_solver import SpaceSolver
-from jaxfluids.stencils import DICT_FIRST_DERIVATIVE_CENTER
-from jaxfluids.stencils.spatial_derivative import SpatialDerivative
-from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
-from jaxfluids.time_integration import DICT_TIME_INTEGRATION
+from jaxfluids.solvers.positivity.positivity_handler import PositivityHandler
+from jaxfluids.time_integration.BDF import BDF_Solver
 from jaxfluids.time_integration.time_integrator import TimeIntegrator
-from jaxfluids.utilities import get_primitives_from_conservatives, get_conservatives_from_primitives
-from jaxfluids.unit_handler import UnitHandler
-from jaxfluids.turb.turb_stats_manager import TurbStatsManager
+from jaxfluids.turb.statistics.turb_stats_manager_online import TurbulentOnlineStatisticsManager
+from jaxfluids.turb.statistics.turb_stats_manager_postprocess import TurbulentStatisticsManager, \
+    turbulent_statistics_for_logging
+from jaxfluids.config import precision
+from jaxfluids.materials import DICT_MATERIAL
 
 class SimulationManager:
     """ The SimulationManager is the top-level class in JAX-FLUIDS. It
@@ -68,575 +40,1088 @@ class SimulationManager:
 
     The most important methods of the SimulationManager are:
     1) simulate()               -   Performs conventional CFD simulation.
+                                    Output
     2) feedforward()            -   Feedforward of a batch of data, i.e.,
         advances a batch of initial conditions in time for a fixed amount of steps
     3) do_integration_step()    -   Performs a single integration step
     """
 
-    def __init__(self, input_reader: InputReader) -> None:
+    def __init__(
+            self,
+            input_manager: InputManager,
+            callbacks: Union[Callback, List[Callback]] = None
+            ) -> None:
 
-        self.input_reader       = input_reader
-        self.numerical_setup    = self.input_reader.numerical_setup
+        self.eps = precision.get_eps()
 
-        config.update("jax_enable_x64", self.numerical_setup["output"]["is_double_precision_compute"])
+        self.input_manager = input_manager
+        self.case_setup: CaseSetup = input_manager.case_setup
+        self.numerical_setup: NumericalSetup = input_manager.numerical_setup
 
-        # SET EPSILON IN CLASSES
-        self.eps    = jnp.finfo(jnp.float64).eps if self.numerical_setup["output"]["is_double_precision_compute"] \
-            else jnp.finfo(jnp.float32).eps
-        classes     = [Material, SpatialReconstruction, SpatialDerivative, Eigendecomposition, RiemannSolver,
-            GeometryCalculator, LevelsetHandler, LevelsetReinitializer, InterfaceQuantityComputer]
-        for c in classes:
-            c.eps = self.eps
+        self.unit_handler = input_manager.unit_handler # ONLY OUTPUT WRITER SHOULD NEED THIS NOW
+        self.material_manager = input_manager.material_manager
+        self.equation_manager = input_manager.equation_manager
+        self.domain_information = input_manager.domain_information
+        self.halo_manager = input_manager.halo_manager
+        self.equation_information = input_manager.equation_information
 
-        self.eps_time = 1e-12
+        # TIME INTEGRATION
+        self.fixed_timestep = self.numerical_setup.conservatives.time_integration.fixed_timestep
+        self.end_step = self.case_setup.general_setup.end_step
+        self.end_time = self.case_setup.general_setup.end_time
 
-        self.unit_handler = UnitHandler( **input_reader.nondimensionalization_parameters )
-
-        self.domain_information = DomainInformation(
-            dim                 = input_reader.dim,
-            nx                  = input_reader.nx,
-            ny                  = input_reader.ny,
-            nz                  = input_reader.nz,
-            nh_conservatives    = self.numerical_setup["conservatives"]["halo_cells"],
-            nh_geometry         = self.numerical_setup["levelset"]["halo_cells"] if input_reader.levelset_type != None else None,
-            domain_size         = self.unit_handler.non_dimensionalize_domain_size(input_reader.domain_size)
-        )
-
-        self.material_manager = MaterialManager(
-            unit_handler        = self.unit_handler,
-            material_properties = input_reader.material_properties,
-            levelset_type       = input_reader.levelset_type
-            )
-
-        self.boundary_condition = BoundaryCondition(    
-            domain_information      = self.domain_information,
-            material_manager        = self.material_manager,
-            unit_handler            = self.unit_handler,
-            boundary_types          = input_reader.boundary_location_types,
-            wall_velocity_functions = input_reader.wall_velocity_functions,
-            dirichlet_functions     = input_reader.dirichlet_functions,
-            neumann_functions       = input_reader.neumann_functions,
-            levelset_type           = input_reader.levelset_type
-        )
-
-        # TIME CONTROL
-        if "fixed_timestep" in self.numerical_setup["conservatives"]["time_integration"].keys():
-            self.fixed_timestep = self.unit_handler.non_dimensionalize(self.numerical_setup["conservatives"]["time_integration"]["fixed_timestep"], "time")
-        else:
-            self.fixed_timestep = False
-        self.end_time       = self.unit_handler.non_dimensionalize(input_reader.end_time, "time")
-        self.CFL            = self.numerical_setup["conservatives"]["time_integration"]["CFL"]
-
-        self.time_integrator : TimeIntegrator = DICT_TIME_INTEGRATION[self.numerical_setup["conservatives"]["time_integration"]["integrator"]](nh=self.domain_information.nh_conservatives, inactive_axis=self.domain_information.inactive_axis)
-
+        time_integrator = self.numerical_setup.conservatives.time_integration.integrator
+        self.time_integrator: TimeIntegrator = time_integrator(
+            nh = self.domain_information.nh_conservatives,
+            inactive_axes = self.domain_information.inactive_axes)
+        
         # LEVELSET HANDLER
-        if self.input_reader.levelset_type != None:
-            self.levelset_handler    = LevelsetHandler(
-                domain_information          = self.domain_information,   
-                numerical_setup             = self.numerical_setup,
-                material_manager            = self.material_manager,
-                unit_handler                = self.unit_handler,
-                solid_interface_velocity    = self.input_reader.solid_interface_velocity,
-                boundary_condition          = self.boundary_condition,
-                )
+        if self.equation_information.levelset_model:
+            self.levelset_handler = LevelsetHandler(
+                domain_information=self.domain_information,
+                numerical_setup=self.numerical_setup,
+                material_manager=self.material_manager,
+                equation_manager=self.equation_manager,
+                halo_manager=self.halo_manager,
+                solid_properties=self.case_setup.solid_properties_setup)
+        else:
+            self.levelset_handler = None
+
+        # DIFFUSE INTERFACE HANDLER
+        if self.equation_information.diffuse_interface_model:
+            self.diffuse_interface_handler = DiffuseInterfaceHandler(
+                domain_information=self.domain_information,
+                numerical_setup=self.numerical_setup,
+                material_manager=self.material_manager,
+                unit_handler=self.unit_handler,
+                equation_manager=self.equation_manager,
+                halo_manager=self.halo_manager)
+        else:
+            self.diffuse_interface_handler = None
+
+        # POSITIVITY HANDLER
+        self.positivity_handler = PositivityHandler(
+            domain_information=self.domain_information,
+            material_manager=self.material_manager,
+            equation_manager=self.equation_manager,
+            halo_manager=self.halo_manager,
+            numerical_setup=self.numerical_setup,
+            levelset_handler=self.levelset_handler,
+            diffuse_interface_handler=self.diffuse_interface_handler)
 
         # SPACE SOLVER
         self.space_solver = SpaceSolver(
-            domain_information  = self.domain_information,    
-            material_manager    = self.material_manager,
-            numerical_setup     = self.numerical_setup,
-            gravity             = self.unit_handler.non_dimensionalize(input_reader.gravity, "gravity"),
-            levelset_type       = self.input_reader.levelset_type,
-            levelset_handler    = self.levelset_handler if self.input_reader.levelset_type else None
-            )
+            domain_information=self.domain_information,
+            material_manager=self.material_manager,
+            equation_manager=self.equation_manager,
+            halo_manager=self.halo_manager,
+            numerical_setup=self.numerical_setup,
+            gravity=self.case_setup.forcing_setup.gravity,
+            geometric_source=self.case_setup.forcing_setup.geometric_source,
+            levelset_handler=self.levelset_handler,
+            diffuse_interface_handler=self.diffuse_interface_handler,
+            positivity_handler=self.positivity_handler)
 
-        # TURBULENT STATISTICS 
-        if self.input_reader.is_turb_init:
-            self.turb_stats_manager = TurbStatsManager(
+        self.numerical_setup.active_physics.is_geometric_source
+        # FORCINGS
+        if self.numerical_setup.active_forcings:
+            self.forcings_computer = Forcing(
+                domain_information=self.domain_information,
+                equation_information=self.equation_information,
+                material_manager=self.material_manager,
+                unit_handler=self.unit_handler,
+                forcing_setup=self.case_setup.forcing_setup,
+                active_forcings_setups=self.numerical_setup.active_forcings,
+                active_physics=self.numerical_setup.active_physics)
+        # OUTPUT WRITER
+        self.output_writer = OutputWriter(
+            input_manager=input_manager,
+            unit_handler=self.unit_handler,
+            domain_information=self.domain_information,
+            equation_information=self.equation_information,
+            material_manager=self.material_manager,
+            levelset_handler=self.levelset_handler)
+
+        # LOGGER
+        self.logger = Logger(
+            numerical_setup=self.numerical_setup,
+            jax_backend=jax.default_backend(),
+            is_multihost=self.domain_information.is_multihost)
+
+        # CALLBACKS INIT
+        if isinstance(callbacks, Callback):
+            callbacks = [callbacks]
+        self.callbacks = callbacks or []
+        for cb in self.callbacks:
+            assert isinstance(cb, Callback)
+            cb.init_callback(
                 domain_information  = self.domain_information,
                 material_manager    = self.material_manager,
-            )
+                halo_manager        = self.halo_manager,
+                logger              = self.logger,
+                output_writer       = self.output_writer)
 
-        # FORCINGS
-        if self.input_reader.active_forcings:
-            self.forcings_computer = Forcing( 
-                domain_information      = self.domain_information,
-                material_manager        = self.material_manager, 
-                unit_handler            = self.unit_handler,
-                levelset_handler        = self.levelset_handler if self.input_reader.levelset_type != None else None,
-                levelset_type           = self.input_reader.levelset_type,
-                is_mass_flow_forcing    = self.numerical_setup["active_forcings"]["is_mass_flow_forcing"],
-                is_temperature_forcing  = self.numerical_setup["active_forcings"]["is_temperature_forcing"],
-                is_turb_hit_forcing     = self.numerical_setup["active_forcings"]["is_turb_hit_forcing"],
-                mass_flow_target        = self.input_reader.mass_flow_target,
-                flow_direction          = self.input_reader.mass_flow_direction,
-                temperature_target      = self.input_reader.temperature_target 
-                )
-
-        # OUTPUT WRITER
-        self.output_writer = OutputWriter(  
-            input_reader                        = input_reader,
-            unit_handler                        = self.unit_handler,
-            domain_information                  = self.domain_information,
-            material_manager                    = self.material_manager,
-            levelset_handler                    = self.levelset_handler if self.input_reader.levelset_type != None else None,
-            derivative_stencil_conservatives    = DICT_FIRST_DERIVATIVE_CENTER[self.numerical_setup["output"]["derivative_stencil"]](nh=self.domain_information.nh_conservatives, inactive_axis=self.domain_information.inactive_axis),
-            derivative_stencil_geometry         = DICT_FIRST_DERIVATIVE_CENTER[self.numerical_setup["output"]["derivative_stencil"]](nh=self.domain_information.nh_geometry, inactive_axis=self.domain_information.inactive_axis) if self.input_reader.levelset_type != None else None,
-            )
-
-        self.logger = Logger("", logging_level=self.numerical_setup["output"]["logging"]) 
-
-    def simulate(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]) -> None:
+    def simulate(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters = ForcingParameters(),
+            ml_parameters_dict: Dict = None,
+            ml_networks_dict: Dict = None,
+            ) -> int:
         """Performs a conventional CFD simulation.
 
-        :param buffer_dictionary: Dictionary containing the material field buffers,
-        levelset quantitiy buffers, time control and mass flow forcing parameters
-        :type buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]
+        :param simulation_buffers: _description_
+        :type simulation_buffers: SimulationBuffers
+        :param time_control_variables: _description_
+        :type time_control_variables: TimeControlVariables
+        :param forcing_parameters: _description_
+        :type forcing_parameters: ForcingParameters
+        :return: _description_
+        :rtype: _type_
         """
-        self.initialize(buffer_dictionary)
-        self.advance(buffer_dictionary)
+        self.initialize(
+            simulation_buffers,
+            time_control_variables,
+            forcing_parameters)
+        return_value = self.advance(
+            simulation_buffers,
+            time_control_variables,
+            forcing_parameters,
+            ml_parameters_dict,
+            ml_networks_dict)
+        return return_value
 
-    def initialize(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]) -> None:
-        """ Initializes the simulation, i.e., creates the output directory,
-        logs the numerical and case setup, and writes the initial output.
+    def initialize(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters = None
+            ) -> None:
+        """ Initializes the simulation, i.e., creates the
+        output directory, logs the numerical and case setup,
+        and writes the initial output.
 
-        :param buffer_dictionary: Dictionary containing the material field buffers,
-        levelset quantitiy buffers, time control and mass flow forcing parameters
-        :type buffer_dictionary: Dict
+        :param simulation_buffers: _description_
+        :type simulation_buffers: SimulationBuffers
+        :param time_control_variables: _description_
+        :type time_control_variables: TimeControlVariables
+        :param forcing_parameters: _description_, defaults to None
+        :type forcing_parameters: ForcingParameters, optional
         """
+
+        self.sanity_check(simulation_buffers, time_control_variables, forcing_parameters)
 
         # CREATE OUTPUT FOLDER, CASE SETUP AND NUMERICAL SETUP
-        self.output_writer.create_folder()
+        save_path_case, save_path_domain, save_path_statistics \
+            = self.output_writer.configure_output_writer()
 
         # CONFIGURE LOGGER AND LOG NUMERICAL SETUP AND CASE SETUP
-        self.logger.configure_logger(self.output_writer.save_path_case)
+        self.logger.configure_logger(save_path_case)
         self.logger.log_initialization()
-        self.logger.log_numerical_setup_and_case_setup(*self.input_reader.info())
-
-        # LOG TURBULENT STATS
-        if self.input_reader.is_turb_init:
-            nhx, nhy, nhz       = self.domain_information.domain_slices_conservatives
-            turbulent_statistics_dict = self.turb_stats_manager.get_turbulent_statistics(
-                buffer_dictionary["material_fields"]["primes"][...,nhx,nhy,nhz])
-            self.logger.log_turbulent_stats_at_start(turbulent_statistics_dict)
+        self.logger.log_numerical_setup_and_case_setup(*self.input_manager.info())
 
         # WRITE INITIAL OUTPUT
-        current_time = buffer_dictionary["time_control"]["current_time"]
-        self.output_writer.next_timestamp += current_time
-        self.output_writer.write_output(buffer_dictionary, force_output=True)
+        self.output_writer.set_simulation_start_time(time_control_variables.physical_simulation_time)
 
-    def advance(self, buffer_dictionary: Dict[str, Dict[str, Union[jnp.ndarray, float]]]) -> None:
-        """ Advances the initial buffers in time.
+        self.output_writer.write_output(
+            simulation_buffers, time_control_variables,
+            WallClockTimes(), forcing_parameters, 
+            force_output=True)  
 
-        :param buffer_dictionary: ictionary containing the material field buffers,
-        levelset quantitiy buffers, time control and mass flow forcing parameters
-        :type buffer_dictionary: Dict
+    def sanity_check(
+        self,
+        simulation_buffers: SimulationBuffers,
+        time_control_variables: TimeControlVariables,
+        forcing_parameters: ForcingParameters = None
+        ) -> None:
+        """Very light weight initial sanity check of inputs to simulate.
+        #TODO should we expand this?
+
+        :param simulation_buffers: _description_
+        :type simulation_buffers: SimulationBuffers
+        :param time_control_variables: _description_
+        :type time_control_variables: TimeControlVariables
+        :param forcing_parameters: _description_, defaults to None
+        :type forcing_parameters: ForcingParameters, optional
+        """
+
+        assert_string = "No simulation buffer provided to simulate()."
+        assert simulation_buffers is not None, assert_string
+
+        assert_string = "No time control variables provided to simulate()."
+        assert time_control_variables is not None, assert_string
+
+        if any((self.numerical_setup.active_forcings.is_mass_flow_forcing,
+                self.numerical_setup.active_forcings.is_turb_hit_forcing)):
+            assert_string = ("Mass flow forcing or turbulent HIT forcing is active "
+                             "but no forcing parameters were provided to simulate().")
+            is_all_forcing_parameters_none = all(map(lambda x: x is None, forcing_parameters))
+            assert forcing_parameters is not None and not is_all_forcing_parameters_none, \
+                assert_string
+
+    def advance(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters = None,
+            ml_parameters_dict: Dict = None,
+            ml_networks_dict = None,
+            ) -> None:
+        """Advances the initial buffers in time.
+
+        :param simulation_buffers: _description_
+        :type simulation_buffers: SimulationBuffers
+        :param time_control_variables: _description_
+        :type time_control_variables: TimeControlVariables
+        :param forcing_parameters: _description_, defaults to None
+        :type forcing_parameters: ForcingParameters, optional
+        :return: _description_
+        :rtype: _type_
         """
 
         # LOG SIMULATION START
         self.logger.log_sim_start()
 
         # START LOOP
-        start_loop      = time.time()
-        current_step    = 0
-        current_time    = buffer_dictionary["time_control"]["current_time"]
-        while current_time < self.end_time - self.eps_time:
+        start_loop = self.synchronize_and_clock(
+            simulation_buffers.material_fields.primitives)
 
-            start_iteration = time.time()
+        # CALLBACK on_simulation_start
+        # buffer_dictionary = self._callback("on_simulation_start",
+        #   buffer_dictionary=buffer_dictionary)
 
-            # COMPUTE TIMESTEP 
-            if self.fixed_timestep:
-                timestep_size = self.fixed_timestep
+        physical_simulation_time = time_control_variables.physical_simulation_time
+        simulation_step = time_control_variables.simulation_step
+
+        wall_clock_times = WallClockTimes()
+
+        while physical_simulation_time < self.end_time and \
+            simulation_step < self.end_step:
+
+            start_step = self.synchronize_and_clock(
+                simulation_buffers.material_fields.primitives)
+
+            # COMPUTE REINITIALIZATION FLAG
+            if self.equation_information.levelset_model:
+                perform_reinitialization = \
+                self.levelset_handler.get_reinitialization_flag(
+                    time_control_variables.simulation_step)
             else:
-                timestep_size = self.compute_timestep(
-                        **buffer_dictionary["material_fields"],
-                        **buffer_dictionary["levelset_quantities"]
-                        )
-            buffer_dictionary["time_control"]["timestep_size"] = timestep_size
+                perform_reinitialization = None
 
-            # COMPUTE FORCINGS
-            if self.input_reader.active_forcings:
-                if self.numerical_setup["active_forcings"]["is_turb_hit_forcing"]:
-                    material_fields, _, _ = self.do_integration_step(
-                            **buffer_dictionary["material_fields"],
-                            **buffer_dictionary["time_control"])
-                    buffer_dictionary["material_fields"]["primes_dash"] = material_fields["primes"]
-                forcings_dictionary = self.forcings_computer.compute_forcings(
-                    **buffer_dictionary["material_fields"],
-                    **buffer_dictionary["time_control"],
-                    **buffer_dictionary["levelset_quantities"],
-                    **buffer_dictionary["mass_flow_forcing"],
-                    logger=self.logger
-                    )
-                if self.numerical_setup["active_forcings"]["is_mass_flow_forcing"]:
-                    buffer_dictionary["mass_flow_forcing"].update(forcings_dictionary["mass_flow"])
+            # COMPUTE INTERFACE COMPRESSION FLAG
+            if self.equation_information.diffuse_interface_model:
+                perform_compression = \
+                    self.diffuse_interface_handler.get_compression_flag(
+                        time_control_variables.simulation_step)
             else:
-                forcings_dictionary = None
-
-            # INTEGRATION STEP
-            if self.input_reader.levelset_type != None:
-                reinitialize = True if current_step % self.levelset_handler.interval_reinitialization == 0 else False
-            else:
-                reinitialize = False
-            material_fields, levelset_quantities, residuals = self.do_integration_step(
-                **buffer_dictionary["material_fields"],
-                **buffer_dictionary["time_control"],
-                **buffer_dictionary["levelset_quantities"],
-                **buffer_dictionary["machinelearning_modules"],
-                forcings_dictionary=forcings_dictionary,
-                reinitialize=reinitialize
-            )
-            buffer_dictionary["material_fields"].update(material_fields)
-            buffer_dictionary["levelset_quantities"].update(levelset_quantities)
-
-            # INCREMENT PHYSICAL SIMULATION TIME
-            current_time += timestep_size
-            buffer_dictionary["time_control"]["current_time"] = current_time
+                perform_compression = None
             
-            # FORCE PYTHON TO WAIT FOR JAX COMPUTATIONS TO COMPLETE
-            buffer_dictionary["material_fields"]["cons"].block_until_ready()
+            # PERFORM INTEGRATION STEP
+            simulation_buffers, time_control_variables, \
+            forcing_parameters, step_information = \
+            self.do_integration_step(
+                simulation_buffers,
+                time_control_variables,
+                forcing_parameters,
+                perform_reinitialization,
+                perform_compression,
+                ml_parameters_dict,
+                ml_networks_dict)
+
+            # CLOCK INTEGRATION STEP
+            end_step = self.synchronize_and_clock(
+                simulation_buffers.material_fields.primitives)
+            wall_clock_step = end_step - start_step
+
+            # COMPUTE WALL CLOCK TIMES FOR TIME STEP
+            wall_clock_times = self.compute_wall_clock_time(
+                wall_clock_step, wall_clock_times,
+                time_control_variables.simulation_step)
+
+            # LOG TERMINAL END TIME STEP
+            self.logger.log_end_time_step(
+                time_control_variables, step_information,
+                wall_clock_times, self.unit_handler.time_reference)
 
             # WRITE H5 OUTPUT
-            self.output_writer.write_output(buffer_dictionary, force_output=False)
+            self.output_writer.write_output(
+                simulation_buffers, time_control_variables,
+                wall_clock_times, forcing_parameters)
 
-            # COMPUTE WALL CLOCK FOR TIME STEP
-            wall_clock_step = time.time() - start_iteration
-            wall_clock_step_cell =  wall_clock_step / self.domain_information.resolution
-            mean_wall_clock_step = (wall_clock_step + mean_wall_clock_step*(current_step - 1))/current_step if current_step > 3 else wall_clock_step
-            mean_wall_clock_step_cell = (wall_clock_step_cell + mean_wall_clock_step_cell*(current_step - 1))/current_step if current_step > 3 else wall_clock_step_cell
-            
-            # INCREMENT CURRENT STEP
-            current_step += 1
+            # UNPACK FOR WHILE LOOP
+            physical_simulation_time = time_control_variables.physical_simulation_time
+            simulation_step = time_control_variables.simulation_step
 
-            # LOG TERMINAL
-            print_list = [
-                'CURRENT TIME                   = %4.4e' % (self.unit_handler.dimensionalize(current_time, "time")),
-                'CURRENT DT                     = %4.4e' % (self.unit_handler.dimensionalize(timestep_size, "time")),
-                'CURRENT STEP                   = %6d'   % current_step,
-                'WALL CLOCK TIMESTEP            = %4.4e' % wall_clock_step,
-                'MEAN WALL CLOCK TIMESTEP       = %4.4e' % mean_wall_clock_step,
-                'WALL CLOCK TIMESTEP CELL       = %4.4e' % (wall_clock_step_cell),
-                'MEAN WALL CLOCK TIMESTEP CELL  = %4.4e' % (mean_wall_clock_step_cell)
-            ]
-
-            if self.input_reader.levelset_type != None:
-                print_list += [ 'RESIDUAL EXTENSION PRIMES      = %4.4e'    % residuals["extension_primes"] ]
-            if self.input_reader.levelset_type == "FLUID-FLUID":
-                print_list += [ 'RESIDUAL EXTENSION INTERFACE   = %4.4e'    % residuals["extension_interface"] ]
-                print_list += [ 'RESIDUAL REINITIALIZATION      = %4.4e'    % residuals["reinitialization"] ]
-                
-            self.logger.log_end_time_step(print_list)
-
+        # CALLBACK on_simulation_end
+        # buffer_dictionary = self._callback("on_simulation_end",
+        #   buffer_dictionary=buffer_dictionary)
 
         # FINAL OUTPUT
-        self.output_writer.write_output(buffer_dictionary, force_output=True, simulation_finish=True)
+        self.output_writer.write_output(
+            simulation_buffers, time_control_variables,
+            wall_clock_times, forcing_parameters,
+            force_output=True, simulation_finish=True)
 
         # LOG SIMULATION FINISH
-        self.logger.log_sim_finish(time.time() - start_loop)
+        end_loop = self.synchronize_and_clock(
+            simulation_buffers.material_fields.primitives)
+        self.logger.log_sim_finish(end_loop - start_loop)
 
-    @partial(jax.jit, static_argnums=(0, 8, 11))
-    def do_integration_step(self, cons: jnp.ndarray, primes: jnp.ndarray, timestep_size: float, current_time: float,
-        levelset: Union[jnp.ndarray, None] = None, volume_fraction: Union[jnp.ndarray, None] = None, apertures: Union[List, None] = None,
-        reinitialize: bool = False, forcings_dictionary: Union[Dict, None] = None, 
-        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None, **kwargs) -> Tuple[Dict, Dict, Dict]:
-        """Performs an integration step using the specified integration scheme. For twophase simulations 
-        a single RK stage consists of the following:
-        1) Compute right-hand-side of Navier-Stokes and levelset advection equation
-        2) Transform volume-averaged conservatives to actual conservatives
-            that can be integrated according to volume fraction
-        3) Prepare the conservative and levelset buffer for integration according
-            to the present integration scheme
-        4) Integrate conservatives
-        5) Integrate levelset + reinitialize levelset + fill levelset boundaries
-        6) Compute volume fraction and apertures from integrated levelset quantities
-        7) Apply the mixing procedure to the integrated conservative variables
-        8) Transform mixed conservative variables to volume-averaged conservative variables and compute 
-            corresponding primitive variables
-        9) Extend primitive variables into ghost cells and compute conservative variables in ghost cells from extended primitive
-            variables
-        10) Fill material boundaries
+        return bool(physical_simulation_time >= self.end_time)
 
-        :param cons: Buffer of conservative variables
-        :type cons: jnp.ndarray
-        :param primes: Buffer of primitive variables
-        :type primes: jnp.ndarray
-        :param timestep_size: Current physical time step size
-        :type timestep_size: float
-        :param current_time: Current physical simulation time
-        :type current_time: float
-        :param levelset: Levelset buffer, defaults to None
-        :type levelset: Union[jnp.ndarray, None], optional
-        :param volume_fraction: Volume fraction buffer, defaults to None
-        :type volume_fraction: Union[jnp.ndarray, None], optional
-        :param apertures: Aperture buffers, defaults to None
-        :type apertures: Union[List, None], optional
-        :param reinitialize: Flag indicating whether to reinitialize levelset in the present time step, defaults to False
-        :type reinitialize: bool, optional
-        :param forcings_dictionary: Dictionary containing forcing buffers, defaults to None
-        :type forcings_dictionary: Union[Dict, None], optional
-        :param ml_parameters_dict: Dictionary containing NN weights, defaults to None
-        :type ml_parameters_dict: Union[Dict, None], optional
-        :param ml_networks_dict: Dictionary containing NN architectures, defaults to None
-        :type ml_networks_dict: Union[Dict, None], optional
-        :return: Tuple of material fields dictionary, levelset quantities dictionary and residual dictionary
-        :rtype: Tuple[Dict, Dict, Dict]
+    def compute_wall_clock_time(
+            self,
+            wall_clock_step: float,
+            wall_clock_times: WallClockTimes,
+            simulation_step: jnp.int32
+            ) -> WallClockTimes:
+        """Computes the instantaneous 
+        and mean wall clock time for the
+        a single simulation steps.
+
+        :param wall_clock_step: _description_
+        :type wall_clock_step: float
+        :param simulation_step: _description_
+        :type simulation_step: jnp.int32
+        :param wall_clock_times: _description_
+        :type wall_clock_times: WallClockTimes
+        :return: _description_
+        :rtype: WallClockTimes
         """
-        
-        # DEFAULT VALUES FOR RESIDUALS
-        residual_primes = None if self.input_reader.levelset_type == None else 0.0
-        residual_reinit = None if self.input_reader.levelset_type != "FLUID-FLUID" else 0.0
-        
-        # INIT BUFFER FOR RUNGE KUTTA SCHEME
-        if self.time_integrator.no_stages > 1:
-            init_cons       = self.levelset_handler.transform_to_conservatives(cons, volume_fraction) if self.input_reader.levelset_type != None else jnp.array(cons, copy=True)
-            init_levelset   = jnp.array(levelset, copy=True) if self.input_reader.levelset_type in ["FLUID-FLUID", "FLUID-SOLID-DYNAMIC"] else None
+        offset = 10
+        cells_per_device = self.domain_information.cells_per_device
+        if simulation_step >= offset:
+            mean_wall_clock_step = wall_clock_times.mean_step
+            mean_wall_clock_step_cell = wall_clock_times.mean_step_per_cell
+            wall_clock_step_cell = wall_clock_step / cells_per_device
+            mean_wall_clock_step = (wall_clock_step + mean_wall_clock_step * (simulation_step - offset)) / (simulation_step - offset + 1)
+            mean_wall_clock_step_cell = (wall_clock_step_cell + mean_wall_clock_step_cell * (simulation_step - offset)) / (simulation_step - offset + 1)
+        else:
+            wall_clock_step_cell = wall_clock_step / cells_per_device
+            mean_wall_clock_step = wall_clock_step
+            mean_wall_clock_step_cell = wall_clock_step_cell
 
-        current_time_stage = current_time
-
-        # LOOP STAGES
-        for stage in range( self.time_integrator.no_stages ):
-
-            # RIGHT HAND SIDE
-            rhs_cons, rhs_levelset, residual_interface = self.space_solver.compute_rhs(
-                cons, primes, current_time_stage, 
-                levelset, volume_fraction, apertures, 
-                forcings_dictionary, 
-                ml_parameters_dict, ml_networks_dict)
-
-            # TRANSFORM TO CONSERVATIVES
-            if self.input_reader.levelset_type != None:
-                cons = self.levelset_handler.transform_to_conservatives(cons, volume_fraction)
-
-            # PREPARE BUFFER FOR RUNGE KUTTA INTEGRATION
-            if stage > 0:
-                cons = self.time_integrator.prepare_buffer_for_integration(cons, init_cons, stage)
-                if self.input_reader.levelset_type in ["FLUID-FLUID", "FLUID-SOLID-DYNAMIC"]:
-                    levelset = self.time_integrator.prepare_buffer_for_integration(levelset, init_levelset, stage)
-
-            # INTEGRATE
-            cons = self.time_integrator.integrate(cons, rhs_cons, timestep_size, stage)
-            if self.input_reader.levelset_type in ["FLUID-FLUID", "FLUID-SOLID-DYNAMIC"]:
-                levelset_new = self.time_integrator.integrate(levelset, rhs_levelset, timestep_size, stage)
-                
-                # REINITIALIZE
-                if self.input_reader.levelset_type == "FLUID-FLUID" and stage == self.time_integrator.no_stages - 1 and reinitialize:
-                    levelset_new, residual_reinit   = self.levelset_handler.reinitialize(levelset_new, False)
-                else:
-                    residual_reinit = 0.0
-
-                # LEVELSET BOUNDARIES AND INTERFACE RECONSTRUCTION
-                levelset_new                        = self.boundary_condition.fill_boundary_levelset(levelset_new)
-                volume_fraction_new, apertures_new  = self.levelset_handler.compute_volume_fraction_and_apertures(levelset_new)
+        wall_clock_times = WallClockTimes(
+            wall_clock_step, wall_clock_step_cell,
+            mean_wall_clock_step, mean_wall_clock_step_cell)
             
-            elif self.input_reader.levelset_type == "FLUID-SOLID-STATIC":
-                levelset_new, volume_fraction_new, apertures_new = levelset, volume_fraction, apertures
+        return wall_clock_times
 
-            current_time_stage = current_time + timestep_size*self.time_integrator.timestep_increment_factor[stage]
+    def synchronize_and_clock(
+            self,
+            buffer: Array,
+            all_reduce: bool = False
+            ) -> float:
+        """Synchronizes jax and python by blocking
+        python until the input buffer is ready.
+        For multi-host simulations, subsequently
+        performs a all-reduce operation to
+        synchronize all hosts. 
 
-            # MIXING AND PRIME EXTENSION
-            if self.input_reader.levelset_type != None:
-                cons, mask_small_cells = self.levelset_handler.mixing(cons, levelset_new, volume_fraction_new, volume_fraction)
-                cons    = self.levelset_handler.transform_to_volume_averages(cons, volume_fraction_new)
-                primes  = self.levelset_handler.compute_primitives_from_conservatives_in_real_fluid(cons, primes, levelset_new, volume_fraction_new, mask_small_cells)
-                cons, primes, residual_primes           = self.levelset_handler.extend_primes(cons, primes, levelset_new, volume_fraction_new, current_time_stage, mask_small_cells)
-                levelset, volume_fraction, apertures    = levelset_new, volume_fraction_new, apertures_new
-            else:
-                primes = get_primitives_from_conservatives(cons, self.material_manager)
-            
-            # FILL BOUNDARIES
-            cons, primes = self.boundary_condition.fill_boundary_primes(cons, primes, current_time_stage)
-
-        # CREATE DICTIONARIES
-        material_fields     = {"cons": cons, "primes": primes}
-        levelset_quantities = {"levelset": levelset, "volume_fraction": volume_fraction, "apertures": apertures}
-        residuals           = {"extension_primes": residual_primes, "extension_interface": residual_interface, "reinitialization": residual_reinit}
-
-        return material_fields, levelset_quantities, residuals
-
-    @partial(jax.jit, static_argnums=(0))
-    def compute_timestep(self, primes: jnp.ndarray, levelset: jnp.ndarray,
-            volume_fraction: jnp.ndarray, **kwargs) -> float:
-        """Computes the physical time step size depending on the active physics.
-
-        :param primes: Buffer of primitive variables
-        :type primes: jnp.ndarray
-        :param levelset: Levelset buffer
-        :type levelset: jnp.ndarray
-        :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: jnp.ndarray
-        :return: Time step size
+        :param buffer: _description_, defaults to True
+        :type buffer: _type_, optional
+        :return: _description_
         :rtype: float
         """
-        
-        # DOMAIN INFORMATION
-        nhx, nhy, nhz       = self.domain_information.domain_slices_conservatives
-        nhx_, nhy_, nhz_    = self.domain_information.domain_slices_geometry
-        cell_sizes          = self.domain_information.cell_sizes
-        min_cell_size       = jnp.min(jnp.array([jnp.min(dxi) for dxi in cell_sizes]))
+        buffer.block_until_ready()
+        if self.domain_information.is_multihost and all_reduce:
+            local_device_count = self.domain_information.local_device_count
+            host_sync_buffer = np.ones(local_device_count)
+            host_sync_buffer = jax.pmap(lambda x: jax.lax.psum(x, axis_name="i"),
+                axis_name="i")(host_sync_buffer)
+            host_sync_buffer.block_until_ready()
+        return time.time()
 
-        # COMPUTE TEMPERATURE
-        if self.numerical_setup["active_physics"]["is_viscous_flux"] or self.numerical_setup["active_physics"]["is_heat_flux"]:
-            temperature = self.material_manager.get_temperature(primes[4,...,nhx,nhy,nhz], primes[0,...,nhx,nhy,nhz])
+    def _do_integration_step(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters,
+            perform_reinitialization: bool,
+            perform_compression: bool,
+            ml_parameters_dict: Union[Dict, None] = None,
+            ml_networks_dict: Union[Dict, None] = None,
+            is_feedforward: bool = False,
+            ) -> Tuple[SimulationBuffers, TimeControlVariables,
+            ForcingParameters, StepInformation]:
+        """Performs an integration step.
+        1) Compute timestep size
+        2) Compute forcings
+        3) Do Runge Kutta stages
+        4) Compute simulation information, i.e.,
+            positivity state, turbulent statistics
+            etc.
 
-        # COMPUTE MASKS
-        if self.input_reader.levelset_type != None:
-            mask_real, _ = self.levelset_handler.compute_masks(levelset, volume_fraction)
-
-        # CONVECTIVE CONTRIBUTION
-        speed_of_sound  = self.material_manager.get_speed_of_sound(p=primes[4,...,nhx,nhy,nhz], rho=primes[0,...,nhx,nhy,nhz])
-        abs_velocity    = 0.0
-        for i in range(1,4):
-            abs_velocity += (jnp.abs(primes[i,...,nhx,nhy,nhz]) + speed_of_sound)
-        if self.input_reader.levelset_type != None:
-            abs_velocity *= mask_real[...,nhx_,nhy_,nhz_]
-        dt = min_cell_size / ( jnp.max(abs_velocity) + self.eps )
-
-        # VISCOUS CONTRIBUTION
-        if self.numerical_setup["active_physics"]["is_viscous_flux"]:
-            const = 3.0 / 14.0
-            kinematic_viscosity = self.material_manager.get_dynamic_viscosity(temperature) / primes[0,...,nhx,nhy,nhz]
-            if self.input_reader.levelset_type != None:
-                kinematic_viscosity = kinematic_viscosity * mask_real[..., nhx_,nhy_,nhz_]
-            dt = jnp.minimum(dt, const * ( min_cell_size * min_cell_size ) / jnp.max(kinematic_viscosity) )
-
-        # HEAT TRANSFER CONTRIBUTION
-        if self.numerical_setup["active_physics"]["is_heat_flux"]:
-            const = 0.1
-            thermal_diffusivity = self.material_manager.get_thermal_conductivity(temperature) / primes[0,...,nhx,nhy,nhz]
-            if self.input_reader.levelset_type != None:
-                thermal_diffusivity = thermal_diffusivity * mask_real[..., nhx_,nhy_,nhz_]
-            dt = jnp.minimum(dt, const * ( min_cell_size * min_cell_size ) / jnp.max(thermal_diffusivity) )
-
-        dt = self.CFL * dt
-
-        return dt
-
-    def _feed_forward(self, primes_init: jnp.ndarray, levelset_init: jnp.ndarray, n_steps: int, timestep_size: float, 
-        t_start: float, output_freq: int = 1, ml_parameters_dict: Union[Dict, None] = None,
-        ml_networks_dict: Union[Dict, None] = None) -> Tuple[jnp.ndarray, jnp.ndarray]:
-        """Advances the initial buffers in time for a fixed amount of steps and returns the
-        entire trajectory. This function is differentiable and
-        must therefore be used to end-to-end optimize ML models within the JAX-FLUIDS simulator.
-
-        :param primes_init: Initial primitive variables buffer
-        :type primes_init: jnp.ndarray
-        :param levelset_init: Initial levelset buffer
-        :type levelset_init: jnp.ndarray
-        :param n_steps: Number of time steps
-        :type n_steps: int
-        :param timestep_size: Physical time step size
-        :type timestep_size: float
-        :param t_start: Physical start time
-        :type t_start: float
-        :param output_freq: Frequency in time steps for output, defaults to 1
-        :type output_freq: int, optional
+        :param simulation_buffers: _description_
+        :type simulation_buffers: SimulationBuffers
+        :param time_control_variables: _description_
+        :type time_control_variables: TimeControlVariables
+        :param forcing_parameters: _description_
+        :type forcing_parameters: ForcingParameters
+        :param perform_reinitialization: _description_
+        :type perform_reinitialization: bool
         :param ml_parameters_dict: _description_, defaults to None
         :type ml_parameters_dict: Union[Dict, None], optional
         :param ml_networks_dict: _description_, defaults to None
         :type ml_networks_dict: Union[Dict, None], optional
         :return: _description_
-        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
+        :rtype: Tuple[SimulationBuffers, TimeControlVariables, ForcingParameters, StepInformation]
         """
-        # CREATE BUFFER
-        nh               = self.domain_information.nh_conservatives
-        nx, ny, nz       = self.domain_information.number_of_cells
-        nhx, nhy, nhz    = self.domain_information.domain_slices_conservatives
-        nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
+        material_fields = simulation_buffers.material_fields
+        levelset_fields = simulation_buffers.levelset_fields
 
-        # CREATE BUFFER
-        if self.input_reader.levelset_type == "FLUID-FLUID":
-            primes      = jnp.ones((5, 2, nx + 2*nh if nx > 1 else nx, ny + 2*nh if ny > 1 else ny, nz + 2*nh if nz > 1 else nz))
-            cons        = jnp.zeros((5, 2, nx + 2*nh if nx > 1 else nx, ny + 2*nh if ny > 1 else ny, nz + 2*nh if nz > 1 else nz))
-            levelset    = jnp.zeros((nx + 2*nh if nx > 1 else nx, ny + 2*nh if ny > 1 else ny, nz + 2*nh if nz > 1 else nz))
+        if not is_feedforward:
+            # COMPUTE TIMESTEP 
+            physical_timestep_size = self.compute_timestep(
+                material_fields.primitives,
+                levelset_fields.levelset,
+                levelset_fields.volume_fraction)
+            
+            time_control_variables = TimeControlVariables(
+                time_control_variables.physical_simulation_time,
+                time_control_variables.simulation_step,
+                physical_timestep_size)
+
+        # COMPUTE FORCINGS
+        active_forcings = self.numerical_setup.active_forcings
+        if any(active_forcings._asdict().values()):
+            forcing_buffers, forcing_parameters, \
+            forcing_infos = self.forcings_computer.compute_forcings(
+                simulation_buffers, time_control_variables,
+                forcing_parameters, self.do_runge_kutta_stages,
+                ml_parameters_dict=ml_parameters_dict,
+                ml_networks_dict=ml_networks_dict)
         else:
-            primes      = jnp.ones((5, nx + 2*nh if nx > 1 else nx, ny + 2*nh if ny > 1 else ny, nz + 2*nh if nz > 1 else nz))
-            cons        = jnp.zeros((5, nx + 2*nh if nx > 1 else nx, ny + 2*nh if ny > 1 else ny, nz + 2*nh if nz > 1 else nz))
-            levelset    = None
+            forcing_buffers, forcing_infos = None, None
 
-        # PRIME & LEVELSET BUFFER
-        primes       = primes.at[..., nhx, nhy, nhz].set(primes_init)
-        if self.input_reader.levelset_type == "FLUID-FLUID":
-            levelset        = levelset.at[nhx, nhy, nhz].set(levelset_init)
-            levelset        = self.boundary_condition.fill_boundary_levelset(levelset)
-            levelset, _     = self.levelset_handler.reinitialize(levelset, True)
-            levelset        = self.boundary_condition.fill_boundary_levelset(levelset)
-            volume_fraction, apertures  = self.levelset_handler.compute_volume_fraction_and_apertures(levelset)
-            _, primes, _     = self.levelset_handler.extend_primes(cons, primes, levelset, volume_fraction, t_start)
-        else:
-            volume_fraction = None
-            apertures       = None
+        # PERFORM INTEGRATION STEP
+        material_fields, time_control_variables, \
+        levelset_fields, \
+        step_information = self.do_runge_kutta_stages(
+            material_fields, time_control_variables,
+            levelset_fields,
+            forcing_buffers, perform_reinitialization,
+            perform_compression,
+            ml_parameters_dict, ml_networks_dict,
+            is_feedforward)
 
-        # CONSERVATIVES
-        cons = get_conservatives_from_primitives(primes, self.material_manager)
+        # CREATE CONTAINERS
+        simulation_buffers = SimulationBuffers(
+            material_fields, levelset_fields)
 
-        # BOUNDARIES
-        cons, primes = self.boundary_condition.fill_boundary_primes(cons, primes, 0.0)
+        step_information = StepInformation(
+            step_information.positivity_state_info_list,
+            step_information.levelset_residuals_info_list,
+            step_information.levelset_positivity_info_list,
+            forcing_info=forcing_infos)
 
-        # TODO FEED FORWARD FOR LEVELSET
-        if self.input_reader.levelset_type != None:
-            primes_real = self.output_writer.compute_real_buffer(primes[...,nhx,nhy,nhz], volume_fraction[nhx_,nhy_,nhz_])
-            out         = jnp.concatenate([primes_real, jnp.expand_dims(volume_fraction[nhx_,nhy_,nhz_], axis=0)], axis = 0)
-        else:
-            primes_real = primes[:,nhx,nhy,nhz]
-            out         = primes_real
+        return simulation_buffers, time_control_variables, \
+            forcing_parameters, step_information
 
-        # INITIAL OUTPUT
-        solution_list = [out]
-        times_list    = [t_start]
+    def do_runge_kutta_stages(
+            self,
+            material_fields: MaterialFieldBuffers,
+            time_control_variables: TimeControlVariables,
+            levelset_fields: LevelsetFieldBuffers = None,
+            forcing_buffers: ForcingBuffers = None, 
+            perform_reinitialization: bool = False,
+            perform_compression: bool = False,
+            ml_parameters_dict: Union[Dict, None] = None,
+            ml_networks_dict: Union[Dict, None] = None,
+            is_feedforward: bool = False
+            ) -> Tuple[MaterialFieldBuffers, TimeControlVariables,
+            LevelsetFieldBuffers, StepInformation]:
+        """Performs the Runge Kutta stages. For twophase
+        levelset simulations a single RK stage consists
+        of the following:
+        1) Compute right-hand-side buffers
+        2) Integrate buffers
+        3) Treat integrated levelset
+            - Perform reinitialization (only last RK stage)
+            - Perform halo update
+            - Perform interface reconstruction
+        4) Treat integrated material fields
+            - Perform conservative mixing
+            - Perform extension procedure on primitives
+        5) Halo update
 
-        forcings_dictionary = {}
+        :param material_fields: _description_
+        :type material_fields: MaterialFieldBuffers
+        :param time_control_variables: _description_
+        :type time_control_variables: TimeControlVariables
+        :param levelset_fields: _description_
+        :type levelset_fields: LevelsetFieldBuffers
+        :param forcing_buffers: _description_, defaults to None
+        :type forcing_buffers: ForcingBuffers, optional
+        :param perform_reinitialization: _description_, defaults to False
+        :type perform_reinitialization: bool, optional
+        :param ml_parameters_dict: _description_, defaults to None
+        :type ml_parameters_dict: Union[Dict, None], optional
+        :param ml_networks_dict: _description_, defaults to None
+        :type ml_networks_dict: Union[Dict, None], optional
+        :return: Returns MaterialFieldBuffers, TimeControlVariables,
+            LevelsetRelatedFieldBuffers, LevelSetResiduals,
+            PositivityCount, VolumeFractionCorrectionCount
+        :rtype: Tuple[MaterialFieldBuffers, TimeControlVariables,
+            LevelsetFieldBuffers, ParticleBuffers, LevelsetResidualInformation,
+            jnp.int32]
+        """
 
-        current_time = t_start
-        current_step = 0
+        equation_type = self.equation_information.equation_type
+        levelset_model = self.equation_information.levelset_model
+        is_moving_levelset = self.equation_information.is_moving_levelset
+        diffuse_interface_model = self.equation_information.diffuse_interface_model
+        is_positivity_logging = self.numerical_setup.output.logging.is_positivity
+        is_levelset_residuals_logging = self.numerical_setup.output.logging.is_levelset_residuals
+        is_only_last_stage_logging = self.numerical_setup.output.logging.is_only_last_stage
 
-        # LOOP OVER STEPS
-        for step in range(n_steps):
-            if self.input_reader.levelset_type != None:
-                reinitialize = True if current_step % self.levelset_handler.interval_reinitialization == 0 else False
+        conservatives = material_fields.conservatives
+        primitives = material_fields.primitives
+
+        physical_simulation_time = time_control_variables.physical_simulation_time
+        physical_timestep_size = time_control_variables.physical_timestep_size
+        simulation_step = time_control_variables.simulation_step
+
+        levelset = levelset_fields.levelset
+        apertures = levelset_fields.apertures
+        volume_fraction = levelset_fields.volume_fraction
+        interface_velocity = levelset_fields.interface_velocity
+        interface_pressure = levelset_fields.interface_pressure
+
+        integration_buffers = IntegrationBuffers(
+            conservatives, levelset,
+            interface_velocity)
+
+        initial_stage_buffers = self.get_initial_buffers_for_stage_integration(
+            integration_buffers, volume_fraction)
+        
+        current_time_stage = physical_simulation_time
+
+        levelset_residuals_info_list = []
+        positivity_state_info_list = []
+
+        # LOOP STAGES
+        for stage in range( self.time_integrator.no_stages ):
+
+            is_logging_stage = True
+            if is_only_last_stage_logging:
+                if stage != self.time_integrator.no_stages - 1:
+                    is_logging_stage = False
+
+            # RIGHT HAND SIDE
+            rhs_buffers, positivity_count_flux, \
+            positivity_count_interpolation, \
+            positivity_count_thinc, \
+            positivity_count_acdi, \
+            count_acdi \
+            = self.space_solver.compute_rhs(
+                conservatives, primitives, current_time_stage,
+                physical_timestep_size, levelset, volume_fraction,
+                apertures, interface_velocity, interface_pressure,
+                forcing_buffers, ml_parameters_dict, ml_networks_dict,
+                is_feedforward)
+
+            # PERFORM STAGE INTEGRATION
+            integration_buffers = self.perform_stage_integration(
+                integration_buffers, rhs_buffers, initial_stage_buffers,
+                physical_timestep_size, stage, volume_fraction)
+
+            # UNPACK INTEGRATED BUFFERS
+            conservatives = integration_buffers.conservatives
+            levelset = integration_buffers.levelset
+            interface_velocity = integration_buffers.interface_velocity
+
+            # POSITIVITY
+            if self.numerical_setup.conservatives.positivity.is_volume_fraction_limiter \
+                and self.equation_information.diffuse_interface_model:
+                conservatives, vf_correction_count \
+                = self.positivity_handler.correct_volume_fraction(conservatives)
             else:
-                reinitialize = False
+                vf_correction_count = None
 
-            material_fields, levelset_quantities, residuals = self.do_integration_step(
-                cons, primes, timestep_size, current_time, 
-                levelset, volume_fraction, apertures, reinitialize, 
-                forcings_dictionary, ml_parameters_dict, ml_networks_dict)
+            # UPDATE STAGE TIME
+            increment_factor = self.time_integrator.timestep_increment_factor[stage]
+            current_time_stage = physical_simulation_time + physical_timestep_size * increment_factor
+        
+            # REINITIALIZE LEVELSET AND PERFORM INTERFACE RECONSTRUCTION
+            if is_moving_levelset:
+                is_last_stage = stage == self.time_integrator.no_stages - 1
+                levelset, volume_fraction_new, apertures, reinitialization_step_count \
+                = self.levelset_handler.treat_integrated_levelset(levelset, perform_reinitialization,
+                                                                  is_last_stage)
+            else:
+                volume_fraction_new = volume_fraction
+                reinitialization_step_count = 0
 
-            primes, cons = material_fields["primes"], material_fields["cons"]
-            levelset, volume_fraction, apertures = levelset_quantities["levelset"], levelset_quantities["volume_fraction"], levelset_quantities["apertures"]
+            # MIX CONSERVATIVES - COMPUTE PRIMITIVES - GHOST CELL EXTENSION
+            if levelset_model:
+                conservatives, primitives, levelset_positivity_info, \
+                prime_extension_step_count = self.levelset_handler.treat_integrated_material_fields(
+                    conservatives, primitives, levelset,
+                    volume_fraction_new, volume_fraction,
+                    current_time_stage, interface_velocity)
+                volume_fraction = volume_fraction_new
+            else:
+                primitives = self.equation_manager.get_primitives_from_conservatives(
+                    conservatives)
+                levelset_positivity_info = None
 
-            current_time += timestep_size
-            current_step += 1
+            # DIFFUSE INTERFACE COMPRESSION
+            if self.equation_information.diffuse_interface_model \
+                and self.numerical_setup.diffuse_interface.interface_compression.is_interface_compression:
+                interface_compression_flag = stage == self.time_integrator.no_stages - 1 \
+                    and perform_compression
+                conservatives, primitives = self.diffuse_interface_handler.perform_interface_compression(
+                    conservatives, primitives, current_time_stage, interface_compression_flag)
 
-            # APPEND OUTPUT
-            if current_step % output_freq == 0:
-                if self.input_reader.levelset_type != None:
-                    cons_real   = self.output_writer.compute_real_buffer(cons[...,nhx,nhy,nhz], volume_fraction[nhx_,nhy_,nhz_])
-                    primes_real = self.output_writer.compute_real_buffer(primes[...,nhx,nhy,nhz], volume_fraction[nhx_,nhy_,nhz_])
-                    out         = jnp.concatenate([primes_real, jnp.expand_dims(volume_fraction[nhx_,nhy_,nhz_], axis=0)], axis = 0)
-                else:
-                    primes_real = primes[:,nhx,nhy,nhz]
-                    out         = primes_real
+            # MATERIAL HALO UPDATE
+            active_physics = self.numerical_setup.active_physics
+            is_viscous_flux = active_physics.is_viscous_flux
+            primitives, conservatives = \
+            self.halo_manager.perform_halo_update_material(
+                primitives, current_time_stage, is_viscous_flux,
+                False, conservatives)
 
-                solution_list.append(out)
-                times_list.append(current_time)
+            # INTERFACE QUANTITIES AND RESIDUAL INFO
+            if equation_type == "TWO-PHASE-LS":
+                interface_velocity, interface_pressure, interface_extension_step_count = \
+                self.levelset_handler.compute_interface_quantities(
+                    primitives, levelset, volume_fraction, interface_velocity, interface_pressure)
+                if is_levelset_residuals_logging and not is_feedforward and is_logging_stage:
+                    levelset_residuals_info = self.levelset_handler.compute_residuals(
+                        primitives, volume_fraction, levelset,
+                        interface_velocity, interface_pressure,
+                        reinitialization_step_count, prime_extension_step_count,
+                        interface_extension_step_count)
+                    levelset_residuals_info_list.append(levelset_residuals_info)
+            elif equation_type == "SINGLE-PHASE-SOLID-LS":
+                if is_levelset_residuals_logging and not is_feedforward and is_logging_stage:
+                    levelset_residuals_info = self.levelset_handler.compute_residuals(
+                        primitives, volume_fraction, levelset, None, None,
+                        reinitialization_step_count, prime_extension_step_count)
+                    levelset_residuals_info_list.append(levelset_residuals_info)
 
-        solution_array = jnp.stack(solution_list)
-        times_array    = jnp.stack(times_list)
-        return solution_array, times_array
+            # POSITIVITY STATE INFO
+            if is_positivity_logging and not is_feedforward and is_logging_stage:
+                positivity_state_info = self.positivity_handler.get_positvity_state_info(
+                    primitives, positivity_count_flux, positivity_count_interpolation,
+                    vf_correction_count, positivity_count_thinc, positivity_count_acdi,
+                    count_acdi, volume_fraction, levelset_positivity_info)
+                positivity_state_info_list.append(positivity_state_info)
+            
+            integration_buffers = IntegrationBuffers(
+                conservatives, levelset, interface_velocity)
 
-    def feed_forward(self, batch_primes_init: jnp.ndarray, batch_levelset_init: jnp.ndarray, n_steps: int, timestep_size: float, 
-        t_start: float, output_freq: int = 1, ml_parameters_dict: Union[Dict, None] = None, 
-        ml_networks_dict: Union[Dict, None] = None) -> Tuple[jnp.ndarray, jnp.ndarray]:
+        # INCREMENT PHYSICAL SIMULATION TIME
+        physical_simulation_time += physical_timestep_size
+        simulation_step += 1
+
+        # CREATE CONTAINERS
+        material_fields = MaterialFieldBuffers(
+            conservatives, primitives)
+
+        time_control_variables = TimeControlVariables(
+            physical_simulation_time, simulation_step,
+            physical_timestep_size)
+
+        levelset_fields = LevelsetFieldBuffers(
+            levelset, volume_fraction, apertures,
+            interface_velocity, interface_pressure)
+
+        step_information = StepInformation(
+            positivity_state_info_list, levelset_residuals_info_list)
+
+        return material_fields, time_control_variables, \
+            levelset_fields, step_information
+
+    def get_initial_buffers_for_stage_integration(
+            self,
+            integration_buffers: IntegrationBuffers,
+            volume_fraction: Array,
+            ) -> IntegrationBuffers:
+        """Creates the initial stage buffers required
+        for later stages within the runge kutta scheme.
+
+        :param integration_buffers: _description_
+        :type integration_buffers: IntegrationBuffers
+        :param volume_fraction: _description_
+        :type volume_fraction: Array
+        :return: _description_
+        :rtype: IntegrationBuffers
+        """
+
+        conservatives = integration_buffers.conservatives
+        levelset = integration_buffers.levelset
+        interface_velocity = integration_buffers.interface_velocity
+
+        if self.time_integrator.no_stages > 1:
+
+            if self.equation_information.levelset_model:
+                init_conservatives = self.levelset_handler.transform_to_conservatives(
+                    conservatives, volume_fraction)
+            else:
+                init_conservatives = conservatives
+            
+            if self.equation_information.is_moving_levelset:
+                init_levelset = levelset
+            else:
+                init_levelset = None
+                
+            if self.equation_information.levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
+                init_solid_interface_velocity = interface_velocity
+            else:
+                init_solid_interface_velocity = None
+        
+            initial_stage_buffers = IntegrationBuffers(
+                init_conservatives, init_levelset,
+                init_solid_interface_velocity)
+        
+        else:
+            initial_stage_buffers = None
+
+        return initial_stage_buffers
+    
+    def perform_stage_integration(
+            self,
+            integration_buffers: IntegrationBuffers,
+            rhs_buffers: IntegrationBuffers,
+            initial_stage_buffers: IntegrationBuffers,
+            physical_timestep_size: float,
+            stage: jnp.int32,
+            volume_fraction: Array
+            ) -> IntegrationBuffers:
+        """Performs a stage integration step.
+        1) Transform volume-averaged conservatives
+            to actual conservatives (only for levelset
+            simulations)
+        2) Compute stage buffer
+        3) Integrate
+
+        :param integration_buffers: _description_
+        :type integration_buffers: IntegrationBuffers
+        :param initial_stage_buffers: _description_
+        :type initial_stage_buffers: IntegrationBuffers
+        :param stage: _description_
+        :type stage: jnp.int32
+        :return: _description_
+        :rtype: IntegrationBuffers
+        """
+
+        conservatives = integration_buffers.conservatives
+        levelset = integration_buffers.levelset
+        interface_velocity = integration_buffers.interface_velocity
+
+        rhs_conservatives = rhs_buffers.conservatives
+        rhs_levelset = rhs_buffers.levelset
+        rhs_solid_interface_velocity = rhs_buffers.interface_velocity
+
+        # TRANSFORM TO REAL CONSERVATIVES
+        if self.equation_information.levelset_model:
+            conservatives = self.levelset_handler.transform_to_conservatives(
+                conservatives, volume_fraction)
+
+        # PREPARE BUFFERS FOR STAGE INTEGRATION
+        if stage > 0:
+
+            initial_conservatives = initial_stage_buffers.conservatives
+            initial_levelset = initial_stage_buffers.levelset
+            initial_solid_velocity = initial_stage_buffers.interface_velocity
+
+            conservatives = self.time_integrator.prepare_buffer_for_integration(
+                conservatives, initial_conservatives, stage)
+            if self.equation_information.is_moving_levelset:
+                levelset = self.time_integrator.prepare_buffer_for_integration(
+                    levelset, initial_levelset, stage)
+            if self.equation_information.levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
+                interface_velocity = self.time_integrator.prepare_buffer_for_integration(
+                    interface_velocity, initial_solid_velocity, stage)
+
+        # PERFORM INTEGRATION
+        conservatives = self.time_integrator.integrate(
+            conservatives, rhs_conservatives,
+            physical_timestep_size, stage)
+
+        if self.equation_information.is_moving_levelset:
+            levelset = self.time_integrator.integrate(
+                levelset, rhs_levelset,
+                physical_timestep_size, stage)
+
+        if self.equation_information.levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
+            interface_velocity = self.time_integrator.integrate(
+                interface_velocity, rhs_solid_interface_velocity,
+                physical_timestep_size, stage) 
+
+        # CREATE CONTAINER
+        integration_buffers = IntegrationBuffers(
+            conservatives, levelset,
+            interface_velocity)
+
+        return integration_buffers
+
+    def compute_timestep(
+            self,
+            primitives: Array,
+            levelset: Array,
+            volume_fraction: Array
+            ) -> jnp.float32:
+        """Computes the physical time step size
+        depending on the active physics.
+
+        :param primitives: _description_
+        :type primitives: Array
+        :param levelset: _description_
+        :type levelset: Array
+        :param volume_fraction: _description_
+        :type volume_fraction: Array
+        :return: _description_
+        :rtype: jnp.float32
+        """
+        if self.fixed_timestep:
+
+            dt = self.fixed_timestep
+
+        else:
+
+            # DOMAIN INFORMATION
+            nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
+            nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
+            active_axes_indices = self.domain_information.active_axes_indices
+            active_physics_setup = self.numerical_setup.active_physics
+
+            equation_type = self.equation_information.equation_type
+            levelset_model = self.equation_information.levelset_model
+
+            # First min over cell_sizes in i direction, then min over axes.
+            # Necessary for mesh stretching.
+            min_cell_size = self.domain_information.smallest_cell_size
+
+            energy_ids = self.equation_information.energy_ids
+            vf_slices = self.equation_information.vf_slices
+
+            alpha = None
+            density = self.material_manager.get_density(primitives[...,nhx,nhy,nhz])
+            pressure = primitives[energy_ids,...,nhx,nhy,nhz]
+
+            if equation_type == "DIFFUSE-INTERFACE-5EQM":
+                alpha = primitives[(vf_slices,) + (...,nhx,nhy,nhz)]
+
+            # COMPUTE TEMPERATURE
+            # ONLY IN THE DOMAIN, I.E., WITHOUT HALOS
+            if active_physics_setup.is_viscous_flux \
+                or active_physics_setup.is_heat_flux:
+                temperature = self.material_manager.get_temperature(
+                    primitives[...,nhx,nhy,nhz], pressure,
+                    density, volume_fractions=alpha)
+
+            # COMPUTE MASKS
+            if levelset_model:
+                mask_real = compute_fluid_masks(volume_fraction, levelset_model)
+                nh_offset = self.domain_information.nh_offset
+                mask_cut_cells = compute_cut_cell_mask(levelset, nh_offset)
+                mask_real *= (1 - mask_cut_cells)
+
+            speed_of_sound = self.material_manager.get_speed_of_sound(
+                primitives[...,nhx,nhy,nhz], pressure, density,
+                volume_fractions=alpha)
+
+            abs_velocity = 0.0
+            for i in self.equation_information.velocity_ids:
+                abs_velocity += (jnp.abs(primitives[i,...,nhx,nhy,nhz]) + speed_of_sound)
+                if levelset_model:
+                    abs_velocity *= mask_real[..., nhx_,nhy_,nhz_]
+            dt = min_cell_size / ( jnp.max(abs_velocity) + self.eps )
+
+            # VISCOUS CONTRIBUTION
+            if active_physics_setup.is_viscous_flux:
+                const = 3.0 / 14.0
+                kinematic_viscosity = self.material_manager.get_dynamic_viscosity(
+                    temperature,
+                    primitives[...,nhx,nhy,nhz],
+                    ) / density
+                if levelset_model:
+                    kinematic_viscosity = kinematic_viscosity * mask_real[..., nhx_,nhy_,nhz_]
+                dt_viscous = const * (min_cell_size * min_cell_size) / (jnp.max(kinematic_viscosity) + self.eps)
+                dt = jnp.minimum(dt, dt_viscous)
+
+            # HEAT TRANSFER CONTRIBUTION
+            if active_physics_setup.is_heat_flux:
+                const = 0.1
+                cp = self.material_manager.get_specific_heat_capacity(
+                    temperature, primitives[...,nhx,nhy,nhz])
+                thermal_diffusivity = self.material_manager.get_thermal_conductivity(
+                    temperature,
+                    primitives[...,nhx,nhy,nhz],
+                    ) / (density * cp)
+                if levelset_model:
+                    thermal_diffusivity = thermal_diffusivity * mask_real[..., nhx_,nhy_,nhz_]
+                dt_thermal = const * (min_cell_size * min_cell_size) / (jnp.max(thermal_diffusivity) + self.eps)
+                dt = jnp.minimum(dt, dt_thermal)
+
+            # DIFFUSION SHARPENING CONTRIBUTION
+            if self.numerical_setup.diffuse_interface.diffusion_sharpening.is_diffusion_sharpening:
+                dt_diffusion_sharpening = \
+                    self.diffuse_interface_handler.compute_diffusion_sharpening_timestep(
+                        primitives)
+                dt = jnp.minimum(dt, dt_diffusion_sharpening)
+
+            # PARALLEL
+            if self.domain_information.is_parallel:
+                dt = jax.lax.pmin(dt, axis_name="i")
+
+            CFL = self.numerical_setup.conservatives.time_integration.CFL
+            dt *= CFL
+
+        return dt
+
+    def _callback(
+            self,
+            hook_name: str,
+            buffer_dictionary: Dict = None,
+            conservatives: Array = None,
+            primitives: Array = None,
+            **kwargs
+            ) -> Union[Dict, Tuple[Array, Array]]:
+        """Executes the hook_name method of all callbacks. 
+
+        :param hook_name: Str indentifier of the callback routine.
+        :type hook_name: str
+        """
+
+        if hook_name in ("on_simulation_start", "on_simulation_end", "on_step_start", "on_step_end"):
+            for cb in self.callbacks:
+                fn = getattr(cb, hook_name)
+                buffer_dictionary = fn(buffer_dictionary, **kwargs)
+                
+            return buffer_dictionary
+        
+        elif hook_name in ("on_stage_start", "on_stage_end"):
+            for cb in self.callbacks:
+                fn = getattr(cb, hook_name)
+                conservatives, primitives = fn(conservatives, primitives, **kwargs)
+
+            return conservatives, primitives
+
+        else:
+            raise NotImplementedError
+
+
+    ### WRAPPER FUNCTIONS ###
+    def do_integration_step(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters,
+            perform_reinitialization: bool,
+            perform_compression: bool,
+            ml_parameters_dict: Union[Dict, None] = None,
+            ml_networks_dict: Union[Dict, None] = None,
+            ) -> Tuple[SimulationBuffers, TimeControlVariables,
+            ForcingParameters, StepInformation]:
+        """Wrapper for the _do_integration_step function 
+        that specifies single (jit) or multi (pmap) 
+        GPU execution of the integration step.
+        For argument description see base function.
+        """
+        if self.domain_information.is_parallel:
+            return self._do_integration_step_pmap(
+                    simulation_buffers,
+                    time_control_variables,
+                    forcing_parameters,
+                    perform_reinitialization,
+                    perform_compression,
+                    ml_parameters_dict,
+                    ml_networks_dict)
+        else:
+            return self._do_integration_step_jit(
+                    simulation_buffers,
+                    time_control_variables,
+                    forcing_parameters,
+                    perform_reinitialization,
+                    perform_compression,
+                    ml_parameters_dict,
+                    ml_networks_dict)
+
+    # JIT AND PMAP WRAPPER FOR DO INTEGRATION STEP
+    # TODO why is ml_parameters_dict mapped?
+    @partial(jax.pmap,
+        static_broadcasted_argnums=(0,4,5,7),
+        in_axes=(None,0,None,None,None,None,None,None),
+        out_axes=(0,None,None,None),
+        axis_name="i")
+    def _do_integration_step_pmap(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters,
+            perform_reinitialization: bool,
+            perform_compression: bool,
+            ml_parameters_dict: Union[Dict, None] = None,
+            ml_networks_dict: Union[Dict, None] = None,
+            ) -> Tuple[SimulationBuffers, TimeControlVariables,
+            ForcingParameters, StepInformation]:
+        """Pmap wrapper for the _do_integration_step function.
+        For argument description see base function.
+        """
+        return self._do_integration_step(
+                simulation_buffers,
+                time_control_variables,
+                forcing_parameters,
+                perform_reinitialization,
+                perform_compression,
+                ml_parameters_dict,
+                ml_networks_dict)
+
+    @partial(jax.jit, static_argnums=(0,4,5,7))
+    def _do_integration_step_jit(
+            self,
+            simulation_buffers: SimulationBuffers,
+            time_control_variables: TimeControlVariables,
+            forcing_parameters: ForcingParameters,
+            perform_reinitialization: bool,
+            perform_compression: bool,
+            ml_parameters_dict: Union[Dict, None] = None,
+            ml_networks_dict: Union[Dict, None] = None,
+            ) -> Tuple[SimulationBuffers, TimeControlVariables,
+            ForcingParameters, StepInformation]:
+        """Jit wrapper for the _do_integration_step function.
+        For argument description see base function.
+        """
+        return self._do_integration_step(
+                simulation_buffers,
+                time_control_variables,
+                forcing_parameters,
+                perform_reinitialization,
+                perform_compression,
+                ml_parameters_dict,
+                ml_networks_dict)
+        
+    def feed_forward(
+            self, 
+            batch_primes_init: Array, 
+            physical_timestep_size: float, 
+            t_start: float, 
+            outer_steps: int, 
+            inner_steps: int = 1,
+            is_scan: bool = False,
+            is_checkpoint: bool = True,
+            is_include_t0: bool = True,
+            batch_levelset_init: Array = None,
+            batch_solid_interface_velocity_init: Array = None,
+            ml_parameters_dict: Union[Dict, None] = None, 
+            ml_networks_dict: Union[Dict, None] = None
+        ) -> Tuple[Array, Array]:
         """Vectorized version of the _feed_forward() method.
 
         :param batch_primes_init: batch of initial primitive variable buffers
-        :type batch_primes_init: jnp.ndarray
+        :type batch_primes_init: Array
         :param batch_levelset_init: batch of initial levelset buffers
-        :type batch_levelset_init: jnp.ndarray
+        :type batch_levelset_init: Array
         :param n_steps: Number of integration steps
         :type n_steps: int
-        :param timestep: Physical time step size
-        :type timestep: float
+        :param physical_timestep_size: Physical time step size
+        :type physical_timestep_size: float
         :param t_start: Physical start time
         :type t_start: float
         :param output_freq: Frequency in time steps for output, defaults to 1
@@ -646,8 +1131,102 @@ class SimulationManager:
         :param ml_networks_dict: NN architectures, defaults to None
         :type ml_networks_dict: Union[Dict, None], optional
         :return: _description_
-        :rtype: Tuple[jnp.ndarray, jnp.ndarray]
+        :rtype: Tuple[Array, Array]
         """
 
-        return jax.vmap(self._feed_forward, in_axes=(0,0,None,None,None,None,None,None), out_axes=(0,0,))(
-            batch_primes_init, batch_levelset_init, n_steps, timestep_size, t_start, output_freq, ml_parameters_dict, ml_networks_dict)
+        return jax.vmap(
+                self._feed_forward,
+                in_axes=(0,0,None,None,None,None,None,None,0,0,None,None),
+                out_axes=(0,0,))(
+            batch_primes_init,
+            physical_timestep_size,
+            t_start,
+            outer_steps,
+            inner_steps,
+            is_scan,
+            is_checkpoint,
+            is_include_t0,
+            batch_levelset_init,
+            batch_solid_interface_velocity_init,
+            ml_parameters_dict,
+            ml_networks_dict)
+
+    def _feed_forward(
+            self, 
+            primes_init: Array, 
+            physical_timestep_size: float, 
+            t_start: float, 
+            outer_steps: int, 
+            inner_steps: int = 1,
+            is_scan: bool = False,
+            is_checkpoint: bool = True,
+            is_include_t0: bool = True,
+            levelset_init: Array = None,   
+            solid_interface_velocity_init: Array = None,   
+            ml_parameters_dict: Union[Dict, None] = None,
+            ml_networks_dict: Union[Dict, None] = None
+        ) -> Tuple[Array, Array]:
+        """Advances the initial buffers in time for a fixed amount of steps and returns the
+        entire trajectory. This function is differentiable and
+        must therefore be used to end-to-end optimize ML models within the JAX-FLUIDS simulator.
+
+        :param primes_init: Initial primitive variables buffer
+        :type primes_init: Array
+        :param levelset_init: Initial levelset buffer
+        :type levelset_init: Array
+        :param n_steps: Number of time steps
+        :type n_steps: int
+        :param physical_timestep_size: Physical time step size
+        :type physical_timestep_size: float
+        :param t_start: Physical start time
+        :type t_start: float
+        :param output_freq: Frequency in time steps for output, defaults to 1
+        :type output_freq: int, optional
+        :param ml_parameters_dict: _description_, defaults to None
+        :type ml_parameters_dict: Union[Dict, None], optional
+        :param ml_networks_dict: _description_, defaults to None
+        :type ml_networks_dict: Union[Dict, None], optional
+        :return: _description_
+        :rtype: Tuple[Array, Array]
+        """
+
+        def post_process_fn(simulation_buffers: SimulationBuffers
+            ) -> Tuple[Array]:
+            # TODO @dbezgin should be user input???
+            nhx,nhy,nhz = self.domain_information.domain_slices_conservatives
+            nhx_,nhy_,nhz_ = self.domain_information.domain_slices_geometry
+            material_fields = simulation_buffers.material_fields
+            levelset_fields = simulation_buffers.levelset_fields
+
+            primitives = material_fields.primitives
+            volume_fraction = levelset_fields.volume_fraction
+            levelset = levelset_fields.levelset
+
+            if self.equation_information.levelset_model:
+                out_buffer = (
+                    primitives[...,nhx,nhy,nhz], 
+                    levelset[nhx,nhy,nhz],
+                    volume_fraction[nhx_,nhy_,nhz_],)
+            else:
+                out_buffer = (primitives[:,nhx,nhy,nhz],)
+            return out_buffer
+
+        multistep = configure_multistep(
+            do_integration_step_fn=self._do_integration_step,
+            post_process_fn=post_process_fn,
+            outer_steps=outer_steps, inner_steps=inner_steps,
+            is_scan=is_scan, is_checkpoint=is_checkpoint,
+            is_include_t0=is_include_t0, ml_networks_dict=ml_networks_dict)
+
+        simulation_buffers, time_control_variables, \
+        forcing_parameters = initialize_fields_for_feedforward(
+            sim_manager=self, primes_init=primes_init,
+            physical_timestep_size=physical_timestep_size, t_start=t_start,
+            levelset_init=levelset_init,
+            solid_interface_velocity_init=solid_interface_velocity_init)
+
+        solution_array, times_array = multistep(
+            simulation_buffers, time_control_variables,
+            forcing_parameters, ml_parameters_dict)
+
+        return solution_array, times_array

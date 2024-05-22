@@ -48,9 +48,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint/flake8: ## check style with flake8
-	flake8 jaxfluids tests
+	flake8 qlbm tests
 lint/black: ## check style with black
-	black --check jaxfluids tests
+	black --check qlbm tests
 
 lint: lint/flake8 lint/black ## check style
 
@@ -61,7 +61,7 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source jaxfluids -m pytest
+	coverage run --source qlbm -m pytest
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
@@ -69,7 +69,12 @@ coverage: ## check code coverage quickly with the default Python
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/source/jaxfluids.rst
 	rm -f docs/source/jaxfluids.*.rst
+	rm -f docs/source/jaxfluids_nn.rst
+	rm -f docs/source/jaxfluids_postprocess.rst
 	sphinx-apidoc -o docs/source src/jaxfluids
+	sphinx-apidoc -o docs/source src/jaxfluids_nn
+	sphinx-apidoc -o docs/source src/jaxfluids_postprocess  
+	sphinx-apidoc -o docs/source src/jaxfluids_thirdparty  
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/build/html/index.html

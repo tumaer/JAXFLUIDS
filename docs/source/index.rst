@@ -14,6 +14,13 @@ by JAX-Fluids, feel free to read `our paper <https://www.sciencedirect.com/scien
 
 This documentation is work in progress.
 
+.. raw:: html
+
+	<iframe width="640" height="360" src="https://www.youtube.com/watch?v=mRuJF4qZX-Y"
+	 title="Supersonic Turbulent Channel Flow"
+	frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+	allowfullscreen></iframe>
+
 Quick Installation
 ------------------
 This is a quick installation guide to get you set up with JAX-Fluids. Please check out our detailed :doc:`installation guide <installation>` for more information!

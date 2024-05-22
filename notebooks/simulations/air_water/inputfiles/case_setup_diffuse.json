@@ -1,0 +1,77 @@
+{
+    "general": {
+        "case_name": "diffuse",
+        "end_time": 1e-4,
+        "save_path": "./results",
+        "save_dt": 1e-5
+    },
+    "domain": {
+        "x": {
+            "cells": 384,
+            "range": [-4.0e-2, 7.1e-2]
+        },
+        "y": {
+            "cells": 256,
+            "range": [-3.7e-2, 3.7e-2]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
+        }
+    },
+    "boundary_conditions": {
+        "east": {"type": "ZEROGRADIENT"},
+        "west": {"type": "ZEROGRADIENT"},
+        "north": {"type": "ZEROGRADIENT"},
+        "south": {"type": "ZEROGRADIENT"},
+        "top": {"type": "INACTIVE"},
+        "bottom": {"type": "INACTIVE"}
+    },
+    "initial_condition": {
+        "alpharho_0": "lambda x,y: jnp.where(x < -2.0e-2, 1000.0, 1000.0) * (jnp.where(jnp.sqrt(x**2 + y**2) <= 1.1e-2, 1.0 - 1e-8, 1e-8))",
+        "alpharho_1": "lambda x,y: jnp.where(x < -2.0e-2, 3.7579, 1.17) * (1.0 - jnp.where(jnp.sqrt(x**2 + y**2) <= 1.1e-2, 1.0 - 1e-8, 1e-8))",
+        "u":          "lambda x,y: jnp.where(x < -2.0e-2, 574.574, 0.0)",
+        "v": 0.0,
+        "w": 0.0,
+        "p":          "lambda x,y: jnp.where(x < -2.0e-2, 661886.67, 101000.0)",
+        "alpha_0":    "lambda x,y: jnp.where(jnp.sqrt(x**2 + y**2) <= 1.1e-2, 1.0 - 1e-8, 1e-8)"
+    },
+    "material_properties": {
+        "fluid_names": ["fluid_0", "fluid_1"],
+        "fluid_0": {
+            "equation_of_state": {
+                "model": "StiffenedGas",
+                "specific_heat_ratio": 6.12,
+                "specific_gas_constant": 1.0,
+                "background_pressure": 3.43e+08
+            }
+        },
+        "fluid_1": {
+            "equation_of_state": {
+                "model": "StiffenedGas",
+                "specific_heat_ratio": 1.4,
+                "specific_gas_constant": 1.0,
+                "background_pressure": 0.0
+            }
+        },
+        "pairing" : {
+            "surface_tension_coefficient": 0.0
+        }
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1000.0,
+        "length_reference": 0.01,
+        "velocity_reference": 100.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["velocity", "pressure", "alpha_0",
+            "alpharho_0", "alpharho_1"],
+        "miscellaneous": ["mach_number", "schlieren"]
+    }
+}

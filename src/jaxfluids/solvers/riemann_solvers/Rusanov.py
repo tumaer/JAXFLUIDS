@@ -1,60 +1,86 @@
-#*------------------------------------------------------------------------------*
-#* JAX-FLUIDS -                                                                 *
-#*                                                                              *
-#* A fully-differentiable CFD solver for compressible two-phase flows.          *
-#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *
-#*                                                                              *
-#* This program is free software: you can redistribute it and/or modify         *
-#* it under the terms of the GNU General Public License as published by         *
-#* the Free Software Foundation, either version 3 of the License, or            *
-#* (at your option) any later version.                                          *
-#*                                                                              *
-#* This program is distributed in the hope that it will be useful,              *
-#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *
-#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
-#* GNU General Public License for more details.                                 *
-#*                                                                              *
-#* You should have received a copy of the GNU General Public License            *
-#* along with this program.  If not, see <https://www.gnu.org/licenses/>.       *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* CONTACT                                                                      *
-#*                                                                              *
-#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* Munich, April 15th, 2022                                                     *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-
-from typing import Callable
+from typing import Callable, Tuple
 
 import jax
 import jax.numpy as jnp
+from jax import Array
 
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.solvers.riemann_solvers.riemann_solver import RiemannSolver
-from jaxfluids.utilities import get_fluxes_xi
+from jaxfluids.equation_manager import EquationManager
 
 class Rusanov(RiemannSolver):
     """Rusanov (Local Lax-Friedrichs) Riemann Solver
     """
 
-    def __init__(self, material_manager: MaterialManager, signal_speed: Callable) -> None:
-        super().__init__(material_manager, signal_speed)
+    def __init__(
+            self,
+            material_manager: MaterialManager, 
+            equation_manager: EquationManager,
+            signal_speed: Callable,
+            **kwargs
+            ) -> None:
+        super().__init__(material_manager, equation_manager, signal_speed)
 
-    def solve_riemann_problem_xi(self, primes_L: jnp.ndarray, primes_R: jnp.ndarray, 
-        cons_L: jnp.ndarray, cons_R: jnp.ndarray, axis: int, **kwargs) -> jnp.ndarray:
-        fluxes_left  = get_fluxes_xi(primes_L, cons_L, axis)
-        fluxes_right = get_fluxes_xi(primes_R, cons_R, axis)
+    def _solve_riemann_problem_xi_single_phase(
+            self, 
+            primitives_L: Array,
+            primitives_R: Array, 
+            conservatives_L: Array,
+            conservatives_R: Array,
+            axis: int, 
+            **kwargs
+        ) -> Tuple[Array, Array, Array]:
+        fluxes_L = self.equation_manager.get_fluxes_xi(primitives_L, conservatives_L, axis)
+        fluxes_R = self.equation_manager.get_fluxes_xi(primitives_R, conservatives_R, axis)
 
-        speed_of_sound_left  = self.material_manager.get_speed_of_sound(p = primes_L[4], rho = primes_L[0])
-        speed_of_sound_right = self.material_manager.get_speed_of_sound(p = primes_R[4], rho = primes_R[0])
+        speed_of_sound_L = self.material_manager.get_speed_of_sound(primitives_L)
+        speed_of_sound_R = self.material_manager.get_speed_of_sound(primitives_R)
         
-        alpha = jnp.maximum(jnp.abs(primes_L[axis+1]) + speed_of_sound_left, jnp.abs(primes_R[axis+1]) + speed_of_sound_right)
+        alpha = jnp.maximum(
+            jnp.abs(primitives_L[self.velocity_ids[axis]]) + speed_of_sound_L, 
+            jnp.abs(primitives_R[self.velocity_ids[axis]]) + speed_of_sound_R)
 
-        fluxes_xi = 0.5 * (fluxes_left + fluxes_right) - 0.5 * alpha * (cons_R - cons_L)
+        fluxes_xi = 0.5 * (fluxes_L + fluxes_R) - 0.5 * alpha * (conservatives_R - conservatives_L)
             
-        return fluxes_xi
+        return fluxes_xi, None, None
+
+    def _solve_riemann_problem_xi_diffuse_five_equation(
+            self, 
+            primitives_L: Array, 
+            primitives_R: Array, 
+            conservatives_L: Array, 
+            conservatives_R: Array, 
+            axis: int, 
+            curvature_L: Array,
+            curvature_R: Array,
+            **kwargs
+        ) -> Tuple[Array, Array, Array]:
+        rho_L = self.material_manager.get_density(primitives_L)
+        rho_R = self.material_manager.get_density(primitives_R)
+        u_L = primitives_L[self.velocity_ids[axis]]
+        u_R = primitives_R[self.velocity_ids[axis]]
+        p_L = primitives_L[self.energy_ids]
+        p_R = primitives_R[self.energy_ids]
+
+        speed_of_sound_L = self.material_manager.get_speed_of_sound(
+            pressure=p_L, density=rho_L, volume_fractions=primitives_L[self.vf_slices])
+        speed_of_sound_R = self.material_manager.get_speed_of_sound(
+            pressure=p_R, density=rho_R, volume_fractions=primitives_R[self.vf_slices])
+
+        alpha = jnp.maximum(
+            jnp.abs(primitives_L[self.velocity_ids[axis]]) + speed_of_sound_L, 
+            jnp.abs(primitives_R[self.velocity_ids[axis]]) + speed_of_sound_R)
+
+        fluxes_L = self.equation_manager.get_fluxes_xi(primitives_L, conservatives_L, axis)
+        fluxes_R = self.equation_manager.get_fluxes_xi(primitives_R, conservatives_R, axis)
+
+        fluxes_xi = 0.5 * (fluxes_L + fluxes_R) - 0.5 * alpha * (conservatives_R - conservatives_L)
+
+        u_hat = 0.5 * (u_L + u_R)
+
+        if self.is_surface_tension:
+            raise NotImplementedError
+        else:
+            alpha_hat = None
+
+        return fluxes_xi, u_hat, alpha_hat

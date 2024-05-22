@@ -1,0 +1,50 @@
+{
+    "conservatives": {
+        "halo_cells": 6,
+        "time_integration": {
+            "integrator": "RK3",
+            "CFL": 0.9
+        },
+        "convective_fluxes": {
+            "convective_solver": "GODUNOV",
+            "riemann_solver": "HLLC",
+            "signal_speed": "EINFELDT",
+            "reconstruction_stencil": "TENO6-A-ADAP",
+            "reconstruction_variable": "CHAR-PRIMITIVE"
+        },
+        "dissipative_fluxes": {
+            "reconstruction_stencil": "CENTRAL6_ADAP",
+            "derivative_stencil_center": "CENTRAL6_ADAP",
+            "derivative_stencil_face": "CENTRAL6_ADAP"
+        },
+        "positivity": {
+            "flux_limiter": null,
+            "is_interpolation_limiter": true,
+            "is_thinc_interpolation_limiter": false,
+            "is_volume_fraction_limiter": false,
+            "is_acdi_flux_limiter": false
+        }
+    },
+    "active_physics": {
+        "is_convective_flux": true,
+        "is_viscous_flux": true,
+        "is_heat_flux": true,
+        "is_volume_force": false
+    },
+    "active_forcings": {
+        "is_mass_flow_forcing": false,
+        "is_temperature_forcing": false,
+        "is_turb_hit_forcing": false
+    },
+    "precision": {
+        "is_double_precision_compute": true,
+        "is_double_precision_output": true
+    },
+    "output": {
+        "derivative_stencil": "CENTRAL2_ADAP",
+        "is_xdmf": false,
+        "logging": {
+            "frequency": 10
+        }
+    }
+}

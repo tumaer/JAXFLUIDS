@@ -51,16 +51,16 @@ turb
 
 """
 
-from jaxfluids.initializer import Initializer
-from jaxfluids.input_reader import InputReader
+from jaxfluids.initialization.initialization_manager import InitializationManager
+from jaxfluids.input.input_manager import InputManager
 from jaxfluids.simulation_manager import SimulationManager
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Deniz Bezgin, Aaron Buhendwa"
 
 
 __all__ = (
-    "Initializer", 
-    "InputReader"
+    "InitializationManager", 
+    "InputManager",
     "SimulationManager", 
 )

@@ -18,13 +18,14 @@ if __name__=='__main__':
         description="Fully-differentiable CFD solver for compressible two-phase flows.",
         author="Deniz Bezgin, Aaron Buhendwa",
         author_email="deniz.bezgin@tum.de, aaron.buhendwa@tum.de",
-        long_description=open(os.path.join(_CURRENT_DIR, "README.md")).read(),
+        long_description=open(os.path.join(_CURRENT_DIR, "README.MD")).read(),
         long_description_content_type='text/markdown',
         packages=find_packages(where="src"),
         package_dir={"": "src"},
-        python_requires=">=3.6",
+        python_requires=">=3.11",
         install_requires=[
-            "dm-haiku",
+            "flax",
+            "gitpython",
             "h5py",
             "jax",
             "jaxlib",
@@ -34,14 +35,14 @@ if __name__=='__main__':
         ],
         extras_require={
             # Use cuda to install CUDA version, use as follows:
-            # $ pip install .[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+            # $ pip install jaxfluids[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
             "cuda": ["jaxlib"],
         },
         url="https://github.com/tumaer/JAXFLUIDS",
-        license="GNU GPLv3",
+        license="MIT",
         classifiers=[
             "Programming Language :: Python :: 3"
-            "License :: OSI Approved :: GNU GPLv3 License"
+            "License :: OSI Approved :: MIT License"
             "Operating System :: OS Independent"
         ]
     )

@@ -1,208 +1,239 @@
-#*------------------------------------------------------------------------------*
-#* JAX-FLUIDS -                                                                 *
-#*                                                                              *
-#* A fully-differentiable CFD solver for compressible two-phase flows.          *
-#* Copyright (C) 2022  Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams    *
-#*                                                                              *
-#* This program is free software: you can redistribute it and/or modify         *
-#* it under the terms of the GNU General Public License as published by         *
-#* the Free Software Foundation, either version 3 of the License, or            *
-#* (at your option) any later version.                                          *
-#*                                                                              *
-#* This program is distributed in the hope that it will be useful,              *
-#* but WITHOUT ANY WARRANTY; without even the implied warranty of               *
-#* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                *
-#* GNU General Public License for more details.                                 *
-#*                                                                              *
-#* You should have received a copy of the GNU General Public License            *
-#* along with this program.  If not, see <https://www.gnu.org/licenses/>.       *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* CONTACT                                                                      *
-#*                                                                              *
-#* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-#*                                                                              *
-#* Munich, April 15th, 2022                                                     *
-#*                                                                              *
-#*------------------------------------------------------------------------------*
-
 from functools import partial
-from typing import Dict, Union
+from typing import Callable, Dict, Union, List, Tuple
 
 import jax
 import jax.numpy as jnp
+from jax import Array
 import numpy as np
 
 class UnitHandler:
-    """The UnitHandler class implements functionaly to solve the NSE in non-dimensional form.
+    """The UnitHandler class implements functionaly
+    to solve the NSE in non-dimensional form.
     """
-    def __init__(self, density_reference: float, length_reference: float, velocity_reference: float, 
-        temperature_reference: float) -> None:
 
-        self.density_reference      = density_reference
-        self.length_reference       = length_reference
-        self.velocity_reference     = velocity_reference
-        self.temperature_reference  = temperature_reference
+    # UNIVERSAL CONSTANTS
+    _universal_gas_constant = 8.31446261815324   # J / (K mol)
+    _avogadro_constant = 6.02214076e+23          # 1 / mol
+    _p_ref_global = 1.01325e5                    # Pa
+    _T_ref_global = 298.15                       # K
 
-        self.time_reference                         = length_reference / velocity_reference
-        self.pressure_reference                     = density_reference * velocity_reference**2
-        self.viscosity_reference                    = density_reference * velocity_reference * length_reference
-        self.thermal_conductivity_reference         = density_reference * velocity_reference**3 * length_reference / temperature_reference
-        self.gravity_reference                      = velocity_reference**2 / length_reference
-        self.specific_gas_constant_reference        = velocity_reference**2 / temperature_reference
-        self.mass_reference                         = density_reference * length_reference**3
-        self.mass_flow_reference                    = self.mass_reference / self.time_reference
-        self.surface_tension_coefficient_reference  = density_reference * velocity_reference * velocity_reference * length_reference
+    def __init__(
+            self,
+            density_reference: float,
+            length_reference: float,
+            velocity_reference: float,
+            temperature_reference: float,
+            amount_of_substance_reference: float = 1.0
+            ) -> None:
 
-    def non_dimensionalize_domain_size(self, domain_size: Dict) -> Dict:
-        domain_size_nondim = {}
-        for axis in domain_size:
-            domain_size_nondim[axis] = [
-                self.non_dimensionalize(domain_size[axis][0], "length"),
-                self.non_dimensionalize(domain_size[axis][1], "length")
-                ]
-        return domain_size_nondim
+        self.density_reference = density_reference
+        self.length_reference = length_reference
+        self.velocity_reference = velocity_reference
+        self.temperature_reference = temperature_reference
+        self.amount_of_substance_reference = amount_of_substance_reference
 
-    @partial(jax.jit, static_argnums=(0, 2))
-    def non_dimensionalize(self, value: Union[jnp.ndarray, float], quantity: str) -> Union[jnp.ndarray, float]:
+        self.mass_reference = density_reference * length_reference**3
+        self.time_reference = length_reference / velocity_reference
+        self.pressure_reference = density_reference * velocity_reference**2
+        self.momentum_reference = density_reference * velocity_reference
+
+        self.dynamic_viscosity_reference = density_reference * velocity_reference * length_reference
+        self.thermal_conductivity_reference = \
+            density_reference * velocity_reference**3 * length_reference / temperature_reference
+        self.mass_diffusivity_reference = velocity_reference * length_reference
+        self.surface_tension_coefficient_reference = \
+            density_reference * velocity_reference * velocity_reference * length_reference
+
+        self.gas_constant_reference = self.mass_reference * velocity_reference**2 / temperature_reference
+        self.specific_gas_constant_reference = velocity_reference**2 / temperature_reference
+        self.enthalpy_mass_reference = velocity_reference**2
+        self.enthalpy_molar_reference = \
+            self.mass_reference * velocity_reference**2 / amount_of_substance_reference
+        self.entropy_molar_reference = self.enthalpy_molar_reference / temperature_reference
+        self.energy_translation_factor_reference = density_reference * self.pressure_reference
+        self.thermal_energy_factor_reference = velocity_reference**2 / density_reference
+
+        self.gravity_reference = velocity_reference**2 / length_reference
+        self.mass_flow_reference = self.mass_reference / self.time_reference
+
+        self.velocity_gradient_reference = self.velocity_reference / self.length_reference
+
+        self.reference_dict = {
+
+            # MATERIAL FIELDS
+            "density": density_reference,
+            "velocity": velocity_reference,
+            "temperature": temperature_reference,
+            "pressure": self.pressure_reference,
+            "momentum": self.momentum_reference,
+            "energy": self.pressure_reference,
+            "amount_of_substance": self.amount_of_substance_reference,
+            "one_amount_of_substance": 1.0 / self.amount_of_substance_reference,
+
+            # LEVELSET FIELDS
+            "levelset": self.length_reference,
+            "interface_pressure": self.pressure_reference,
+            "interface_velocity": self.velocity_reference,
+            "mask_real": 1.0,
+            "volume_fraction": 1.0,
+            "normal": 1.0,
+
+            # MATERIAL PROPERTIES
+            "dynamic_viscosity": self.dynamic_viscosity_reference,
+            "thermal_conductivity": self.thermal_conductivity_reference,
+            "mass_diffusivity": self.mass_diffusivity_reference,
+            "gas_constant": self.gas_constant_reference,
+            "specific_gas_constant": self.specific_gas_constant_reference,
+            "specific_heat_capacity": self.specific_gas_constant_reference,
+            "enthalpy_mass": self.enthalpy_mass_reference,
+            "enthalpy_molar": self.enthalpy_molar_reference,
+            "entropy_molar": self.entropy_molar_reference,
+            "surface_tension_coefficient": self.surface_tension_coefficient_reference,
+            "energy_translation_factor": self.energy_translation_factor_reference,
+            "thermal_energy_factor": self.thermal_energy_factor_reference,
+
+            # PHYSICAL QUANTITIES
+            "length": length_reference,
+            "time": self.time_reference,
+            "gravity": self.gravity_reference,
+            "mass": self.mass_reference,
+            "mass_flow": self.mass_flow_reference,
+
+            # OUTPUT
+            "absolute_velocity": self.velocity_reference,
+            "vorticity": self.velocity_reference/self.length_reference,
+            "absolute_vorticity": self.velocity_reference/self.length_reference,
+            "schlieren": self.density_reference/self.length_reference,
+            "mach_number": 1.0,
+            "qcriterion": self.velocity_gradient_reference**2,
+            "dilatation": 1.0/self.time_reference,
+
+            "none": 1.0,
+            "None": 1.0
+        }
+        
+        self.universal_gas_constant_nondim = self.non_dimensionalize(self._universal_gas_constant, "gas_constant")
+        self.avogadro_constant_nondim = self.non_dimensionalize(self._avogadro_constant, "one_amount_of_substance")
+        self.p_ref_global_nondim = self.non_dimensionalize(self._p_ref_global, "pressure")
+        self.T_ref_global_nondim = self.non_dimensionalize(self._T_ref_global, "temperature")
+
+    def non_dimensionalize(
+            self,
+            value: Union[Array, float],
+            quantity: Union[str, Callable],
+            quantity_list: Tuple = None,
+            is_spatial_derivative: bool = False,
+            is_temporal_derivative: bool = False
+            ) -> Union[Array, float]:
         """Non-dimensionalizes the given buffer w.r.t. the specified quantity.
 
         :param value: Dimensional quantity buffer
-        :type value: Union[jnp.ndarray, float]
+        :type value: Union[Array, float]
         :param quantity: Quantity name
         :type quantity: str
         :return: Non-dimensional quantity buffer
-        :rtype: Union[jnp.ndarray, float]
+        :rtype: Union[Array, float]
         """
-        
-        # NAME CONVERSION
-        if quantity == "rho":
-            quantity = "density"
-        if quantity in ["u", "v", "w", "velocityX", "velocityY", "velocityZ"]:
-            quantity = "velocity"
-        if quantity in ["momentumX", "momentumY", "momentumZ"]:
-            quantity = "momentum"
-        if quantity == "p":
-            quantity = "pressure"
-        if quantity == "T":
-            quantity = "temperature"
 
-        # PRIMES
-        if quantity == "density":
-            value /= self.density_reference
-        elif quantity == "velocity":
-            value /= self.velocity_reference
-        elif quantity == "temperature":
-            value /= self.temperature_reference
-        elif quantity == "pressure":
-            value /= self.pressure_reference
+        if isinstance(quantity, Callable):
+            reference = quantity(
+                self.density_reference,
+                self.length_reference,
+                self.velocity_reference,
+                self.temperature_reference,
+                self.amount_of_substance_reference)
+            value_nondim = value / reference
 
-        # CONS
-        elif quantity == "mass":
-            value /= self.density_reference
-        elif quantity == "momentum":
-            value /= (self.density_reference * self.velocity_reference)
-        elif quantity == "energy":
-            value /= self.pressure_reference
+        elif isinstance(quantity, str):
+            if quantity == "specified":
+                reference = jnp.stack([self.reference_dict[quant] for quant in quantity_list])
+                reference = reference.reshape((-1,) + (1,) * (value.ndim - 1))
+                value_nondim = value / reference
+            
+            elif quantity in ["None", "none"]:
+                value_nondim = value
 
-        # MATERIAL PARAMETERS
-        elif quantity == "dynamic_viscosity":
-            value /= self.viscosity_reference
-        elif quantity == "thermal_conductivity":
-            value /= self.thermal_conductivity_reference
-        elif quantity == "specific_gas_constant":
-            value /= self.specific_gas_constant_reference
-        elif quantity == "surface_tension_coefficient":
-            value /= self.surface_tension_coefficient_reference
+            else:
+                quantity = self.convert_name(quantity)
+                reference = self.reference_dict[quantity]
+                value_nondim = value / reference
 
-        # PHYSICAL QUANTITIES
-        elif quantity == "gravity":
-            value /= self.gravity_reference
-        elif quantity == "length":
-            value /= self.length_reference
-        elif quantity == "time":
-            value /= self.time_reference
-        
-        # MISC
-        elif quantity == "mass":
-            value /= self.mass_reference
-        elif quantity == "mass_flow":
-            value /= self.mass_flow_reference
         else:
-            assert False, "Quantity %s is unknown" % quantity
+            raise NotImplementedError
 
-        return value
-        
-    @partial(jax.jit, static_argnums=(0, 2))
-    def dimensionalize(self, value: Union[jnp.ndarray, float], quantity: str) -> Union[jnp.ndarray, float]:
+        if is_spatial_derivative:
+            value_nondim = value_nondim * self.length_reference
+
+        if is_temporal_derivative:
+            value_nondim = value_nondim * self.time_reference
+
+        return value_nondim
+
+    def dimensionalize(
+            self,
+            value: Union[Array, float],
+            quantity: Union[str, Callable],
+            quantity_list: Tuple = None
+            ) -> Union[Array, float]:
         """Dimensionalizes the given quantity buffer w.r.t. the specified quanty.
 
         :param value: Non-dimensional quantity buffer
-        :type value: Union[jnp.ndarray, float]
+        :type value: Union[Array, float]
         :param quantity: Quantity name
         :type quantity: str
         :return: Dimensional quantity buffer
-        :rtype: Union[jnp.ndarray, float]
+        :rtype: Union[Array, float]
         """
+        if isinstance(quantity, Callable):
+            reference = quantity(
+                self.density_reference,
+                self.length_reference,
+                self.velocity_reference,
+                self.temperature_reference,)
+            value_dim = value * reference
 
-        # NAME CONVERSION
+        elif isinstance(quantity, str):
+            if quantity == "specified":
+                reference = jnp.stack([self.reference_dict[quant] for quant in quantity_list])
+                reference = reference.reshape((-1,) + (1,) * (value.ndim - 1))
+                value_dim = value * reference
+            
+            elif quantity in ("None", "none",):
+                value_dim = value
+
+            else:
+                quantity = self.convert_name(quantity)
+                reference = self.reference_dict[quantity]
+                value_dim = value * reference
+
+        else:
+            raise NotImplementedError
+
+        return value_dim
+
+    def convert_name(self, quantity: str) -> str:
+        """Converts the name of the quantity as specified during
+        computation to the appropriate name for non-dimensionalization.
+
+        :param quantity: _description_
+        :type quantity: str
+        :return: _description_
+        :rtype: str
+        """
         if quantity == "rho":
             quantity = "density"
-        if quantity in ["u", "v", "w", "velocityX", "velocityY", "velocityZ"]:
+        elif quantity in ("u", "v", "w",):
             quantity = "velocity"
-        if quantity in ["momentumX", "momentumY", "momentumZ"]:
+        elif quantity in ("rhou", "rhov", "rhow",):
             quantity = "momentum"
-        if quantity == "p":
+        elif quantity in ("p",):
             quantity = "pressure"
-        if quantity == "T":
+        elif quantity == "T":
             quantity = "temperature"
-
-        # PRIMES
-        if quantity == "density":
-            value *= self.density_reference
-        elif quantity == "velocity":
-            value *= self.velocity_reference
-        elif quantity == "temperature":
-            value *= self.temperature_reference
-        elif quantity == "pressure":
-            value *= self.pressure_reference
-
-        # CONS
-        elif quantity == "mass":
-            value *= self.density_reference
-        elif quantity == "momentum":
-            value *= (self.density_reference * self.velocity_reference)
-        elif quantity == "energy":
-            value *= self.pressure_reference
-
-        # MATERIAL PARAMETERS
-        elif quantity == "dynamic_viscosity":
-            value *= self.viscosity_reference
-        elif quantity == "thermal_conductivity":
-            value *= self.thermal_conductivity_reference
-        elif quantity == "specific_gas_constant":
-            value *= self.specific_gas_constant_reference
-        elif quantity == "surface_tension_coefficient":
-            value *= self.surface_tension_coefficient_reference
-
-        # PHYSICAL QUANTITIES
-        elif quantity == "gravity":
-            value *= self.gravity_reference
-        elif quantity == "length":
-            value *= self.length_reference
-        elif quantity == "time":
-            value *= self.time_reference
-        
-        # MISC
-        elif quantity == "mass":
-            value *= self.mass_reference
-        elif quantity == "mass_flow":
-            value *= self.mass_flow_reference
-        else:
-            assert False, "Quantity %s is unknown" % quantity
-
-        return value
-        
+        elif quantity.startswith("alpharho_"):
+            quantity = "density"
+        elif quantity.startswith("alpha_"):
+            quantity = "volume_fraction"
+        elif quantity.startswith("rho_"):
+            quantity = "density"       
+        return quantity

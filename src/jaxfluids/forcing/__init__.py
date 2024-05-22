@@ -1,0 +1,3 @@
+TUPLE_ACOUSTIC_FORCING = (
+    "PLANAR"
+)
