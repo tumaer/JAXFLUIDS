@@ -1,0 +1,85 @@
+{
+    "general": {
+        "case_name": "doublemach",
+        "end_time": 0.28,
+        "save_path": "./results",
+        "save_dt": 0.01
+    },
+    "domain": {
+        "x": {
+            "cells": 256,
+            "range": [0.0, 4.0]
+        },
+        "y": {
+            "cells": 256,
+            "range": [0.0, 4.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
+        }
+    },
+    "boundary_conditions": {
+        "east": {"type": "ZEROGRADIENT"},
+        "west": {
+            "type": "DIRICHLET",
+            "primitives_callable": {
+                "rho": 8.0,
+                "u": 7.144709581221618,
+                "v": -4.125,
+                "w": 0.0,
+                "p": 116.5
+            }
+        },
+        "north": {"type": "ZEROGRADIENT"},
+        "south": [
+            {
+                "type": "DIRICHLET",
+                "primitives_callable": {
+                    "rho": 8.0,
+                    "u": 7.144709581221618,
+                    "v": -4.125,
+                    "w": 0.0,
+                    "p": 116.5
+                },
+                "bounding_domain": "lambda x: x < 0.16666666666666666"
+            },
+            {
+                "type": "SYMMETRY",
+                "bounding_domain": "lambda x: x >= 0.16666666666666666"
+            }
+        ],
+        "top": {"type": "INACTIVE"},
+        "bottom": {"type": "INACTIVE"}
+    },
+    "initial_condition": {
+        "rho": "lambda x,y: 8.0*(y > jnp.sqrt(3.0) * (x - 1.0 / 6.0)) + 1.4*(y <= jnp.sqrt(3.0) * (x - 1.0 / 6.0))",
+        "u": "lambda x,y: 7.144709581221618*(y > jnp.sqrt(3.0) * (x - 1.0 / 6.0)) + 0.0*(y <= jnp.sqrt(3.0) * (x - 1.0 / 6.0))",
+        "v": "lambda x,y: -4.125*(y > jnp.sqrt(3.0) * (x - 1.0 / 6.0)) + 0.0*(y <= jnp.sqrt(3.0) * (x - 1.0 / 6.0))",
+        "w": 0.0,
+        "p": "lambda x,y: 116.5*(y > jnp.sqrt(3.0) * (x - 1.0 / 6.0)) + 1.0*(y <= jnp.sqrt(3.0) * (x - 1.0 / 6.0))"
+    },
+
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        }
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure", "temperature"],
+        "miscellaneous": ["schlieren", "mach_number"]
+    }
+}
