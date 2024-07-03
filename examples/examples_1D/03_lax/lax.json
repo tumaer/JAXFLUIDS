@@ -1,0 +1,53 @@
+{
+    "general": {
+        "case_name": "lax",
+        "end_time": 0.14,
+        "save_path": "./results",
+        "save_dt": 0.01
+    },
+    "domain": {
+        "x": {
+            "cells": 200,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_conditions": {
+        "east": {"type": "ZEROGRADIENT"},
+        "west": {"type": "ZEROGRADIENT"},
+        "north": {"type": "INACTIVE"},
+        "south": {"type": "INACTIVE"},
+        "top": {"type": "INACTIVE"},
+        "bottom": {"type": "INACTIVE"}
+    },
+    "initial_condition": {
+        "rho": "lambda x: 0.445*(x <= 0.5) + 0.5*(x > 0.5)",
+        "u": "lambda x: 0.698*(x <= 0.5) + 0.0*(x > 0.5)",
+        "v": 0.0,
+        "w": 0.0,
+        "p": "lambda x: 3.528*(x <= 0.5) + 0.571*(x > 0.5)"
+    },
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        }
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure", "temperature"]
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    }
+}

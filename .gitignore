@@ -9,7 +9,6 @@ figs
 figs/
 */jaxfluids.egg-info
 tensorboard/
-examples/
 tests/
 *.dat
 *.tex
