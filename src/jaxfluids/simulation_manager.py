@@ -1100,7 +1100,7 @@ class SimulationManager:
     def feed_forward(
             self, 
             batch_primes_init: Array, 
-            physical_timestep_size: float, 
+            physical_timestep_size: Array, 
             t_start: float, 
             outer_steps: int, 
             inner_steps: int = 1,

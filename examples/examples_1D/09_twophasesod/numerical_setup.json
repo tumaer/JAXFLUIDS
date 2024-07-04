@@ -1,0 +1,88 @@
+{
+    "conservatives": {
+        "halo_cells": 5,
+        "time_integration": {
+            "integrator": "RK3",
+            "CFL": 0.5
+        },
+        "convective_fluxes": {
+            "convective_solver": "GODUNOV",
+            "riemann_solver": "HLLC",
+            "signal_speed": "EINFELDT",
+            "reconstruction_stencil": "WENO5-Z",
+            "reconstruction_variable": "CHAR-PRIMITIVE"
+        },
+        "positivity": {
+            "flux_limiter": null,
+            "is_interpolation_limiter": true,
+            "is_thinc_interpolation_limiter": false,
+            "is_volume_fraction_limiter": false,
+            "is_acdi_flux_limiter": false
+        },
+        "dissipative_fluxes": {
+            "reconstruction_stencil": "CENTRAL4",
+            "derivative_stencil_center": "CENTRAL4",
+            "derivative_stencil_face": "CENTRAL4"
+        }
+    },
+    "levelset": {
+        "model": "FLUID-FLUID",
+        "halo_cells": 2,
+        "levelset_advection_stencil": "HOUC5",
+        "narrowband": {
+            "computation_width": 5,
+            "perform_cutoff": false
+        },
+        "geometry": {
+            "derivative_stencil_normal": "CENTRAL4",
+            "subcell_reconstruction": false
+        },
+        "extension": {
+            "time_integrator": "EULER",
+            "spatial_stencil": "FIRSTORDER",
+            "steps_primes": 40,
+            "CFL_primes": 0.5,
+            "steps_interface": 40,
+            "CFL_interface": 0.5,
+            "reset_cells": false
+        },
+        "reinitialization": {
+            "type": "GODUNOVHAMILTONIAN",
+            "CFL": 0.25,
+            "interval": 1,
+            "steps": 40,
+            "is_cut_cell": true,
+            "remove_underresolved": false
+        },
+        "mixing": {
+            "volume_fraction_threshold": 0.6,
+            "mixing_targets": 1
+        },
+        "residual_computation": {
+            "derivative_stencil": "CENTRAL2"
+        }
+    },
+    "active_physics": {
+        "is_convective_flux": true,
+        "is_viscous_flux": false,
+        "is_heat_flux": false,
+        "is_volume_force": false,
+        "is_surface_tension": false
+    },
+    "active_forcings": {
+        "is_mass_flow_forcing": false,
+        "is_temperature_forcing": false,
+        "is_turb_hit_forcing": false
+    },
+    "precision": {
+        "is_double_precision_compute": true,
+        "is_double_precision_output": true
+    },
+    "output": {
+        "derivative_stencil": "CENTRAL4",
+        "is_xdmf": false,
+        "logging": {
+            "is_only_last_stage": true
+        }
+    }
+}
