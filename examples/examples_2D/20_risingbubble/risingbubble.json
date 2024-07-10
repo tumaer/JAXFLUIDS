@@ -1,0 +1,141 @@
+{
+    "general": {
+        "case_name": "risingbubble",
+        "end_time": 3.0,
+        "save_path": "./results",
+        "save_dt": 1e-1
+
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "results/risingbubble-5/domain/data_1.96011555.h5"
+    },
+    "domain": {
+        "x": {
+            "cells": 50,
+            "range": [-0.5, 0.5]
+        },
+        "y": {
+            "cells": 100,
+            "range": [0.0, 2.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
+        }
+    },
+    "boundary_conditions": {
+        "primitives": {
+            "east": {"type": "SYMMETRY"},
+            "west": {"type": "SYMMETRY"},
+            "north": {
+                "type": "DIRICHLET",
+                "primitives_callable": {
+                    "rho": 1000.0,
+                    "u": 0.0,
+                    "v": 0.0,
+                    "w": 0.0,
+                    "p": 5000.0
+                }
+            },
+            "south": {
+                "type": "WALL",
+                "wall_velocity_callable": {
+                    "u": 0.0,
+                    "v": 0.0,
+                    "w": 0.0
+                }
+            },
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        },
+        "levelset": {
+            "east": {"type": "SYMMETRY"},
+            "west": {"type": "SYMMETRY"},
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        }
+    },
+    "initial_condition": {
+        "primitives": {
+            "positive" : {
+                "rho": 1000.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": "lambda x, y: 7000 - 1000*y*0.98"
+            },
+            "negative": {
+                "rho": 100.0,
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0,
+                "p": 6500.0
+            }
+        },
+        "levelset": "lambda x, y:  - 0.25 + jnp.sqrt(x**2 + (y - 0.5)**2)"
+    },
+    "forcings": {
+        "gravity": [0.0, -0.98, 0.0]
+    },  
+    "material_properties": {
+        "positive": {
+            "equation_of_state": {
+                "model": "IdealGas",
+                "specific_heat_ratio": 1.4,
+                "specific_gas_constant": 1.0
+            },
+            "transport": {
+                "dynamic_viscosity": {
+                    "model": "CUSTOM",
+                    "value": 10.0
+                },
+                "bulk_viscosity": 0.0,
+                "thermal_conductivity": {
+                    "model": "CUSTOM",
+                    "value": 0.0
+                }
+            }
+        },
+        "negative": {
+            "equation_of_state": {
+                "model": "IdealGas",
+                "specific_heat_ratio": 1.4,
+                "specific_gas_constant": 1.0
+            },
+            "transport": {
+                "dynamic_viscosity": {
+                    "model": "CUSTOM",
+                    "value": 1.0
+                },
+                "bulk_viscosity": 0.0,
+                "thermal_conductivity": {
+                    "model": "CUSTOM",
+                    "value": 0.0
+                }
+            }
+        },
+        "pairing" : {
+            "surface_tension_coefficient": 24.5
+        }
+    },
+    "output":  {
+        "primitives": ["density", "velocity", "pressure"],
+        "real_fluid": ["density", "velocity", "pressure"],
+        "levelset": ["levelset", "volume_fraction"]
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1000.0,
+        "length_reference": 0.25,
+        "velocity_reference": 0.5,
+        "temperature_reference": 1.0
+    }
+
+}
