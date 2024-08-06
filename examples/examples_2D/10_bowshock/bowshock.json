@@ -1,0 +1,77 @@
+{
+    "general": {
+        "case_name": "bowshock",
+        "end_time": 2.0,
+        "save_path": "./results",
+        "save_dt": 0.1
+    },
+    "domain": {
+        "x": {
+            "cells": 60,
+            "range": [-0.3, 0.0]
+        },
+        "y": {
+            "cells": 240,
+            "range": [-0.6, 0.6]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_conditions": {
+        "primitives": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {
+                "type": "DIRICHLET",
+                "primitives_callable": {
+                    "rho": 1.0,
+                    "u": 2.3664319132398465,
+                    "v": 0.0,
+                    "w": 0.0,
+                    "p": 1.0
+                }
+            },
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        },
+        "levelset": {
+            "east": {"type": "SYMMETRY"},
+            "west": {"type": "ZEROGRADIENT"},
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        }
+    },
+    "initial_condition": {
+        "primitives": {
+            "rho": 1.0,
+            "u": 2.3664319132398465,
+            "v": 0.0,
+            "w": 0.0,
+            "p": 1.0
+        },
+        "levelset": "lambda x, y:  - 0.1 + jnp.sqrt(x**2 + y**2)"
+    },    
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 0.7142857142857143
+        }
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure", "temperature"],
+        "levelset": ["volume_fraction", "levelset"],
+        "miscellaneous": ["schlieren", "mach_number"]
+    }
+}
