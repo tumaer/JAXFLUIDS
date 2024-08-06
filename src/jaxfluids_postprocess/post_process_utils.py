@@ -88,10 +88,10 @@ def load_data(
         # READ METADATA
         is_parallel = h5file["metadata"]["is_parallel"][()]
         diffuse_interface_model = h5file["metadata"]["diffuse_interface_model"][()]
-        if type(diffuse_interface_model) != np.bool8:
+        if type(diffuse_interface_model) != np.bool_:
             diffuse_interface_model = diffuse_interface_model.decode("utf-8")
         levelset_model = h5file["metadata"]["levelset_model"][()]
-        if type(levelset_model) != np.bool8:
+        if type(levelset_model) != np.bool_:
             levelset_model = levelset_model.decode("utf-8")
         if "fluid_names" in h5file["metadata"].keys():
             fluid_names = tuple([fluid_name.decode("utf-8") for fluid_name in h5file["metadata"]["fluid_names"][()]])
@@ -501,7 +501,7 @@ def reassemble_parallel_data(
                     available_quantities[key] = [arr.decode("utf-8") for arr in quantity_array]
                 split_factors = h5file["domain/split_factors"][:]
                 levelset_model = h5file["metadata"]["levelset_model"][()]
-                if type(levelset_model) != np.bool8:
+                if type(levelset_model) != np.bool_:
                     levelset_model = levelset_model.decode("utf-8")
 
             for axis_index, grid in enumerate(["gridFX", "gridFY", "gridFZ"]):
@@ -1249,10 +1249,10 @@ def load_data_old(
 
         is_parallel = h5file["metadata"]["is_parallel"][()]
         diffuse_interface_model = h5file["metadata"]["diffuse_interface_model"][()]
-        if type(diffuse_interface_model) != np.bool8:
+        if type(diffuse_interface_model) != np.bool_:
             diffuse_interface_model = diffuse_interface_model.decode("utf-8")
         levelset_model = h5file["metadata"]["levelset_model"][()]
-        if type(levelset_model) != np.bool8:
+        if type(levelset_model) != np.bool_:
             levelset_model = levelset_model.decode("utf-8")
         number_fluids = h5file["metadata"]["number_fluids"][()]
         is_double = h5file["metadata"]["is_double_precision"][()]

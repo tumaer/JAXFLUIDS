@@ -285,9 +285,9 @@ class MaterialFieldsInitializer:
         levelset_model_restart = h5file["metadata"]["levelset_model"][()]
         diffuse_interface_model_restart = h5file["metadata"]["diffuse_interface_model"][()]
         levelset_model_restart = levelset_model_restart.decode("utf-8") if \
-            type(levelset_model_restart) != np.bool8 else levelset_model_restart
+            type(levelset_model_restart) != np.bool_ else levelset_model_restart
         diffuse_interface_model_restart = diffuse_interface_model_restart.decode("utf-8") if \
-            type(diffuse_interface_model_restart) != np.bool8 else diffuse_interface_model_restart
+            type(diffuse_interface_model_restart) != np.bool_ else diffuse_interface_model_restart
 
         assert_string = (f"Dimension of restart file {restart_file_path} does "
                          "not match case setup file.")
