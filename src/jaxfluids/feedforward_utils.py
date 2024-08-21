@@ -69,29 +69,31 @@ def initialize_fields_for_feedforward(
         levelset = sim_manager.levelset_handler.reinitializer.set_levelset_cutoff(levelset)
         levelset = sim_manager.halo_manager.perform_halo_update_levelset(levelset, True, True)
         volume_fraction, apertures = sim_manager.levelset_handler.compute_volume_fraction_and_apertures(levelset)
+
         if levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
             interface_velocity = create_field_buffer(nh, device_number_of_cells, dtype, leading_dim=3)
             interface_velocity = interface_velocity.at[...,nhx,nhy,nhz].set(solid_interface_velocity_init)
-
-        if levelset_model == "FLUID-SOLID-DYNAMIC":
-            solid_interface_velocity = interface_quantity_computer.compute_solid_velocity(t_start)
-        elif levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
             solid_interface_velocity = interface_velocity[...,nhx,nhy,nhz]
-        else:
+            interface_pressure = None
+        elif levelset_model == "FLUID-SOLID-DYNAMIC":
+            interface_velocity = None
+            solid_interface_velocity = interface_quantity_computer.compute_solid_velocity(t_start)
+            interface_pressure = None
+        elif levelset_model == "FLUID-FLUID":
+            interface_velocity, interface_pressure = levelset_handler.compute_interface_quantities(
+                primitives, levelset, None, None, 200, 0.3)
             solid_interface_velocity = None
-            
+        else:
+            interface_velocity = None
+            solid_interface_velocity = None
+            interface_pressure = None
+           
         normal = geometry_calculator.compute_normal(levelset)
-        conservatives, primitives, _ = ghost_cell_handler.perform_ghost_cell_treatment(
+        conservatives, primitives, *_ = ghost_cell_handler.perform_ghost_cell_treatment(
             conservatives, primitives, levelset, volume_fraction,
             t_start, normal, solid_interface_velocity)
         primitives, conservatives = sim_manager.halo_manager.perform_halo_update_material(
             primitives, t_start, is_viscous_flux, False, conservatives)
-        
-        if levelset_model == "FLUID-FLUID":
-            interface_velocity, interface_pressure = levelset_handler.compute_interface_quantities(
-                primitives, levelset, None, None, 200, 0.3)
-        else:
-            interface_pressure = None
 
     else:
         levelset, volume_fraction, apertures = None, None, None

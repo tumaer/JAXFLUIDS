@@ -49,7 +49,7 @@ class GhostCellHandler():
             mixing_invalid_cells: Array = None,
             steps: int = None,
             CFL: int = None
-            ) -> Tuple[Array, Array, float]:
+            ) -> Tuple[Array, Array, float, float]:
         """Performs the ghost cell treatment on
         the material fields.
         1) Extend primitives into narrow band ghost cells
@@ -78,7 +78,7 @@ class GhostCellHandler():
         :param mask_small_cells: _description_, defaults to None
         :type mask_small_cells: Array, optional
         :return: _description_
-        :rtype: Tuple[Array, Array, float]
+        :rtype: Tuple[Array, Array, float, float]
         """
         
         nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
