@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Any, Callable, Dict, Tuple, TYPE_CHECKING, NamedTuple
 
+import numpy as np
+
 import jax
 import jax.numpy as jnp
 from jax import Array
@@ -59,6 +61,14 @@ def initialize_fields_for_feedforward(
 
     # INITIALIZE LEVELSET FIELD
     if levelset_model:
+        assert_str = (
+            "Consistency error while initializing fields for feed foward. "
+            f"Level-set model {levelset_model} is active, however levelset_init is "
+            f"of type {type(levelset_init)}. levelset_init must be a jax.Array or "
+            "a np.ndarray."
+        )
+        assert isinstance(levelset_init, (Array, np.ndarray)), assert_str
+
         levelset_handler = sim_manager.levelset_handler
         geometry_calculator = levelset_handler.geometry_calculator
         ghost_cell_handler = levelset_handler.ghost_cell_handler
