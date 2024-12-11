@@ -110,14 +110,20 @@ Check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.
 We gratefully acknowledge access to TPU compute resources granted by Google's TRC program.
 
 ## Citation
-JAX-Fluids 2.0: Towards HPC for Differentiable CFD of Compressible Two-phase Flows
-https://arxiv.org/abs/2402.05193
+JAX-Fluids 2.0: Towards HPC for differentiable CFD of compressible two-phase flows
+https://doi.org/10.1016/j.cpc.2024.109433
 ```
-@article{bezgin2024jax,
-  title={JAX-Fluids 2.0: Towards HPC for Differentiable CFD of Compressible Two-phase Flows},
-  author={Bezgin, Deniz A and Buhendwa, Aaron B and Adams, Nikolaus A},
-  journal={arXiv preprint arXiv:2402.05193},
-  year={2024}
+@article{Bezgin2025,
+   author = {Deniz A. Bezgin and Aaron B. Buhendwa and Nikolaus A. Adams},
+   doi = {10.1016/j.cpc.2024.109433},
+   issn = {00104655},
+   journal = {Computer Physics Communications},
+   month = {3},
+   pages = {109433},
+   title = {JAX-Fluids 2.0: Towards HPC for differentiable CFD of compressible two-phase flows},
+   volume = {308},
+   url = {https://linkinghub.elsevier.com/retrieve/pii/S0010465524003564},
+   year = {2025},
 }
 ```
 
@@ -125,17 +131,18 @@ JAX-Fluids: A fully-differentiable high-order computational fluid dynamics solve
 https://doi.org/10.1016/j.cpc.2022.108527
 
 ```
-@article{BEZGIN2022108527,
-   title = {JAX-Fluids: A fully-differentiable high-order computational fluid dynamics solver for compressible two-phase flows},
-   journal = {Computer Physics Communications},
-   pages = {108527},
-   year = {2022},
-   issn = {0010-4655},
-   doi = {https://doi.org/10.1016/j.cpc.2022.108527},
-   url = {https://www.sciencedirect.com/science/article/pii/S0010465522002466},
+@article{Bezgin2023,
    author = {Deniz A. Bezgin and Aaron B. Buhendwa and Nikolaus A. Adams},
-   keywords = {Computational fluid dynamics, Machine learning, Differential programming, Navier-Stokes equations, Level-set, Turbulence, Two-phase flows}
-} 
+   doi = {10.1016/j.cpc.2022.108527},
+   issn = {00104655},
+   journal = {Computer Physics Communications},
+   month = {1},
+   pages = {108527},
+   title = {JAX-Fluids: A fully-differentiable high-order computational fluid dynamics solver for compressible two-phase flows},
+   volume = {282},
+   url = {https://linkinghub.elsevier.com/retrieve/pii/S0010465522002466},
+   year = {2023},
+}
 ```
 ## License
 This project is licensed under the GNU General Public License v3 - see 
