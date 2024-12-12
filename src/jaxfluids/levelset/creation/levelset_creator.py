@@ -83,8 +83,9 @@ class LevelsetCreator:
         
         elif is_NACA:
             levelset_init = self.NACA_airfoils.compute_levelset(
-                self.initial_condition_levelset,
+                self.initial_condition_levelset.NACA_profile,
                 mesh_grid, smallest_cell_size)
+            levelset = levelset.at[nhx,nhy,nhz].set(levelset_init)
 
         elif is_blocks:
             for levelset_block in self.initial_condition_levelset.blocks:

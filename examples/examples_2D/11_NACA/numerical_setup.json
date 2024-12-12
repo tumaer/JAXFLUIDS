@@ -3,14 +3,14 @@
         "halo_cells": 5,
         "time_integration" : {
             "integrator": "RK3",
-            "CFL": 0.5
+            "CFL": 0.7
         },
         "convective_fluxes": {
             "convective_solver": "GODUNOV",
             "riemann_solver": "HLLC",
             "signal_speed": "EINFELDT",
             "reconstruction_stencil": "WENO5-Z",
-            "reconstruction_variable": "PRIMITIVE"
+            "reconstruction_variable": "CHAR-PRIMITIVE"
         },
         "dissipative_fluxes": {
             "reconstruction_stencil": "CENTRAL4",
@@ -19,8 +19,7 @@
         },
         "positivity": {
             "flux_limiter": "NASA",
-            "is_interpolation_limiter": true,
-            "is_logging": true
+            "is_interpolation_limiter": true
         }
     },
     "levelset": {
