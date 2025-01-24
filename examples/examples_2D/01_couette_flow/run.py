@@ -28,8 +28,9 @@ plot_dict = {
     "velocityX": data_dict["velocity"][:,0],
     "pressure": data_dict["pressure"]
 }
+x,y,z = cell_centers
 
-# ANIMATION
+# CREATE ANIMATION
 create_1D_animation(
     plot_dict,
     cell_centers,
@@ -40,10 +41,10 @@ create_1D_animation(
 
 # CREATE FIGURE
 fig, ax = plt.subplots(ncols=3, sharex=True, figsize=(15,3))
-ax[0].plot(cell_centers[1], plot_dict["density"][-1,0,:,0])
-ax[1].plot(cell_centers[1], plot_dict["velocityX"][-1,0,:,0], label="JXF")
-ax[1].plot(cell_centers[1], 0.1*cell_centers[1], color="black", linestyle="--", label="Exact")
-ax[2].plot(cell_centers[1], plot_dict["pressure"][-1 ,0,:,0])
+ax[0].plot(y, plot_dict["density"][-1,0,:,0])
+ax[1].plot(y, plot_dict["velocityX"][-1,0,:,0], label="JXF")
+ax[1].plot(y, 0.1*y, color="black", linestyle="--", label="Exact")
+ax[2].plot(y, plot_dict["pressure"][-1 ,0,:,0])
 ax[1].legend()
 ylabels = (r"$\rho$", r"$u$", r"$p$")
 for i, axi in enumerate(ax):
@@ -52,3 +53,4 @@ for i, axi in enumerate(ax):
     axi.set_box_aspect(1.0)
 plt.savefig("couette.png", dpi=200)
 plt.show()
+plt.close()

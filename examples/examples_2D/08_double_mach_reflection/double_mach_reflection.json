@@ -1,6 +1,6 @@
 {
     "general": {
-        "case_name": "doublemach",
+        "case_name": "double_mach_reflection",
         "end_time": 0.28,
         "save_path": "./results",
         "save_dt": 0.01

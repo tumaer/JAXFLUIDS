@@ -1,0 +1,35 @@
+{
+    "conservatives": {
+        "halo_cells": 4,
+        "time_integration" : {
+            "integrator": "RK3",
+            "CFL": 0.9
+        },
+        "convective_fluxes": {
+            "convective_solver": "GODUNOV",
+            "riemann_solver": "HLLC",
+            "signal_speed": "EINFELDT",
+            "reconstruction_stencil": "WENO5-JS",
+            "reconstruction_variable": "PRIMITIVE"
+        },
+        "dissipative_fluxes": {
+            "reconstruction_stencil": "CENTRAL4",
+            "derivative_stencil_center": "CENTRAL4",
+            "derivative_stencil_face": "CENTRAL4"
+        }
+    },
+    "active_physics": {
+        "is_convective_flux": false,
+        "is_viscous_flux": false,
+        "is_heat_flux": true,
+        "is_volume_force": false
+    },
+    "precision": {
+        "is_double_precision_compute": false,
+        "is_double_precision_output": false
+    },
+    "output":  {
+        "logging_frequency": 1000,
+        "derivative_stencil": "CENTRAL4"
+    }
+}

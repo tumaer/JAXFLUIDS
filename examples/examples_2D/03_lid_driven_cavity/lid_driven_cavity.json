@@ -1,0 +1,92 @@
+{
+    "general": {
+        "case_name": "lid_driven_cavity",
+        "end_time": 200.0,
+        "save_path": "./results",
+        "save_dt": 5.0
+    },
+    "domain": {
+        "x": {
+            "cells": 128,
+            "range": [0.0, 1.0]
+        },
+        "y": {
+            "cells": 128,
+            "range": [0.0, 1.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_conditions": {
+        "east": {
+            "type": "WALL",
+            "wall_velocity_callable": {
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0
+            }
+        },
+        "west": {
+            "type": "WALL",
+            "wall_velocity_callable": {
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0
+            }
+        },
+        "north": {
+            "type": "WALL",
+            "wall_velocity_callable": {
+                "u": 5e-1,
+                "v": 0.0,
+                "w": 0.0
+            }
+        },
+        "south": {
+            "type": "WALL",
+            "wall_velocity_callable": {
+                "u": 0.0,
+                "v": 0.0,
+                "w": 0.0
+            }
+        },
+        "top": {"type": "INACTIVE"},
+        "bottom": {"type": "INACTIVE"}
+    },
+    "initial_condition": {
+        "rho": 1.0,
+        "u": 0.0,
+        "v": 0.0,
+        "w": 0.0,
+        "p": 2.0
+    },
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "transport": {
+            "dynamic_viscosity": {
+                "model": "CUSTOM",
+                "value": 1e-4
+            },
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": {
+                "model": "CUSTOM",
+                "value": 0.0
+            }
+        }
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure"]
+    }
+}

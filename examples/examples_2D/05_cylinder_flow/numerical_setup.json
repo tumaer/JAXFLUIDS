@@ -1,0 +1,68 @@
+{
+    "conservatives": {
+        "halo_cells": 6,
+        "time_integration": {
+            "integrator": "RK3",
+            "CFL": 0.8
+        },
+        "convective_fluxes": {
+            "convective_solver": "GODUNOV",
+            "riemann_solver": "HLLC",
+            "signal_speed": "EINFELDT",
+            "reconstruction_stencil": "WENO5-Z-ADAP",
+            "reconstruction_variable": "PRIMITIVE"
+        },
+        "dissipative_fluxes": {
+            "reconstruction_stencil": "CENTRAL4_ADAP",
+            "derivative_stencil_center": "CENTRAL4_ADAP",
+            "derivative_stencil_face": "CENTRAL4_ADAP"
+        },
+        "positivity": {
+            "flux_limiter": null,
+            "is_interpolation_limiter": true,
+            "is_thinc_interpolation_limiter": false,
+            "is_volume_fraction_limiter": false,
+            "is_acdi_flux_limiter": false
+        }
+    },
+    "levelset": {
+        "model": "FLUID-SOLID-STATIC",
+        "halo_cells": 2,
+        "interface_flux": {
+            "viscous_flux_method": "MEYER",
+            "derivative_stencil:": "CENTRAL4"
+        },
+        "extension": {
+            "steps_primes": 40,
+            "CFL_primes": 0.25,
+            "residual_threshold": 1e-2
+        },
+        "mixing": {
+            "volume_fraction_threshold": 0.6,
+            "mixing_targets": 1
+        }
+    },
+    "active_physics": {
+        "is_convective_flux": true,
+        "is_viscous_flux": true,
+        "is_heat_flux": false,
+        "is_volume_force": false
+    },
+    "active_forcings": {
+        "is_mass_flow_forcing": false,
+        "is_temperature_forcing": false,
+        "is_turb_hit_forcing": false
+    },
+    "precision": {
+        "is_double_precision_compute": false,
+        "is_double_precision_output": false,
+        "spatial_stencil_epsilon": 1e-10
+    },
+    "output": {
+        "derivative_stencil": "CENTRAL2_ADAP",
+        "is_xdmf": true,
+        "logging": {
+            "frequency": 100
+        }
+    }
+}

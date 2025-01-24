@@ -13,17 +13,8 @@
             "reconstruction_variable": "CHAR-PRIMITIVE",
             "frozen_state": "ROE"
         },
-        "dissipative_fluxes": {
-            "reconstruction_stencil": "CENTRAL4",
-            "derivative_stencil_center": "CENTRAL4",
-            "derivative_stencil_face": "CENTRAL4"
-        },
         "positivity": {
-            "flux_limiter": null,
-            "is_interpolation_limiter": true,
-            "is_thinc_interpolation_limiter": false,
-            "is_volume_fraction_limiter": false,
-            "is_acdi_flux_limiter": false
+            "is_interpolation_limiter": true
         }
     },
     "active_physics": {

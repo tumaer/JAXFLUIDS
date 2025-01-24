@@ -1,0 +1,150 @@
+{
+    "general": {
+        "case_name": "cylinder_flow_Re200",
+        "end_time": 500.0,
+        "save_path": "./results",
+        "save_dt": 5.0
+    },
+    "restart": {
+        "flag": false,
+        "file_path": "./results/cylinderflow_Re200/domain/data_100.0023022051.h5"
+    },
+    "domain": {
+        "x": {
+            "cells": 500,
+            "range": [
+                -10.0,
+                12.0
+            ],
+            "stretching": {
+                "type": "PIECEWISE",
+                "parameters": [
+                    {
+                    "type": "DECREASING",
+                    "lower_bound": -10.0,
+                    "upper_bound": -2.0,
+                    "cells": 100
+                    },
+                    {
+                    "type": "CONSTANT",
+                    "lower_bound": -2.0,
+                    "upper_bound": 4.0,
+                    "cells": 300
+                    },
+                    {
+                    "type": "INCREASING",
+                    "lower_bound": 4.0,
+                    "upper_bound": 12.0,
+                    "cells": 100
+                    }
+                ]
+            }
+        },
+        "y": {
+            "cells": 400,
+            "range": [
+                -10.0,
+                10.0
+            ],
+            "stretching": {
+                "type": "PIECEWISE",
+                "parameters": [
+                    {
+                    "type": "DECREASING",
+                    "lower_bound": -10.0,
+                    "upper_bound": -2.0,
+                    "cells": 100
+                    },
+                    {
+                    "type": "CONSTANT",
+                    "lower_bound": -2.0,
+                    "upper_bound": 2.0,
+                    "cells": 200
+                    },
+                    {
+                    "type": "INCREASING",
+                    "lower_bound": 2.0,
+                    "upper_bound": 10.0,
+                    "cells": 100
+                    }
+                ]
+            }
+        },
+        "z": {
+            "cells": 1,
+            "range": [
+                0.0,
+                1.0
+            ]
+        }
+    },
+    "boundary_conditions": {
+        "primitives": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {
+                "type": "DIRICHLET",
+                "primitives_callable": {
+                    "rho": 1.0,
+                    "u": 0.354964787,
+                    "v": 0.0,
+                    "w": 0.0,
+                    "p": 1.0
+                }
+            },
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        },
+        "levelset": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {"type": "ZEROGRADIENT"},
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        }
+    },
+    "initial_condition": {
+        "primitives": {
+            "rho": 1.0,
+            "u": 0.354964787,
+            "v": 0.0,
+            "w": 0.0,
+            "p": 1.0
+        },
+        "levelset": "lambda x,y: - 0.5 + jnp.sqrt(x**2 + y**2)"
+    },
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "transport": {
+            "dynamic_viscosity": {
+                "model": "CUSTOM",
+                "value": 0.001774823935
+            },
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": {
+                "model": "CUSTOM",
+                "value": 0.0
+            }
+        }
+    },
+    "forcings": {
+        "temperature_target": 1.0
+    },
+    "nondimensionalization_parameters": {
+        "density_reference": 1.0,
+        "length_reference": 1.0,
+        "velocity_reference": 1.0,
+        "temperature_reference": 1.0
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure"],
+        "levelset": ["levelset", "volume_fraction"],
+        "miscellaneous": ["vorticity"]
+    }
+}
