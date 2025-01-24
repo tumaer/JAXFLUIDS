@@ -1,14 +1,14 @@
 {
     "general": {
-        "case_name": "linearadvection",
+        "case_name": "shock_density_interaction",
+        "end_time": 1.8,
         "save_path": "./results",
-        "end_time": 2.0,
         "save_dt": 0.1
     },
     "domain": {
         "x": {
             "cells": 200,
-            "range": [0.0, 2.0]
+            "range": [0.0, 10.0]
         },
         "y": {
             "cells": 1,
@@ -20,19 +20,19 @@
         }
     },
     "boundary_conditions": {
-        "east": {"type": "PERIODIC"},
-        "west": {"type": "PERIODIC"},
+        "east": {"type": "ZEROGRADIENT"},
+        "west": {"type": "ZEROGRADIENT"},
         "north": {"type": "INACTIVE"},
         "south": {"type": "INACTIVE"},
         "top": {"type": "INACTIVE"},
         "bottom": {"type": "INACTIVE"}
     },
     "initial_condition": {
-        "rho": "lambda x: ((x>=0.2) & (x<=0.4)) * ( 1/6*(jnp.exp(-334.477 * (x-0.3-0.005)**2) + jnp.exp(-334.477 * (x - 0.3 + 0.005)**2) + 4 * jnp.exp(-334.477 * (x - 0.3)**2))) + ((x>=0.6) & (x<=0.8)) * 1 + ((x>=1.0) & (x<=1.2)) * (1 - jnp.abs(10 * (x - 1.1))) + ((x>=1.4) & (x<=1.6)) * (1/6 * (jnp.sqrt(jnp.maximum( 1 - 100 * (x - 1.5 - 0.005)**2, 0)) + jnp.sqrt(jnp.maximum( 1 - 100 * (x - 1.5 + 0.005)**2, 0)) + 4 * jnp.sqrt(jnp.maximum( 1 - 100 * (x - 1.5)**2, 0))) ) + ~( ((x>=0.2) & (x<=0.4)) | ((x>=0.6) & (x<=0.8)) | ((x>=1.0) & (x<=1.2)) | ((x>=1.4) & (x<=1.6)) ) * 0.01",
-        "u": 1.0,
+        "rho": "lambda x: 3.857143 * (x <= 1.0) + (1.0 + 0.2 * jnp.sin(5 * x))*(x > 1.0)",
+        "u": "lambda x: 2.629369 * (x <= 1.0) + 0.0 * (x > 1.0)",
         "v": 0.0,
         "w": 0.0,
-        "p": 1.0
+        "p": "lambda x: 10.33333 * (x <= 1.0) + 1.0 * (x > 1.0)"
     },
     "material_properties": {
         "equation_of_state": {

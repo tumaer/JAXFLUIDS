@@ -1,6 +1,6 @@
 {
     "general": {
-        "case_name": "heatequation",
+        "case_name": "heat_equation",
         "end_time": 5.0,
         "save_path": "./results",
         "save_dt": 0.1

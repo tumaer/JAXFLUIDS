@@ -1,6 +1,6 @@
 {
     "general": {
-        "case_name": "twophasesod",
+        "case_name": "twophase_sod",
         "end_time": 0.15,
         "save_path": "./results",
         "save_dt": 0.01
