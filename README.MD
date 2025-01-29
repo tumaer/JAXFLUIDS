@@ -145,5 +145,5 @@ https://doi.org/10.1016/j.cpc.2022.108527
 }
 ```
 ## License
-This project is licensed under the GNU General Public License v3 - see 
-the [LICENSE](LICENSE) file or for details https://www.gnu.org/licenses/.
+This project is licensed under the MIT License - see 
+the [LICENSE](LICENSE) file or for details https://en.wikipedia.org/wiki/MIT_License.

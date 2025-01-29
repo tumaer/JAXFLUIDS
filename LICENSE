@@ -1,53 +1,21 @@
-********************************************************************************
-*                                                                              *
-* This file is part of JAX-FLUIDS                                              *
-*                                                                              *
-********************************************************************************
-*                                                                              *
-* JAX-FLUIDS is a comprehensive fully-differentiable compressible two-phase    *
-* CFD Python package. JAX-FLUIDS allows the simulation of complex fluid        *
-* dynamics with phenomena like three-dimensional turbulence, compressibility   *
-* effects, and two-phase flows. Written entirely in JAX, it is straightforward *
-* to include existing ML models into the proposed framework. Furthermore,      *
-* JAX-FLUIDS enables end-to-end optimization. I.e., ML models are optimized    *
-* with gradients that are backpropagted through the entire CFD algorithm,      *
-* and therefore contain not only information of the underlying PDE but also of * 
-* the applied numerical methods. We believe that a Python package like         *
-* JAX-FLUIDS is crucial to facilitate the intersection of ML and CFD, and may  *
-* pave the way for an era of  research at differentiable fluid dynamics.       *
-*                                                                              *
-* This code is developed by D. Bezgin and A. Buhendwa at the Chair             *
-* of Aerodynamics and Fluid Mechanics, Technical University of Munich.         *
-*                                                                              *
-*                                                                              *
-********************************************************************************
-*                                                                              *
-* LICENSE                                                                      *
-*                                                                              *
-* JAX-FLUIDS                                                                   *
-* Copyright (C) 2022 Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams     *
-*                                                                              *
-* This program is free software: you can redistribute it and/or modify it      *     
-* under the terms of the GNU General Public License as published by the Free   *        
-* Software Foundation version 3.                                               *                   
-*                                                                              *          
-* This program is distributed in the hope that it will be useful, but          *
-* WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY   *      
-* or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for  *              
-* more details.                                                                *
-*                                                                              *          
-* You should have received a copy of the GNU General Public License along      *
-* with this program (gpl-3.0.txt). If not, see                                 *
-* <https://www.gnu.org/licenses/gpl-3.0.html>                                  *
-*                                                                              *
-********************************************************************************
-*                                                                              *
-* CONTACT                                                                      *
-*                                                                              *
-* deniz.bezgin@tum.de // aaron.buhendwa@tum.de // nikolaus.adams@tum.de        *               
-*                                                                              *
-********************************************************************************
-*                                                                              *
-* Munich, April 15th, 2022                                                     *
-*                                                                              *
-********************************************************************************
+MIT License
+
+Copyright (c) 2022 Deniz A. Bezgin, Aaron B. Buhendwa, Nikolaus A. Adams
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
