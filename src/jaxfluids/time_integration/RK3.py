@@ -1,9 +1,12 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.time_integration.time_integrator import TimeIntegrator
+
+Array = jax.Array
+
 class RungeKutta3(TimeIntegrator):
     """3rd-order TVD RK3 scheme
 

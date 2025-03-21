@@ -1,5 +1,7 @@
+import jax
 import jax.numpy as jnp
-from jax import Array
+
+Array = jax.Array
 
 def squared(x: Array) -> Array:
     return power2(x)

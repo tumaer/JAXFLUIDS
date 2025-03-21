@@ -7,7 +7,6 @@ import math
 import h5py
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.domain.domain_information import DomainInformation
@@ -21,8 +20,11 @@ from jaxfluids.input.input_manager import InputManager
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
 from jaxfluids.equation_information import EquationInformation
 from jaxfluids.data_types.buffers import ForcingParameters, SimulationBuffers, TimeControlVariables
-from jaxfluids.data_types.information import WallClockTimes, TurbulentStatisticsInformation
+from jaxfluids.data_types.information import WallClockTimes
 from jaxfluids.parallel.helper_functions import synchronize_jf
+from jaxfluids.data_types.information import FlowStatistics
+
+Array = jax.Array
 
 class OutputWriter:
     """Output writer for JAX-FLUIDS. The OutputWriter class can write h5 and xdmf 
@@ -48,7 +50,7 @@ class OutputWriter:
         case_setup = input_manager.case_setup
         
         self.is_active = numerical_setup.output.is_active
-        self.is_active_turbulent_statistics = numerical_setup.turbulence_statistics.is_active
+        self.is_write_turbulence_statistics = case_setup.statistics_setup.turbulence.is_cumulative
 
         general_setup = case_setup.general_setup
         self.case_name = general_setup.case_name
@@ -115,8 +117,8 @@ class OutputWriter:
                 quantities_setup=quantities_setup,
                 is_double=is_double,)
         
-        if self.is_active_turbulent_statistics:
-            turbulence_statistics_setup = numerical_setup.turbulence_statistics
+        if self.is_write_turbulence_statistics:
+            turbulence_statistics_setup = case_setup.statistics_setup.turbulence
             self.next_output_time_statistics = turbulence_statistics_setup.start_sampling
             self.save_dt_statistics = turbulence_statistics_setup.save_dt
             self.statistics_writer = StatisticsWriter(
@@ -134,15 +136,13 @@ class OutputWriter:
     def configure_output_writer(self) -> Tuple[str, str, str]:
         self.save_path_case, self.save_path_domain, \
         self.save_path_statistics = self.get_folder_name()
-
-        # SYNCHRONIZING
+        
         synchronize_jf(self.is_multihost)
         
         if self.is_multihost and self.is_parallel_filesystem:
             if self.process_id == 0:
                 self.create_folder()
 
-            # SYNCHRONIZING
             synchronize_jf(self.is_multihost)
 
         else:
@@ -151,7 +151,7 @@ class OutputWriter:
         self.hdf5_writer.set_save_path_domain(self.save_path_domain)
         if self.is_xdmf:
             self.xdmf_writer.set_save_path_domain(self.save_path_domain)
-        if self.is_active_turbulent_statistics:
+        if self.is_write_turbulence_statistics:
             self.statistics_writer.set_save_path_statistics(self.save_path_statistics)
         
         return self.save_path_case, self.save_path_domain, \
@@ -172,7 +172,7 @@ class OutputWriter:
         """
         os.mkdir(self.save_path_case)
         os.mkdir(self.save_path_domain)
-        if self.is_active_turbulent_statistics:
+        if self.is_write_turbulence_statistics:
             os.mkdir(self.save_path_statistics)
 
         with open(os.path.join(self.save_path_case, self.case_name + ".json"), "w") as json_file:
@@ -193,13 +193,13 @@ class OutputWriter:
         if not os.path.exists(self.save_path):
             if self.is_multihost and self.is_parallel_filesystem:
                 if self.process_id == 0:
-                    os.makedirs(self.save_path, exist_ok=True)
+                    os.mkdir(self.save_path)
 
                 # SYNCHRONIZING
                 synchronize_jf(self.is_multihost)
 
             else:
-                os.makedirs(self.save_path, exist_ok=True)
+                os.mkdir(self.save_path)
 
         create_directory = True
         i = 1
@@ -232,7 +232,8 @@ class OutputWriter:
             wall_clock_times: WallClockTimes,
             forcing_parameters: ForcingParameters = None,
             force_output: bool = False,
-            simulation_finish: bool = False
+            simulation_finish: bool = False,
+            flow_statistics: FlowStatistics = None
             ) -> None:
         """Writes h5 and (optional) xdmf output.
         
@@ -253,8 +254,8 @@ class OutputWriter:
             
             if force_output:
                 self._write_output(simulation_buffers, time_control_variables,
-                                           wall_clock_times, forcing_parameters,
-                                           is_write_step=self.is_save_step)
+                                   wall_clock_times, forcing_parameters,
+                                   is_write_step=self.is_save_step)
 
             else:
                 is_write_output = False
@@ -283,6 +284,16 @@ class OutputWriter:
             if simulation_finish and self.is_xdmf:
                 self.xdmf_writer.write_timeseries()
 
+        if self.is_write_turbulence_statistics and flow_statistics is not None:
+            if self.process_id == 0:
+                diff = physical_simulation_time - self.next_output_time_statistics
+                if diff >= -self.eps_time or force_output:
+                    self.statistics_writer.write_statistics(
+                        flow_statistics.turbulence, time_control_variables,)
+                    if not force_output:
+                        self.next_output_time_statistics += self.save_dt_statistics
+
+
     def _write_output(
             self,
             simulation_buffers: SimulationBuffers,
@@ -297,22 +308,3 @@ class OutputWriter:
         if self.is_xdmf:
             self.xdmf_writer.write_file(time_control_variables,
                                         is_write_step)
-
-    def write_turbulent_statistics(
-            self, 
-            turbulent_statistics: TurbulentStatisticsInformation,
-            time_control_variables: TimeControlVariables,
-            force_output: bool = False,
-            ) -> None:
-        
-        if self.is_active_turbulent_statistics:
-            physical_simulation_time = time_control_variables.physical_simulation_time
-            simulation_step = time_control_variables.simulation_step
-            
-            if self.save_dt_statistics:
-                diff = physical_simulation_time - self.next_output_time_statistics
-                if diff >= -self.eps_time or force_output:
-                    self.statistics_writer.write_statistics(
-                        turbulent_statistics, time_control_variables,)
-                    if not force_output:
-                        self.next_output_time_statistics += self.save_dt_statistics

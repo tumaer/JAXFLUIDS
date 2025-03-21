@@ -2,15 +2,18 @@ from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING
 from abc import ABC, abstractmethod
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.equation_manager import EquationManager
 if TYPE_CHECKING:
+    from jaxfluids.data_types.ml_buffers import MachineLearningSetup
     from jaxfluids.data_types.numerical_setup.conservatives import ConvectiveFluxesSetup
-    
+
+Array = jax.Array
+
 class ConvectiveFluxSolver(ABC):
 
     eps = jnp.finfo(jnp.float64).eps
@@ -46,10 +49,9 @@ class ConvectiveFluxSolver(ABC):
             axis: int,
             curvature: Array = None,
             volume_fraction: Array = None,
-            ml_parameters_dict: Union[Dict, None] = None,
-            ml_networks_dict: Union[Dict, None] = None,
+            ml_setup: MachineLearningSetup = None,
             **kwargs,
-            ) -> Array:
+        ) -> Array:
         """Computes the convective fluxes. 
 
         :param primitives: Primitive variable buffer
@@ -58,10 +60,8 @@ class ConvectiveFluxSolver(ABC):
         :type conservatives: Array
         :param axis: Spatial direction
         :type axis: int
-        :param ml_parameters_dict: Dictionary of neural network weights, defaults to None
-        :type ml_parameters_dict: Union[Dict, None], optional
-        :param ml_networks_dict: Dictionary of neural network architectures, defaults to None
-        :type ml_networks_dict: Union[Dict, None], optional
+        :param ml_setup: Dictionary of neural network weights, defaults to None
+        :type ml_setup: MachineLearningSetup, optional
         :return: Convective fluxes in axis direction
         :rtype: Array
         """

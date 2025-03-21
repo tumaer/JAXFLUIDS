@@ -1,6 +1,6 @@
 {
     "general": {
-        "case_name": "twophase_sod",
+        "case_name": "twophasesod",
         "end_time": 0.15,
         "save_path": "./results",
         "save_dt": 0.01
@@ -42,6 +42,7 @@
             "bottom": {"type": "INACTIVE"}
         }
     },
+
     "initial_condition": {
         "primitives": {
             "positive" : {
@@ -133,11 +134,5 @@
             "mach_number",
             "schlieren"
         ]
-    },
-    "nondimensionalization_parameters": {
-        "density_reference": 1.0,
-        "length_reference": 1.0,
-        "velocity_reference": 1.0,
-        "temperature_reference": 1.0
     }
 }

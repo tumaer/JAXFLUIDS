@@ -1,9 +1,9 @@
 {
     "general": {
-        "case_name": "linear_advection",
+        "case_name": "linearadvection",
         "save_path": "./results",
         "end_time": 2.0,
-        "save_dt": 0.1
+        "save_dt": 1.0
     },
     "domain": {
         "x": {
@@ -43,11 +43,5 @@
     },
     "output": {
         "primitives": ["density", "velocity", "pressure", "temperature"]
-    },
-    "nondimensionalization_parameters": {
-        "density_reference": 1.0,
-        "length_reference": 1.0,
-        "velocity_reference": 1.0,
-        "temperature_reference": 1.0
     }
 }

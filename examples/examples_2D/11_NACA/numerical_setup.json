@@ -1,16 +1,18 @@
 {
     "conservatives": {
         "halo_cells": 5,
-        "time_integration" : {
+        "time_integration": {
             "integrator": "RK3",
-            "CFL": 0.7
+            "CFL": 0.8
         },
         "convective_fluxes": {
             "convective_solver": "GODUNOV",
-            "riemann_solver": "HLLC",
-            "signal_speed": "EINFELDT",
-            "reconstruction_stencil": "WENO5-Z",
-            "reconstruction_variable": "CHAR-PRIMITIVE"
+            "godunov": {
+                "riemann_solver": "HLLC",
+                "signal_speed": "EINFELDT",
+                "reconstruction_stencil": "WENO5-Z",
+                "reconstruction_variable": "CHAR-PRIMITIVE"
+            }
         },
         "dissipative_fluxes": {
             "reconstruction_stencil": "CENTRAL4",
@@ -18,48 +20,56 @@
             "derivative_stencil_face": "CENTRAL4"
         },
         "positivity": {
-            "flux_limiter": "NASA",
             "is_interpolation_limiter": true
         }
     },
     "levelset": {
-        "model": "FLUID-SOLID-STATIC",
-        "halo_cells": 3,
-        "levelset_advection_stencil": "HOUC5",
-        "narrowband": {
-            "computation_width": 8,
-            "cutoff_width": 15,
-            "perform_cutoff": true
+        "halo_cells": 2,
+        "model": "FLUID-SOLID",
+        "interface_flux": {
+            "method": "INTERPOLATION",
+            "interpolation_dh": 1.0
         },
         "geometry": {
             "derivative_stencil_normal": "CENTRAL4",
             "subcell_reconstruction": false
         },
         "extension": {
-            "time_integrator": "EULER",
-            "spatial_stencil": "FIRSTORDER",
-            "steps_primes": 30,
-            "CFL_primes": 0.7,
-            "steps_interface": 30,
-            "CFL_interface": 0.7
+            "primitives": {
+                "CFL": 0.5,
+                "steps": 20,
+                "residual_threshold": 1e-5,
+                "is_use_interpolation": false,
+                "is_use_iterative_procedure": true
+            }
         },
         "mixing": {
-            "volume_fraction_threshold": 0.6,
-            "mixing_targets": 1
+            "conservatives": {
+                "volume_fraction_threshold": 1e-1,
+                "mixing_targets": 1,
+                "is_interpolate_invalid_cells": false
+            }
         }
     },
     "active_physics": {
         "is_convective_flux": true,
         "is_viscous_flux": false,
         "is_heat_flux": false,
-        "is_volume_force": false,
-        "is_surface_tension": false
+        "is_volume_force": false
+    },
+    "active_forcings": {
+        "is_mass_flow_forcing": false,
+        "is_temperature_forcing": false
     },
     "precision": {
         "is_double_precision_compute": true,
         "is_double_precision_output": true
     },
-    "output":  {
-        "derivative_stencil": "CENTRAL4"
+    "output": {
+        "derivative_stencil": "CENTRAL4",
+        "logging": {
+            "frequency": 10
+        },
+        "is_xdmf": false
     }
 }

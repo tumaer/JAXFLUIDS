@@ -1,3 +1,6 @@
+__version__ = "0.1.0"
+__author__ = "Deniz Bezgin, Aaron Buhendwa"
+
 from jaxfluids_postprocess.matplotlib_utils import (
     create_1D_animation,
     create_1D_figure,
@@ -20,9 +23,6 @@ from jaxfluids_postprocess.h5py_utils import (
     save_dict_to_h5,
     load_dict_from_h5,
 )
-
-__version__ = "0.1.0"
-__author__ = "Deniz Bezgin, Aaron Buhendwa"
 
 __all__ = (
     "create_1D_animation",

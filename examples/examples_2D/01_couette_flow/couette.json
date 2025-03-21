@@ -49,7 +49,9 @@
         "p": 1.0
     },
     "forcings": {
-        "temperature_target": 1.0
+        "temperature": {
+            "target_value": 1.0
+        }
     },
     "material_properties": {
         "equation_of_state": {

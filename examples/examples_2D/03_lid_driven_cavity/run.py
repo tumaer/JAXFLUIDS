@@ -12,20 +12,23 @@ initialization_manager = InitializationManager(input_manager)
 sim_manager = SimulationManager(input_manager)
 
 # RUN SIMULATION
-simulation_buffers, time_control_variables, \
-forcing_parameters = initialization_manager.initialization()
-sim_manager.simulate(simulation_buffers, time_control_variables)
+jxf_buffers = initialization_manager.initialization()
+sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
 quantities = ["velocity"]
-cell_centers, cell_sizes, times, data_dict = load_data(path, quantities, step=5)
+jxf_data = load_data(path, quantities, step=5)
+
+cell_centers = jxf_data.cell_centers
+data = jxf_data.data
+times = jxf_data.times
 
 # PLOT
 nrows_ncols = (1,2)
 plot_dict = {
-    "velocityX": data_dict["velocity"][:,0],
-    "velocityY": data_dict["velocity"][:,1],
+    "velocityX": data["velocity"][:,0],
+    "velocityY": data["velocity"][:,1],
 }
 x,y,z = cell_centers
 
@@ -39,8 +42,8 @@ create_2D_animation(
     interval=100)
 
 # CREATE FIGURE
-velX = data_dict["velocity"][-1,0,:,:,0]
-velY = data_dict["velocity"][-1,1,:,:,0]
+velX = data["velocity"][-1,0,:,:,0]
+velY = data["velocity"][-1,1,:,:,0]
 vel_abs = np.sqrt(velX**2 + velY**2)
 
 N = len(x)

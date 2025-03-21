@@ -1,7 +1,11 @@
 from typing import Tuple, Union
 
-import jax.numpy as jnp
-from jax import Array 
+import jax
+import jax.numpy as jnp 
+
+from jaxfluids.math.sum_consistent import sum4_consistent
+
+Array = jax.Array
 
 def signal_speed_Arithmetic(u_L: Array, u_R: Array, a_L: Array, a_R: Array,
     *args, **kwargs) -> Tuple[Array, Array]:
@@ -60,8 +64,8 @@ def signal_speed_Davis(u_L: Array, u_R: Array, a_L: Array, a_R: Array,
     :return: Buffers of left and right going wave speed estimates.
     :rtype: Tuple[Array, Array]
     """
-    S_L = jnp.minimum( u_L - a_L, u_R - a_R )
-    S_R = jnp.maximum( u_L + a_L, u_R + a_R )
+    S_L = jnp.minimum(u_L - a_L, u_R - a_R)
+    S_R = jnp.maximum(u_L + a_L, u_R + a_R)
     return S_L, S_R
 
 def signal_speed_Davis_2(u_L: Array, u_R: Array, a_L: Array, a_R: Array,
@@ -92,10 +96,11 @@ def signal_speed_Davis_2(u_L: Array, u_R: Array, a_L: Array, a_R: Array,
     :return: Buffers of left and right going wave speed estimates.
     :rtype: Tuple[Array, Array]
     """
-
-    one_dens = 1.0 / (jnp.sqrt(rho_L) + jnp.sqrt(rho_R))
-    u_Roe = ( jnp.sqrt(rho_L) * u_L + jnp.sqrt(rho_R) * u_R ) * one_dens
-    H_Roe = ( jnp.sqrt(rho_L) * H_L + jnp.sqrt(rho_R) * H_R ) * one_dens
+    sqrt_rho_L = jnp.sqrt(rho_L)
+    sqrt_rho_R = jnp.sqrt(rho_R)
+    one_dens = 1.0 / (sqrt_rho_L + sqrt_rho_R)
+    u_Roe = (sqrt_rho_L * u_L + sqrt_rho_R * u_R ) * one_dens
+    H_Roe = (sqrt_rho_L * H_L + sqrt_rho_R * H_R ) * one_dens
     a_Roe = jnp.sqrt( (gamma - 1) * (H_Roe - 0.5 * u_Roe * u_Roe) )
     S_L = u_Roe - a_Roe
     S_R = u_Roe + a_Roe
@@ -117,12 +122,14 @@ def signal_speed_Einfeldt(u_L: Array, u_R: Array, a_L: Array, a_R: Array,
     :return: Buffers of left and right going wave speed estimates.
     :rtype: Tuple[Array, Array]
     """
-    one_dens = 1.0 / (jnp.sqrt(rho_L) + jnp.sqrt(rho_R))
-    eta2 = 0.5 * jnp.sqrt(rho_L) * jnp.sqrt(rho_R) * one_dens * one_dens
-    u_bar = ( jnp.sqrt(rho_L) * u_L + jnp.sqrt(rho_R) * u_R ) * one_dens
-    d_bar = jnp.sqrt( ( jnp.sqrt(rho_L) * a_L * a_L + jnp.sqrt(rho_R) * a_R * a_R ) * one_dens + eta2 * (u_R - u_L) * (u_R - u_L) )
-    S_L = jnp.minimum( u_bar - d_bar, u_L - a_L )
-    S_R = jnp.maximum( u_bar + d_bar, u_R + a_R )
+    sqrt_rho_L = jnp.sqrt(rho_L)
+    sqrt_rho_R = jnp.sqrt(rho_R)
+    one_dens = 1.0 / (sqrt_rho_L + sqrt_rho_R)
+    eta2 = 0.5 * sqrt_rho_L * sqrt_rho_R * one_dens * one_dens
+    u_bar = (sqrt_rho_L * u_L + sqrt_rho_R * u_R ) * one_dens
+    d_bar = jnp.sqrt((sqrt_rho_L * a_L * a_L + sqrt_rho_R * a_R * a_R ) * one_dens + eta2 * jnp.square(u_R - u_L))
+    S_L = jnp.minimum(u_bar - d_bar, u_L - a_L)
+    S_R = jnp.maximum(u_bar + d_bar, u_R + a_R)
     return S_L, S_R
 
 def signal_speed_Toro(u_L: Array, u_R: Array, a_L: Array, a_R: Array,
@@ -184,11 +191,11 @@ def compute_sstar(
     :rtype: Array
     """
 
-    delta_uL = S_L - u_L
-    delta_uR = S_R - u_R
-    one_rho_deltaSU = 1.0 / (rho_L * delta_uL - rho_R * delta_uR)
-    # S_star = one_rho_deltaSU * (p_R - p_L + rho_L * u_L * delta_uL - rho_R * u_R * delta_uR - sigma * kappa * (alpha_R - alpha_L))
-    S_star = one_rho_deltaSU * (p_R - p_L + rho_L * u_L * delta_uL - rho_R * u_R * delta_uR)
+    rho_delta_u_L = rho_L * (S_L - u_L)
+    rho_delta_u_R = rho_R * (S_R - u_R)
+    # S_star = ((p_R - p_L) + (u_L * rho_delta_u_L - u_R * rho_delta_u_R) - sigma * kappa * (alpha_R - alpha_L)) / (rho_delta_u_L - rho_delta_u_R)
+    S_star = ((p_R - p_L) + (u_L * rho_delta_u_L - u_R * rho_delta_u_R)) / (rho_delta_u_L - rho_delta_u_R)
+    # S_star = sum4_consistent(p_R, - p_L, u_L * rho_delta_u_L, -u_R * rho_delta_u_R) / (rho_delta_u_L - rho_delta_u_R)
     return S_star
 
 def estimate_pressure(u_L: Array, u_R: Array, a_L: Array, a_R: Array, 

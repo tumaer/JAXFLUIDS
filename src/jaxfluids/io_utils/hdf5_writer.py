@@ -6,7 +6,6 @@ from functools import partial
 import h5py
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.levelset.levelset_handler import LevelsetHandler
@@ -14,14 +13,19 @@ from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
 from jaxfluids.data_types.buffers import ForcingParameters, SimulationBuffers, \
-    MaterialFieldBuffers, LevelsetFieldBuffers, TimeControlVariables
+    MaterialFieldBuffers, LevelsetFieldBuffers, TimeControlVariables, \
+    SolidFieldBuffers
 from jaxfluids.data_types.information import WallClockTimes
 from jaxfluids.data_types.case_setup.output import OutputQuantitiesSetup
 from jaxfluids.data_types.numerical_setup.output import OutputSetup
 from jaxfluids.data_types.numerical_setup import ActiveForcingsSetup
+from jaxfluids.materials.single_materials.barotropic_cavitation_fluid \
+    import BarotropicCavitationFluid
 
 from jaxfluids.stencils import DICT_SECOND_DERIVATIVE_CENTER
 from jaxfluids.math.differential_operator.laplacian import Laplacian
+
+Array = jax.Array
 
 class HDF5Writer():
     def __init__(
@@ -92,6 +96,7 @@ class HDF5Writer():
         physical_simulation_time = time_control_variables.physical_simulation_time
         material_fields = simulation_buffers.material_fields
         levelset_fields = simulation_buffers.levelset_fields
+        solid_fields = simulation_buffers.solid_fields
 
         if is_write_step:
             simulation_step = time_control_variables.simulation_step
@@ -127,6 +132,7 @@ class HDF5Writer():
                 cell_sizes_h5.append(jnp.squeeze(dxi))
 
             dim = self.domain_information.dim
+            active_axes_indices = self.domain_information.active_axes_indices
             split_factors = self.domain_information.split_factors
             is_parallel = self.domain_information.is_parallel
             is_multihost = self.domain_information.is_multihost
@@ -140,6 +146,8 @@ class HDF5Writer():
             fluid_names = self.equation_information.fluid_names
             diffuse_interface_model = self.equation_information.diffuse_interface_model
             levelset_model = self.equation_information.levelset_model
+            cavitation_model = self.equation_information.cavitation_model
+            # TODO multi-component
 
             # METADATA
             if self.is_metadata:
@@ -155,6 +163,7 @@ class HDF5Writer():
                 h5file.create_dataset(name="metadata/number_fluids", data=number_fluids)
                 h5file.create_dataset(name="metadata/levelset_model", data=levelset_model)
                 h5file.create_dataset(name="metadata/diffuse_interface_model", data=diffuse_interface_model)
+                h5file.create_dataset(name="metadata/cavitation_model", data=cavitation_model)
 
                 h5file.create_dataset(name="metadata/is_double_precision", data=self.is_double)
                 
@@ -168,6 +177,7 @@ class HDF5Writer():
             if self.is_domain:
                 h5file.create_group(name="domain")
                 h5file.create_dataset(name="domain/dim", data=dim)
+                h5file.create_dataset(name="domain/active_axes_indices", data=jnp.array(active_axes_indices), dtype="i8")
                 h5file.create_dataset(name="domain/gridX", data=cell_centers_h5[0], dtype=dtype)
                 h5file.create_dataset(name="domain/gridY", data=cell_centers_h5[1], dtype=dtype)
                 h5file.create_dataset(name="domain/gridZ", data=cell_centers_h5[2], dtype=dtype)
@@ -212,6 +222,13 @@ class HDF5Writer():
                     buffer = self.prepare_levelset_field_buffer(levelset_fields, quantity)
                     h5file.create_dataset(name="levelset/" + quantity, data=buffer, dtype=dtype)
 
+            # SOLID RELATED FIELDS
+            if getattr(self.quantities_setup, "solids") != None:
+                h5file.create_group(name="solids")
+                for quantity in self.quantities_setup.solids:
+                    buffer = self.prepare_solid_field_buffer(solid_fields, quantity)
+                    h5file.create_dataset(name="solids/" + quantity, data=buffer, dtype=dtype)
+
             # DIFFUSE INTERFACE GEOMETRICAL QUANTITIES
             # TODO deniz
             
@@ -222,7 +239,7 @@ class HDF5Writer():
                 for quantity in self.quantities_setup.real_fluid:
                     real_buffer = self.prepare_real_material_field_buffer_for_h5dump(material_fields, quantity, volume_fraction)
                     h5file.create_dataset(name="real_fluid/" + quantity, data=real_buffer, dtype=dtype)
-                    
+
             # MISCELLANEOUS FIELDS
             if getattr(self.quantities_setup, "miscellaneous") != None:
                 h5file.create_group(name="miscellaneous")
@@ -284,20 +301,36 @@ class HDF5Writer():
 
         # MATERIAL FIELD RELATED QUANTITIES WHICH ARE NOT DIRECTLY GIVEN
         # IN PRIMITIVES OR CONSERVATIVES (E.G., DENSITY (for diffuse),
+        # TEMPERATURE, ALPHA_0 for (diffuse 4eqm)) ARE COMPUTED
         else:
             equation_type = self.equation_information.equation_type
             primitives = material_fields.primitives
-            mass_ids = self.equation_information.mass_ids
-            energy_ids = self.equation_information.energy_ids
-            mass_slices = self.equation_information.mass_slices
-            vf_slices = self.equation_information.vf_slices
-            component_slices = self.equation_information.species_slices
+            ids_mass = self.equation_information.ids_mass
+            ids_energy = self.equation_information.ids_energy
+            s_mass = self.equation_information.s_mass
+            s_volume_fraction = self.equation_information.s_volume_fraction
+            component_slices = self.equation_information.s_species
+            
             if quantity == "temperature":
-                buffer = self.material_manager.get_temperature(primitives)
+                if self.equation_information.is_compute_temperature:
+                    buffer = material_fields.temperature
+                else:
+                    buffer = self.material_manager.get_temperature(primitives)
                     
             elif quantity in ["density", "mass"]:
-                if equation_type in ("DIFFUSE-INTERFACE-5EQM"):
+                if equation_type in ("DIFFUSE-INTERFACE-4EQM",
+                                     "DIFFUSE-INTERFACE-5EQM",
+                                    ):
                     buffer = self.material_manager.get_density(primitives)
+                else:
+                    raise NotImplementedError
+            
+            elif quantity == "alpha_0":
+                if equation_type == "DIFFUSE-INTERFACE-4EQM":
+                    temperature = self.material_manager.get_temperature(primitives)
+                    volume_fraction = self.material_manager.diffuse_4eqm_mixture.get_volume_fractions_from_pressure_temperature(
+                        primitives[s_mass], primitives[ids_energy], temperature)
+                    buffer = volume_fraction[0]
                 else:
                     raise NotImplementedError
                 
@@ -376,7 +409,10 @@ class HDF5Writer():
         """
 
         if quantity == "temperature":
-            buffer = self.material_manager.get_temperature(material_fields.primitives)
+            if self.equation_information.is_compute_temperature:
+                buffer = material_fields.temperature
+            else:
+                buffer = self.material_manager.get_temperature(material_fields.primitives)
         else:
             key = "primitives" if quantity in self.material_field_indices["primitives"].keys() else "conservatives" 
             index = self.material_field_indices[key][quantity]
@@ -448,9 +484,6 @@ class HDF5Writer():
             "interface_velocity": jnp.s_[...,nhx_,nhy_,nhz_],
             "interface_pressure": jnp.s_[...,nhx_,nhy_,nhz_]
             }
-        if self.equation_information.levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            active_axes_indices = jnp.array(self.domain_information.active_axes_indices)
-            domain_slices["interface_velocity"] = jnp.s_[active_axes_indices,nhx,nhy,nhz]
         slice_object = domain_slices[quantity]
         buffer = getattr(levelset_fields, quantity)
         buffer = self.unit_handler.dimensionalize(buffer[slice_object], quantity)
@@ -488,6 +521,65 @@ class HDF5Writer():
                 levelset_fields, quantity)
 
 
+
+    def _prepare_solid_field_buffer(
+            self,
+            solid_fields: SolidFieldBuffers,
+            quantity: str,
+            ) -> Dict:
+        """Computes levelset related fields for h5 dump.
+
+        :param levelset_fields: _description_
+        :type levelset_fields: LevelsetFieldBuffers
+        :param quantity: _description_
+        :type quantity: str
+        :return: _description_
+        :rtype: Dict
+        """
+        nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
+        nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
+        active_axes_indices = jnp.array(self.domain_information.active_axes_indices)
+        domain_slices = {
+            "velocity": jnp.s_[active_axes_indices,nhx,nhy,nhz],
+            "temperature": jnp.s_[nhx,nhy,nhz],
+            "energy": jnp.s_[nhx,nhy,nhz]
+            }
+        slice_object = domain_slices[quantity]
+        buffer = getattr(solid_fields, quantity)
+        buffer = self.unit_handler.dimensionalize(buffer[slice_object], quantity)
+        return buffer.T
+
+    @partial(jax.pmap, static_broadcasted_argnums=(0,2),
+             in_axes=(None,0,None), axis_name="i")
+    def _prepare_solid_field_buffer_pmap(
+            self,
+            solid_fields: SolidFieldBuffers,
+            quantity: str
+            ) -> Array:
+        return self._prepare_solid_field_buffer(
+            solid_fields, quantity)
+
+    @partial(jax.jit, static_argnums=(0,2))
+    def _prepare_solid_field_buffer_jit(
+            self,
+            solid_fields: SolidFieldBuffers,
+            quantity: str,
+            ) -> Array:
+        return self._prepare_solid_field_buffer(
+            solid_fields, quantity)
+
+    def prepare_solid_field_buffer(
+            self,
+            solid_fields: SolidFieldBuffers,
+            quantity: str
+            ) -> Array:
+        if self.domain_information.is_parallel:
+            return self._prepare_solid_field_buffer_pmap(
+                solid_fields, quantity)
+        else:
+            return self._prepare_solid_field_buffer_jit(
+                solid_fields, quantity)
+        
 
 
 
@@ -558,15 +650,15 @@ class HDF5Writer():
         nhx,nhy,nhz = self.domain_information.domain_slices_conservatives
         nhx_,nhy_,nhz_ = self.domain_information.domain_slices_geometry
 
-        velocity_slices = self.equation_information.velocity_slices
+        s_velocity = self.equation_information.s_velocity
         equation_type = self.equation_information.equation_type
 
-        energy_slices = self.equation_information.energy_ids
-        mass_slices = self.equation_information.mass_slices
-        vf_slices = self.equation_information.vf_slices
+        s_energy = self.equation_information.ids_energy
+        s_mass = self.equation_information.s_mass
+        s_volume_fraction = self.equation_information.s_volume_fraction
 
-        mass_id = self.equation_information.mass_ids
-        energy_id = self.equation_information.energy_ids
+        mass_id = self.equation_information.ids_mass
+        energy_id = self.equation_information.ids_energy
 
         if quantity == "mach_number":
             speed_of_sound = self.material_manager.get_speed_of_sound(primitives)
@@ -583,36 +675,40 @@ class HDF5Writer():
             computed_quantity = self._compute_schlieren(density)
 
         elif quantity == "vorticity":
-            velocity = primitives[velocity_slices]
+            velocity = primitives[s_velocity]
             computed_quantity = self._compute_vorticity(velocity)
 
         elif quantity == "absolute_vorticity":
-            velocity = primitives[velocity_slices]
+            velocity = primitives[s_velocity]
             computed_quantity = self._compute_absolute_vorticity(velocity)
 
         elif quantity == "absolute_velocity":
             if equation_type == "TWO-PHASE-LS":
-                velocity = primitives[velocity_slices,nhx_,nhy_,nhz_]
+                velocity = primitives[s_velocity,nhx_,nhy_,nhz_]
             else:
-                velocity = primitives[velocity_slices,nhx,nhy,nhz]
+                velocity = primitives[s_velocity,nhx,nhy,nhz]
             computed_quantity = self._compute_absolute_velocity(velocity)
 
         elif quantity == "mach_number":
             if equation_type == "TWO-PHASE-LS":
-                velocity = primitives[velocity_slices,nhx_,nhy_,nhz_]
+                velocity = primitives[s_velocity,nhx_,nhy_,nhz_]
             else:
-                velocity = primitives[velocity_slices,nhx,nhy,nhz]
+                velocity = primitives[s_velocity,nhx,nhy,nhz]
                 speed_of_sound = speed_of_sound[...,nhx,nhy,nhz]
             computed_quantity = self._compute_mach_number(
                 velocity, speed_of_sound)
             
         elif quantity == "qcriterion":
-            velocity = primitives[velocity_slices]
+            velocity = primitives[s_velocity]
             computed_quantity = self._compute_qcriterion(velocity)
 
         elif quantity == "dilatation":
-            velocity = primitives[velocity_slices]
-            computed_quantity = self._compute_dilatation(velocity) 
+            velocity = primitives[s_velocity]
+            computed_quantity = self._compute_dilatation(velocity)
+        
+        elif quantity == "volume_fraction":
+            density = primitives[mass_id,nhx,nhy,nhz]
+            computed_quantity = self._compute_volume_fraction(density)    
             
         else:
             raise NotImplementedError
@@ -715,7 +811,7 @@ class HDF5Writer():
                 derivative = jnp.zeros(shape)
             schlieren.append(derivative)
         schlieren = jnp.stack(schlieren, axis=0)
-        schlieren = jnp.sqrt(jnp.sum(schlieren*schlieren, axis=0) + 1e-10) # TODO EPS
+        schlieren = jnp.sqrt(jnp.sum(jnp.square(schlieren), axis=0) + 1e-30) # TODO EPS
         return schlieren
 
     def _compute_vorticity(
@@ -768,7 +864,7 @@ class HDF5Writer():
         """
         vorticity = self._compute_vorticity(velocity)
         # TODO eps ad
-        absolute_vorticity = jnp.sqrt(jnp.sum(vorticity * vorticity, axis=0) + 1e-100)
+        absolute_vorticity = jnp.sqrt(jnp.sum(jnp.square(vorticity), axis=0) + 1e-100)
         return absolute_vorticity
 
     def _compute_qcriterion(
@@ -798,6 +894,20 @@ class HDF5Writer():
         velocity_grad = self.compute_velocity_gradient(velocity)
         dilatation = velocity_grad[0,0] + velocity_grad[1,1] + velocity_grad[2,2]
         return dilatation
+
+    def _compute_volume_fraction(
+            self,
+            density: Array,
+            ) -> Array:
+        
+        if isinstance(self.material_manager.material, BarotropicCavitationFluid):
+            material = self.material_manager.material
+            volume_fraction = material.get_volume_fraction(density)
+        
+        else:
+            raise NotImplementedError
+        
+        return volume_fraction
 
     def compute_velocity_gradient(
         self,

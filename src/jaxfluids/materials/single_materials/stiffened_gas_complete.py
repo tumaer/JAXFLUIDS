@@ -1,12 +1,15 @@
 from typing import List, Union
 import types
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.material_properties import MaterialPropertiesSetup
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class StiffenedGasComplete(Material):
     """Implements the stiffened gas equation of state
@@ -50,13 +53,16 @@ class StiffenedGasComplete(Material):
         # Specific internal energy
         return ( p + self.gamma * self.pb ) / ( rho * (self.gamma - 1) ) - self.eb
 
-    def get_total_energy(self, p:Array, rho:Array, u:Array, v:Array, w:Array) -> Array:
+    def get_density_from_pressure_and_temperature(self, p: Array, T: Array) -> Array:
+        raise NotImplementedError
+    
+    def get_total_energy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         # Total energy per unit volume
-        return self.get_specific_energy(p, rho) * rho + 0.5 * rho * ( (u * u + v * v + w * w) )
+        return self.get_specific_energy(p, rho) * rho + 0.5 * rho * sum3_consistent(*jnp.square(velocity_vec))
 
-    def get_total_enthalpy(self, p:Array, rho:Array, u:Array, v:Array, w:Array) -> Array:
+    def get_total_enthalpy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         # Total specific enthalpy
-        return ( self.get_total_energy(p, rho, u, v, w) + p ) / rho
+        return ( self.get_total_energy(p, rho, velocity_vec) + p ) / rho
     
     def get_specific_heat_capacity(self, T: Array) -> Union[float, Array]:
         """Calculates the specific heat coefficient per unit mass.

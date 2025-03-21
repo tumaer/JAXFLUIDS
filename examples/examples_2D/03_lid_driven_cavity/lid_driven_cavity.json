@@ -1,9 +1,9 @@
 {
     "general": {
         "case_name": "lid_driven_cavity",
-        "end_time": 200.0,
+        "end_time": 100.0,
         "save_path": "./results",
-        "save_dt": 5.0
+        "save_dt": 1.0
     },
     "domain": {
         "x": {
@@ -17,6 +17,11 @@
         "z": {
             "cells": 1,
             "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
         }
     },
     "boundary_conditions": {

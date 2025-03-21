@@ -2,12 +2,13 @@ from typing import Callable, Tuple, Union
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.solvers.riemann_solvers.riemann_solver import RiemannSolver
 from jaxfluids.equation_manager import EquationManager
 # from jaxfluids.data_types.numerical_setup.conservatives import CATUMSetup
+
+Array = jax.Array
 
 class CATUM(RiemannSolver):
     """CATUM Flux Function
@@ -60,33 +61,29 @@ class CATUM(RiemannSolver):
             axis: int,
             **kwargs
         ) -> Tuple[Array, Union[Array, None], Union[Array, None]]:
-        rho_L = primitives_L[self.mass_ids]
-        rho_R = primitives_R[self.mass_ids]
-        p_L = primitives_L[self.energy_ids]
-        p_R = primitives_R[self.energy_ids]
-        u_xi_L = primitives_L[self.velocity_ids[axis]]
-        u_xi_R = primitives_R[self.velocity_ids[axis]]
+        rho_L = primitives_L[self.ids_mass]
+        rho_R = primitives_R[self.ids_mass]
+        p_L = primitives_L[self.ids_energy]
+        p_R = primitives_R[self.ids_energy]
+        u_xi_L = primitives_L[self.ids_velocity[axis]]
+        u_xi_R = primitives_R[self.ids_velocity[axis]]
 
         H_L = rho_L * self.material_manager.get_total_enthalpy(
-            p=p_L, 
-            u=primitives_L[self.velocity_ids[0]], 
-            v=primitives_L[self.velocity_ids[1]], 
-            w=primitives_L[self.velocity_ids[2]], 
+            p=p_L, velocity_vec=primitives_L[self.s_velocity],
             rho=rho_L)
         H_R = rho_R * self.material_manager.get_total_enthalpy(
-            p=p_R, 
-            u=primitives_R[self.velocity_ids[0]], 
-            v=primitives_R[self.velocity_ids[1]], 
-            w=primitives_R[self.velocity_ids[2]], 
+            p=p_R, velocity_vec=primitives_R[self.s_velocity],
             rho=rho_R)
 
-        q_h_L = conservatives_L.at[self.energy_ids].set(H_L)
-        q_h_R = conservatives_R.at[self.energy_ids].set(H_R)
+        q_h_L = conservatives_L.at[self.ids_energy].set(H_L)
+        q_h_R = conservatives_R.at[self.ids_energy].set(H_R)
 
         speed_of_sound_L = self.material_manager.get_speed_of_sound(pressure=p_L, density=rho_L)
         speed_of_sound_R = self.material_manager.get_speed_of_sound(pressure=p_R, density=rho_R)
-        speed_of_sound_liquid_L = self.material_manager.get_speed_of_sound_liquid(pressure=p_L, density=rho_L)
-        speed_of_sound_liquid_R = self.material_manager.get_speed_of_sound_liquid(pressure=p_R, density=rho_R)
+        # speed_of_sound_liquid_L = self.material_manager.get_speed_of_sound_liquid(pressure=p_L, density=rho_L)
+        # speed_of_sound_liquid_R = self.material_manager.get_speed_of_sound_liquid(pressure=p_R, density=rho_R)
+        speed_of_sound_liquid_L = speed_of_sound_L
+        speed_of_sound_liquid_R = speed_of_sound_R
 
         p_star = 0.5 * (p_L + p_R)  # Schmidt Eq. (2.43)
 
@@ -101,9 +98,11 @@ class CATUM(RiemannSolver):
             rho_c_star = jnp.maximum(rho_L, rho_R) *  c_max     # Eq. (2.37)
             u_star = ((3.0 * rho_L + rho_R) * u_xi_L + (rho_L + 3.0 * rho_R) * u_xi_R) / (4.0 * (rho_L + rho_R)) \
                 - (p_R - p_L) / (2*rho_c_star)  # Eq. (2.41)
+            # u_star = 0.5 * (u_xi_L + u_xi_R) + 0.5 * (p_L - p_R) / rho_c_star
+            # p_star = 0.5 * (p_L + p_R) + 0.5 * (u_xi_L - u_xi_R) * rho_c_star
 
-            # v_vel = 0.5 * (conservatives_L[self.velocity_ids[axis]]/rho_L + conservatives_R[self.velocity_ids[axis]]/rho_R)   #2.38
-            # v_mom = (conservatives_L[self.velocity_ids[axis]] + conservatives_R[self.velocity_ids[axis]]) / (rho_L + rho_R)   #2.39
+            # v_vel = 0.5 * (conservatives_L[self.ids_velocity[axis]]/rho_L + conservatives_R[self.ids_velocity[axis]]/rho_R)   #2.38
+            # v_mom = (conservatives_L[self.ids_velocity[axis]] + conservatives_R[self.ids_velocity[axis]]) / (rho_L + rho_R)   #2.39
             # xi = 0.5
             # u_star = xi * v_vel + (1.0 - xi) * v_mom - (p_R -p_L) / (2 *rho_c_star)   #2.40
         
@@ -128,11 +127,23 @@ class CATUM(RiemannSolver):
         #advected_q_H = 0.5 * u_star * (q_h_L+q_h_R) - 0.5 * jnp.abs(u_star) * (q_h_R-q_h_L)    # Schmidt Eq. (2.42)
         advected_q_H = jnp.where(u_star > 0.0, q_h_L, q_h_R) * u_star                           # Schmidt Eq. (2.42)
 
-        fluxes_xi = advected_q_H.at[self.velocity_ids[axis]].add(p_star)    # Schmidt Eq. (2.44)
+        fluxes_xi = advected_q_H.at[self.ids_velocity[axis]].add(p_star)    # Schmidt Eq. (2.44)
+        # fluxes_xi = fluxes_xi.at[self.ids_energy].add(p_star * u_star)
         #fluxes_xi = 0.5 * u_star * (q_h_L + q_h_R) - 0.5 * jnp.abs(u_star) * (q_h_R-q_h_L) \
         #   + p_star * jnp.stack([0,unit_vector,0]) # Schmidt Eq. (2.44)
             
         return fluxes_xi, None, None
+
+    def _solve_riemann_problem_xi_diffuse_four_equation(
+            self,
+            primitives_L: Array,
+            primitives_R: Array,
+            conservatives_L: Array,
+            conservatives_R: Array,
+            axis: int,
+            **kwargs
+        ) -> Tuple[Array, Union[Array, None], Union[Array, None]]:
+        raise NotImplementedError
 
     def _solve_riemann_problem_xi_diffuse_five_equation(
             self,

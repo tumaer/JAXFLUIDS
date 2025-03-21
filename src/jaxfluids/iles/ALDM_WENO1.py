@@ -1,11 +1,11 @@
-from functools import partial
-from typing import List
+from typing import List, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
+
+Array = jax.Array
 
 class ALDM_WENO1(SpatialReconstruction):
     """ALDM_WENO1 
@@ -19,8 +19,8 @@ class ALDM_WENO1(SpatialReconstruction):
             self, 
             nh: int, 
             inactive_axes: List,
-            is_mesh_stretching: List = None,
-            cell_sizes: List = None,
+            is_mesh_stretching: List[bool] = None,
+            cell_sizes: Tuple[Array] = None,
             smoothness_measure: str = "TV",
         ) -> None:
         super(ALDM_WENO1, self).__init__(nh=nh, inactive_axes=inactive_axes)

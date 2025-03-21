@@ -1,11 +1,13 @@
 from typing import Dict, List, TYPE_CHECKING
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 from jaxfluids.equation_information import EquationInformation
 # from jaxfluids.data_types.numerical_setup.conservatives import SplitReconstructionSetup
+
+Array = jax.Array
 
 class SplitReconstruction(SpatialReconstruction):
 

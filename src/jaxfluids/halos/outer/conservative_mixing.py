@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.halos.outer.boundary_condition import BoundaryCondition, get_signs_symmetry
@@ -10,6 +9,8 @@ from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_information import EquationInformation
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace
 from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS
+
+Array = jax.Array
 
 class BoundaryConditionConservativeMixing(BoundaryCondition):
 
@@ -24,7 +25,7 @@ class BoundaryConditionConservativeMixing(BoundaryCondition):
 
         no_primes = equation_information.no_primes
         equation_type = equation_information.equation_type
-        vel_indices = equation_information.velocity_ids
+        vel_indices = equation_information.ids_velocity
         self.face_signs_symmetry, self.edge_signs_symmetry, \
         self.vertex_signs_symmetry = get_signs_symmetry(
             no_primes, equation_type, vel_indices)
@@ -57,7 +58,10 @@ class BoundaryConditionConservativeMixing(BoundaryCondition):
                 
                 if boundary_type in ["ZEROGRADIENT", "PERIODIC", "SYMMETRY"]:
                     pass
-                elif boundary_type in ["DIRICHLET", "NEUMANN"]:
+                elif boundary_type in [
+                    "DIRICHLET", "NEUMANN", "SIMPLE_OUTFLOW", "SIMPLE_INFLOW",
+                    "DIRICHLET_PARAMETERIZED"
+                ]:
                     boundary_type = "ZEROGRADIENT"
                 elif "WALL" in boundary_type:
                     boundary_type = "SYMMETRY"

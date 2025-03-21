@@ -3,8 +3,9 @@ from typing import Callable, Dict, Union, List, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
+
+Array = jax.Array
 
 class UnitHandler:
     """The UnitHandler class implements functionaly
@@ -14,8 +15,9 @@ class UnitHandler:
     # UNIVERSAL CONSTANTS
     _universal_gas_constant = 8.31446261815324   # J / (K mol)
     _avogadro_constant = 6.02214076e+23          # 1 / mol
-    _p_ref_global = 1.01325e5                    # Pa
+    _p_ref_global = 1.01325e+5                   # Pa
     _T_ref_global = 298.15                       # K
+    _boltzmann_constant = _universal_gas_constant / _avogadro_constant  # J / K
 
     def __init__(
             self,
@@ -77,7 +79,7 @@ class UnitHandler:
             "mask_real": 1.0,
             "volume_fraction": 1.0,
             "normal": 1.0,
-
+           
             # MATERIAL PROPERTIES
             "dynamic_viscosity": self.dynamic_viscosity_reference,
             "thermal_conductivity": self.thermal_conductivity_reference,
@@ -92,11 +94,21 @@ class UnitHandler:
             "energy_translation_factor": self.energy_translation_factor_reference,
             "thermal_energy_factor": self.thermal_energy_factor_reference,
 
+            # REACTION KINETICS
+            "molar_energy": self.enthalpy_molar_reference,
+
             # PHYSICAL QUANTITIES
             "length": length_reference,
+            "one_length": 1.0 / length_reference,
+            "area": length_reference**2,
+            "one_area": 1.0 / length_reference**2,
+            "volume": length_reference**3,
+            "one_volume": 1.0 / length_reference**3,
             "time": self.time_reference,
+            "one_time": 1.0 / self.time_reference,
             "gravity": self.gravity_reference,
             "mass": self.mass_reference,
+            "one_mass": 1.0 / self.mass_reference,
             "mass_flow": self.mass_flow_reference,
 
             # OUTPUT
@@ -114,6 +126,7 @@ class UnitHandler:
         
         self.universal_gas_constant_nondim = self.non_dimensionalize(self._universal_gas_constant, "gas_constant")
         self.avogadro_constant_nondim = self.non_dimensionalize(self._avogadro_constant, "one_amount_of_substance")
+        self.boltzmann_constant_nondim = self.universal_gas_constant_nondim / self.avogadro_constant_nondim
         self.p_ref_global_nondim = self.non_dimensionalize(self._p_ref_global, "pressure")
         self.T_ref_global_nondim = self.non_dimensionalize(self._T_ref_global, "temperature")
 
@@ -226,7 +239,7 @@ class UnitHandler:
             quantity = "velocity"
         elif quantity in ("rhou", "rhov", "rhow",):
             quantity = "momentum"
-        elif quantity in ("p",):
+        elif quantity in ("p","E"):
             quantity = "pressure"
         elif quantity == "T":
             quantity = "temperature"
@@ -234,6 +247,10 @@ class UnitHandler:
             quantity = "density"
         elif quantity.startswith("alpha_"):
             quantity = "volume_fraction"
-        elif quantity.startswith("rho_"):
-            quantity = "density"       
+        elif quantity.startswith(("rhoY_", "rho_")):
+            quantity = "density"
+        elif quantity.startswith("Y_"):
+            quantity = "mass_fraction"
+        elif quantity.startswith("X_"):
+            quantity = "mole_fraction"            
         return quantity

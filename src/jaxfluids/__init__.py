@@ -47,12 +47,12 @@ stencils
 time_integration
     Explicit time integration schemes up to third-order
 turb
-    Tools for turbulent initial conditions and statistics
+    Tools for turbulence initial conditions and statistics
 
 """
 
-from jaxfluids.initialization.initialization_manager import InitializationManager
 from jaxfluids.input.input_manager import InputManager
+from jaxfluids.initialization.initialization_manager import InitializationManager
 from jaxfluids.simulation_manager import SimulationManager
 
 __version__ = "0.2.0"

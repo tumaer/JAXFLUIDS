@@ -1,4 +1,5 @@
 from typing import Dict
+import warnings
 
 from jaxfluids.data_types.case_setup.solid_properties import *
 from jaxfluids.data_types.numerical_setup import NumericalSetup
@@ -7,7 +8,6 @@ from jaxfluids.equation_information import EquationInformation
 from jaxfluids.input.setup_reader import get_path_to_key, create_wrapper_for_callable
 from jaxfluids.input.case_setup import get_setup_value, loop_fields
 from jaxfluids.unit_handler import UnitHandler
-from jaxfluids.levelset import TUPLE_SOLID_TEMPERATURE_MODELS
 
 def read_solid_properties_setup(
         case_setup_dict: Dict,
@@ -26,113 +26,125 @@ def read_solid_properties_setup(
 
     active_axes = domain_setup.active_axes
     dim = domain_setup.dim
+    input_argument_labels = active_axes + ("t",)
+    input_argument_units = tuple(["length"] * dim + ["time"])
 
     levelset_model = equation_information.levelset_model
+    solid_coupling = equation_information.solid_coupling
 
     basepath = "solid_properties"
-    is_optional = True if levelset_model != "FLUID-SOLID-DYNAMIC" else False
+
+    solid_coupling = equation_information.solid_coupling
+    if any((solid_coupling.dynamic, solid_coupling.thermal)):
+        is_optional = False
+    else:
+        is_optional = True
+
     solid_properties_case_setup = get_setup_value(
         case_setup_dict, "solid_properties", basepath, dict,
         is_optional=is_optional, default_value={})
 
-    input_argument_labels = active_axes + ("t",)
-    input_argument_units = tuple(["length"] * dim + ["time"])
-
     # SOLID VELOCITY
+    is_optional = False if solid_coupling.dynamic == "ONE-WAY" else True
     path_to_velocity = get_path_to_key(basepath, "velocity")
     solid_velocity_case_setup = get_setup_value(
         solid_properties_case_setup, "velocity", path_to_velocity, (list, dict),
-        is_optional=is_optional, default_value={})
+        is_optional=is_optional, default_value=None)
 
-    is_blocks = False
-    is_callable = False
-    solid_velocity_blocks = None
-    velocity_callable = None
+    if solid_velocity_case_setup is not None:
 
-    def _read_velocity_callable(
-            velocity_callable_case_setup: Dict,
-            basepath: str
-            ) -> VelocityCallable:
-        """Wrapper to read the velocity callable
-        from the case setup .json file and create jaxfluids
-        container.
+        def _read_velocity_callable(
+                velocity_callable_case_setup: Dict,
+                basepath: str
+                ) -> VelocityCallable:
+            """Wrapper to read the velocity callable
+            from the case setup .json file and create jaxfluids
+            container.
 
-        :param solid_velocity_case_setup: _description_
-        :type solid_velocity_case_setup: Dict
-        :param path_to_velocity: _description_
-        :type path_to_velocity: str
-        :return: _description_
-        :rtype: VelocityCallable
-        """
-        velocity_callables_dict = {}
-        for velocity_xi in ["u","v","w"]:
-            path = get_path_to_key(basepath, velocity_xi)
-            velocity_xi_callable_case_setup = get_setup_value(
-                velocity_callable_case_setup, velocity_xi, path, (float, str),
-                is_optional=is_optional, default_value=0.0)
-            velocity_wrapper = create_wrapper_for_callable(
-                velocity_xi_callable_case_setup, input_argument_units,
-                input_argument_labels, "velocity", path, 
-                perform_nondim=True, unit_handler=unit_handler)
-            velocity_callables_dict[velocity_xi] = velocity_wrapper
-        velocity_callable = VelocityCallable(**velocity_callables_dict)
-        return velocity_callable
+            :param solid_velocity_case_setup: _description_
+            :type solid_velocity_case_setup: Dict
+            :param path_to_velocity: _description_
+            :type path_to_velocity: str
+            :return: _description_
+            :rtype: VelocityCallable
+            """
+            velocity_callables_dict = {}
+            for velocity_xi in ("u","v","w"):
+                path = get_path_to_key(basepath, velocity_xi)
+                velocity_xi_callable_case_setup = get_setup_value(
+                    velocity_callable_case_setup, velocity_xi, path, (float, str),
+                    is_optional=False)
+                velocity_wrapper = create_wrapper_for_callable(
+                    velocity_xi_callable_case_setup, input_argument_units,
+                    input_argument_labels, "velocity", path, 
+                    perform_nondim=True, unit_handler=unit_handler)
+                velocity_callables_dict[velocity_xi] = velocity_wrapper
+            velocity_callable = VelocityCallable(**velocity_callables_dict)
+            return velocity_callable
 
-    if isinstance(solid_velocity_case_setup, list):
-        is_blocks = True
-        solid_velocity_block_list = []
-        for solid_velocity_block_case in solid_velocity_case_setup:
+        if isinstance(solid_velocity_case_setup, list):
+            solid_velocity_block_list = []
+            for solid_velocity_block_case in solid_velocity_case_setup:
+                velocity_callable = _read_velocity_callable(
+                    solid_velocity_block_case, path_to_velocity)
+                path = get_path_to_key(path_to_velocity, "bounding_domain")
+                bounding_domain_callable_case_setup = get_setup_value(
+                    solid_velocity_block_case, "bounding_domain", path, (float, str),
+                    is_optional=False)
+                bounding_domain_callable = create_wrapper_for_callable(
+                    bounding_domain_callable_case_setup,
+                    input_argument_units, input_argument_labels,
+                    "None", path, perform_nondim=True,
+                    unit_handler=unit_handler)
+                solid_velocity_block = SolidVelocityBlock(
+                    velocity_callable, bounding_domain_callable)
+                solid_velocity_block_list.append(solid_velocity_block)
+            solid_velocity_blocks = tuple(solid_velocity_block_list)
+            is_blocks = True
+            is_callable = False
+            velocity_callable = None
+
+        else:
             velocity_callable = _read_velocity_callable(
-                solid_velocity_block_case, path_to_velocity)
-            path = get_path_to_key(path_to_velocity, "bounding_domain")
-            bounding_domain_callable_case_setup = get_setup_value(
-                solid_velocity_block_case, "bounding_domain", path, (float, str),
-                is_optional=False)
-            bounding_domain_callable = create_wrapper_for_callable(
-                bounding_domain_callable_case_setup,
-                input_argument_units, input_argument_labels,
-                None, path, perform_nondim=False)
-            solid_velocity_block = SolidVelocityBlock(
-                velocity_callable, bounding_domain_callable)
-            solid_velocity_block_list.append(solid_velocity_block)
-        solid_velocity_blocks = tuple(solid_velocity_block_list)
+                solid_velocity_case_setup, path_to_velocity)
+            solid_velocity_blocks = None
+            is_callable = True
+            is_blocks = False
+        
+        solid_velocity_setup = SolidVelocitySetup(
+            solid_velocity_blocks,
+            velocity_callable,
+            is_blocks, is_callable)
+        
     else:
-        is_callable = True
-        velocity_callable = _read_velocity_callable(
-            solid_velocity_case_setup, path_to_velocity)
-    
-    solid_velocity = SolidVelocitySetup(
-        solid_velocity_blocks,
-        velocity_callable,
-        is_blocks, is_callable)
+
+        solid_velocity_setup = SolidVelocitySetup(
+            None, None, False, False)
+
+    if solid_coupling.dynamic == "TWO-WAY":
+        warning_string = (f"solid velocity will not be used.")
+        warnings.warn(warning_string, RuntimeWarning)
 
     # SOLID TEMPERATURE
-    path_temperature = get_path_to_key(basepath, "temperature")
+    is_optional = False if solid_coupling.thermal == "ONE-WAY" else True
+    path = get_path_to_key(basepath, "temperature")
     solid_temperature_case_setup = get_setup_value(
-        solid_properties_case_setup, "temperature", path_temperature, dict,
-        is_optional=True, default_value={})
-    
-    path = get_path_to_key(path_temperature, "model")
-    model = get_setup_value(
-        solid_temperature_case_setup, "model", path, str,
-        is_optional=True, default_value="ADIABATIC",
-        possible_string_values=TUPLE_SOLID_TEMPERATURE_MODELS)
-    
-    path = get_path_to_key(path_temperature, "value")
-    is_optional = True if model == "ADIABATIC" else False
-    temperature_value = get_setup_value(
-        solid_temperature_case_setup, "value", path, (str, float),
+        solid_properties_case_setup, "temperature", path, (str, float),
         is_optional=is_optional, default_value=1.0)
-    
+
     solid_temperature = create_wrapper_for_callable(
-        temperature_value, input_argument_units, input_argument_labels,
+        solid_temperature_case_setup, input_argument_units, input_argument_labels,
         "temperature", path, perform_nondim=True, unit_handler=unit_handler)
 
-    solid_temperature_setup = SolidTemperatureSetup(
-        model, solid_temperature)
+    if solid_coupling.thermal == "TWO-WAY":
+        warning_string = (f"solid velocity will not be used.")
+        warnings.warn(warning_string, RuntimeWarning)
 
     # SOLID DENSITY
-    is_optional = True if levelset_model != "FLUID-SOLID-DYNAMIC-COUPLED" else False
+    if any((solid_coupling.dynamic == "TWO-WAY", solid_coupling.thermal == "TWO-WAY")):
+        is_optional = False
+    else:
+        is_optional = True
     path = get_path_to_key(basepath, "density")
     solid_density_case_setup = get_setup_value(
         solid_properties_case_setup, "density", path, float,
@@ -140,8 +152,35 @@ def read_solid_properties_setup(
         numerical_value_condition=(">", 0.0))
     solid_density = unit_handler.non_dimensionalize(solid_density_case_setup, "density")
 
+    # THERMAL CONDUCTIVITY
+    input_argument_labels = active_axes + ("T",)
+    input_argument_units = tuple(["length"] * dim + ["temperature"])
+
+    is_optional = False if solid_coupling.thermal == "TWO-WAY" else True
+    path = get_path_to_key(basepath, "thermal_conductivity")
+    thermal_conductivity_case_setup = get_setup_value(
+        solid_properties_case_setup, "thermal_conductivity", path, (float, str),
+        is_optional=is_optional, default_value=1.0,
+        numerical_value_condition=(">=", 0.0))
+    thermal_conductivity_callable = create_wrapper_for_callable(
+        thermal_conductivity_case_setup,
+        input_argument_units, input_argument_labels,
+        "thermal_conductivity", path, perform_nondim=True,
+        unit_handler=unit_handler, is_scalar=True)
+    
+
+    # SPECIFIC HEAT CAPACITY
+    is_optional = False if solid_coupling.thermal == "TWO-WAY" else True
+    path = get_path_to_key(basepath, "specific_heat_capacity")
+    specific_heat_capacity_case_setup = get_setup_value(
+        solid_properties_case_setup, "specific_heat_capacity", path, float,
+        is_optional=is_optional, default_value=1.0,
+        numerical_value_condition=(">", 0.0))
+    specific_heat_capacity = unit_handler.non_dimensionalize(specific_heat_capacity_case_setup, "specific_heat_capacity")
+
     solid_properties = SolidPropertiesSetup(
-        solid_velocity, solid_temperature_setup,
-        solid_density)
+        solid_velocity_setup, solid_temperature,
+        solid_density, thermal_conductivity_callable,
+        specific_heat_capacity)
 
     return solid_properties

@@ -2,11 +2,12 @@ from typing import Callable, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.solvers.riemann_solvers.riemann_solver import RiemannSolver
 from jaxfluids.equation_manager import EquationManager
+
+Array = jax.Array
 
 class HLL(RiemannSolver):
     """HLL Riemann Solver by Harten, Lax and van Leer
@@ -38,13 +39,13 @@ class HLL(RiemannSolver):
         gamma = self.material_manager.get_gamma() 
 
         wave_speed_simple_L, wave_speed_simple_R = self.signal_speed(
-            primitives_L[self.velocity_ids[axis]], 
-            primitives_R[self.velocity_ids[axis]], 
+            primitives_L[self.ids_velocity[axis]], 
+            primitives_R[self.ids_velocity[axis]], 
             speed_of_sound_L, speed_of_sound_R, 
-            rho_L=primitives_L[self.mass_ids], 
-            rho_R=primitives_R[self.mass_ids], 
-            p_L=primitives_L[self.energy_ids], 
-            p_R=primitives_R[self.energy_ids], 
+            rho_L=primitives_L[self.ids_mass], 
+            rho_R=primitives_R[self.ids_mass], 
+            p_L=primitives_L[self.ids_energy], 
+            p_R=primitives_R[self.ids_energy], 
             gamma=gamma)
         wave_speed_L = jnp.minimum(wave_speed_simple_L, 0.0)
         wave_speed_R = jnp.maximum(wave_speed_simple_R, 0.0)
@@ -61,6 +62,9 @@ class HLL(RiemannSolver):
             
         return fluxes_xi, None, None
 
+    def _solve_riemann_problem_xi_diffuse_four_equation():
+        raise NotImplementedError
+
     def _solve_riemann_problem_xi_diffuse_five_equation(
             self, 
             primitives_L: Array, 
@@ -74,15 +78,15 @@ class HLL(RiemannSolver):
         ) -> Tuple[Array, Array, Array]:
         rho_L = self.material_manager.get_density(primitives_L)
         rho_R = self.material_manager.get_density(primitives_R)
-        u_L = primitives_L[self.velocity_ids[axis]]
-        u_R = primitives_R[self.velocity_ids[axis]]
-        p_L = primitives_L[self.energy_ids]
-        p_R = primitives_R[self.energy_ids]
+        u_L = primitives_L[self.ids_velocity[axis]]
+        u_R = primitives_R[self.ids_velocity[axis]]
+        p_L = primitives_L[self.ids_energy]
+        p_R = primitives_R[self.ids_energy]
 
         speed_of_sound_L = self.material_manager.get_speed_of_sound(
-            pressure=p_L, density=rho_L, volume_fractions=primitives_L[self.vf_slices])
+            pressure=p_L, density=rho_L, volume_fractions=primitives_L[self.s_volume_fraction])
         speed_of_sound_R = self.material_manager.get_speed_of_sound(
-            pressure=p_R, density=rho_R, volume_fractions=primitives_R[self.vf_slices])
+            pressure=p_R, density=rho_R, volume_fractions=primitives_R[self.s_volume_fraction])
 
         wave_speed_simple_L, wave_speed_simple_R = self.signal_speed(
             u_L, u_R,
@@ -104,8 +108,8 @@ class HLL(RiemannSolver):
         u_hat = (wave_speed_R * u_L - wave_speed_L * u_R) /  (wave_speed_R - wave_speed_L + self.eps)
 
         if self.is_surface_tension:
-            alpha_L = primitives_L[self.vf_slices]
-            alpha_R = primitives_R[self.vf_slices]
+            alpha_L = primitives_L[self.s_volume_fraction]
+            alpha_R = primitives_R[self.s_volume_fraction]
             alpha_hat = (wave_speed_R * alpha_L - wave_speed_L * alpha_R) /  (wave_speed_R - wave_speed_L + self.eps)
         else:
             alpha_hat = None

@@ -1,12 +1,15 @@
 from typing import List, Union
 import types
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.material_properties import MaterialPropertiesSetup
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class Tait(Material):
     """Implements the tait equation of state."""
@@ -45,6 +48,9 @@ class Tait(Material):
         # Temperature is not defined for Tait.
         return jnp.zeros_like(p)
 
+    def get_density_from_pressure_and_temperature(self, p: Array, T: Array) -> Array:
+        raise NotImplementedError
+    
     def get_density(self, p: Array) -> Array:
         return self.rho_ref * jnp.power((p - self.p_ref) / self.B + 1.0, 1.0 / self.N)
 
@@ -53,11 +59,11 @@ class Tait(Material):
         # TODO where is this coming from?
         return (p + self.B - self.p_ref) /(self.N * rho) + (self.B - self.p_ref) / rho
 
-    def get_total_energy(self, p:Array, rho:Array, u:Array, v:Array, w:Array) -> Array:
+    def get_total_energy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         # Total energy per unit volume
         return ((p + self.B - self.p_ref) / self.N  + self.B - self.p_ref) + \
-            0.5 * rho * ( (u * u + v * v + w * w) )
+            0.5 * rho * sum3_consistent(*jnp.square(velocity_vec))
 
-    def get_total_enthalpy(self, p:Array, rho:Array, u:Array, v:Array, w:Array) -> Array:
+    def get_total_enthalpy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         # Total specific enthalpy
-        return (self.get_total_energy(p, rho, u, v, w) + p) / rho
+        return (self.get_total_energy(p, rho, velocity_vec) + p) / rho

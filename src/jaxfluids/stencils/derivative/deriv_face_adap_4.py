@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+
+Array = jax.Array
 
 class DerivativeFourthOrderAdapFace(SpatialDerivative):
     """ 
@@ -21,8 +22,8 @@ class DerivativeFourthOrderAdapFace(SpatialDerivative):
             nh: int, 
             inactive_axes: List, 
             offset: int = 0,
-            is_mesh_stretching: List = None,
-            cell_sizes: List = None
+            is_mesh_stretching: List[bool] = None,
+            cell_sizes: Tuple[Array] = None
         ) -> None:
         super(DerivativeFourthOrderAdapFace, self).__init__(nh=nh,
                                                             inactive_axes=inactive_axes,

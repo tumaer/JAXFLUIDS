@@ -17,6 +17,11 @@
         "z": {
             "cells": 1,
             "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
         }
     },   
     "boundary_conditions": {

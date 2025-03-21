@@ -23,6 +23,7 @@ def create_1D_animation(
         save_anim: str = None,
         fig_args: Dict = {},
         axes_args: Dict = {},
+        line_args: Dict = {},
         interval: int = 50,
         save_png: str = None,
         dpi: int = 100
@@ -78,6 +79,7 @@ def create_1D_animation(
                 minmax_list=minmax_list,
                 index=index_time,
                 fig_args=fig_args,
+                line_args=line_args,
                 is_show=False
             )
             print("Saving %s" % filename)
@@ -95,6 +97,7 @@ def create_1D_animation(
             minmax_list=minmax_list,
             index=0,
             fig_args=fig_args,
+            line_args=line_args,
             is_show=False
         )
         ani = FuncAnimation(
@@ -118,12 +121,14 @@ def create_2D_animation(
         plane_value: float = 0.0,
         minmax_list: List = None,
         cmap: str = "seismic",
+        norm: mpl.colors.Normalize = None,
         colorbars: Tuple[str] = None,
         save_anim: str = None,
         interval: int = 50,
         dpi: int = 100,
         fig_args: Dict = {},
         axes_args: Dict = {},
+        levelset_kwargs: Dict = {},
         save_png: str = None,
         index_offset_name: int = 0,
         ) -> None:
@@ -185,8 +190,8 @@ def create_2D_animation(
         cell_centers = cell_centers,
         plane = plane,
         plane_value = plane_value,
-        levelset = levelset
-        )
+        levelset = levelset,
+    )
 
     no_timesnapshots = len(data_dict[list(data_dict.keys())[0]])
     if save_png:
@@ -198,7 +203,7 @@ def create_2D_animation(
         # LOOP OVER TIME SNAPSHOTS
         for index_time in range(no_timesnapshots):
             filename = "image_%04d" % (index_time + index_offset_name)
-            fig, axes, _, _, _ = create_2D_figure(
+            fig, axes, _, _ = create_2D_figure(
                 data_dict=data_dict,
                 times=times,
                 levelset=levelset,
@@ -208,7 +213,9 @@ def create_2D_animation(
                 colorbars=colorbars,
                 index=index_time,
                 fig_args=fig_args,
+                levelset_kwargs=levelset_kwargs,
                 cmap=cmap,
+                norm=norm,
                 is_show=False)
             print("Saving %s" % filename)
             fig.savefig(os.path.join(save_png, filename), dpi=dpi, bbox_inches="tight")
@@ -219,7 +226,7 @@ def create_2D_animation(
 
     else:
         # CREATE SUBPLOTS
-        fig, axes, quadmesh_list, pciset_list, scatter_list = create_2D_figure(
+        fig, axes, quadmesh_list, pciset_list = create_2D_figure(
             data_dict=data_dict,
             times=times,
             levelset=levelset,
@@ -229,14 +236,16 @@ def create_2D_animation(
             colorbars=colorbars,
             index=0,
             cmap=cmap,
+            norm=norm,
             fig_args=fig_args,
+            levelset_kwargs=levelset_kwargs,
             is_show=False)
 
         # CREATE ANIMATION
         ani = FuncAnimation(
             fig, update_2D,
             frames=no_timesnapshots,
-            fargs=((X0, X1), data_dict, levelset, axes, quadmesh_list, pciset_list, scatter_list),
+            fargs=((X0, X1), data_dict, levelset, axes, quadmesh_list, pciset_list),
             interval=interval,
             blit=True,
             repeat=True
@@ -258,9 +267,9 @@ def create_3D_animation(
         fig_args: Dict = {},
         axes_args: Dict = {},
     ) -> None:
-    """Creates 3D animation. Plots contours for material fields.
-    Optional save_png argument specifies a path to save
-    timesnapshots as .png files.
+    """Creates 3D animation. Plots contours for material fields. 
+    Optional save_png argument
+    specifies a path to save timesnapshots as .png files.
 
     :param data_dict: _description_
     :type data_dict: Dict
@@ -343,6 +352,7 @@ def create_1D_figure(
         minmax_list: List = None,
         index: int = -1,
         fig_args: Dict = {},
+        line_args: Dict = {},
         save_fig: str = None,
         dpi: int = None,
         is_show: bool = True,
@@ -384,12 +394,12 @@ def create_1D_figure(
     lines_list = []
     for i, (ax, quantity) in enumerate(zip(axes, data_dict.keys())):
         lines_list.append(
-            ax.plot(X0, data_dict[quantity][index], "o", label=quantity)[0]
+            ax.plot(X0, data_dict[quantity][index], label=quantity, **line_args)[0]
         )
         if minmax_list is not None:
             minmax = minmax_list[i]
         else:
-            minmax = [np.min(data_dict[quantity]), np.max(data_dict[quantity])]
+            minmax = [np.min(data_dict[quantity]) * 0.9, np.max(data_dict[quantity]) * 1.1]
         ax.set_ylim(minmax)
         ax.set_title(quantity.upper(), fontsize=TITLE_FONTSIZE)
 
@@ -410,13 +420,14 @@ def create_2D_figure(
         minmax_list: List = None,
         index: int = -1,
         cmap: str = "seismic",
+        norm: mpl.colors.Normalize = None,
         colorbars: Tuple[str] = None,
         fig_args: Dict = {},
         levelset_kwargs: Dict = None,
         save_fig: str = None,
         dpi: int = None,
         is_show: bool = True,
-    ) -> Tuple[mpl.figure.Figure, List, List, List, List]:
+    ) -> Tuple[mpl.figure.Figure, List, List, List]:
     """Standalone function which creates a 2D pcolormesh of the data provided
     in data_dict. If the levelset argument is provided, the interface is
     plotted as an isoline. Returns the figure, the axes and
@@ -483,7 +494,8 @@ def create_2D_figure(
         meshgrid,
         plane,
         plane_value,
-        levelset)
+        levelset,
+    )
     n_plots = len(data_dict.keys())
 
     # ROWS AND COLUMNS
@@ -516,6 +528,16 @@ def create_2D_figure(
     else:
         cmaps = [None] * n_plots
 
+    # NORMS
+    norms = norm
+    if isinstance(norms, mpl.colors.Normalize):
+        norms = [norms] * n_plots
+    elif isinstance(norms, (List, Tuple)):
+        for norm in norms:
+            assert isinstance(norm, mpl.colors.Normalize)
+    else:
+        norms = None
+
     # KWARGS FOR PCOLORMESH - MINMAX VALUE AND CMAP
     datadict_kwargs = []
     for i, (quantity, data) in enumerate(data_dict.items()):
@@ -530,7 +552,11 @@ def create_2D_figure(
                 "norm": mpl.colors.LogNorm(vmin=minmax[0], vmax=minmax[1])
             })
         else:
-            datadict_kwargs.append({"cmap": cmaps[i], "vmin": minmax[0], "vmax": minmax[1]})
+            if norms is None:
+                datadict_kwargs.append({"cmap": cmaps[i], "vmin": minmax[0], "vmax": minmax[1]})
+            else:
+                datadict_kwargs.append({"cmap": cmaps[i], "norm": norms[i]})
+
     # KWARGS FOR LEVELSET
     if levelset_kwargs is None:
         levelset_kwargs = {"colors": "black", "linewidths": 2}
@@ -554,7 +580,6 @@ def create_2D_figure(
 
     quadmesh_list = []
     pciset_list = []
-    scatter_list = []
 
     # LOOP OVER QUANTITIES
     for i, (ax, quantity, datadict_kw) in enumerate(zip(axes, data_dict.keys(), datadict_kwargs)):
@@ -590,7 +615,7 @@ def create_2D_figure(
     save_figure(fig, save_fig, dpi)
     if is_show:
         plt.show()
-    return fig, axes, quadmesh_list, pciset_list, scatter_list
+    return fig, axes, quadmesh_list, pciset_list
 
 def create_3D_figure(
         data_dict: Dict[str, np.ndarray],
@@ -743,7 +768,6 @@ def update_2D(
     axes: np.ndarray,
     quadmesh_list: List,
     pciset_list: List,
-    scatter_list: List
     ) -> List:
     """Update function for FuncAnimation for the create_2D_animation() function.
 
@@ -769,7 +793,7 @@ def update_2D(
     X0, X1 = meshgrid
     list_of_collections = []
 
-    for quantity, ax, quadmesh, pciset, scatter in zip(data_dict, axes, quadmesh_list, pciset_list, scatter_list):
+    for quantity, ax, quadmesh, pciset in zip(data_dict, axes, quadmesh_list, pciset_list):
         
         # UPDATE QUADMESH
         quadmesh.set_array(data_dict[quantity][i].flatten())
@@ -800,6 +824,7 @@ def update_3D(
     for quantity, ax, collection, kw in zip(data_dict, axes, collection_list, kwargs):
         
         # UPDATE QUADMESH
+
         for tp1, tp2, tp3 in zip(collection[0].collections, collection[1].collections, collection[2].collections):
             tp1.remove()
             tp2.remove()

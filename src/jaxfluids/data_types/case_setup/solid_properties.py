@@ -1,5 +1,4 @@
-from typing import NamedTuple, Tuple, \
-    Callable
+from typing import NamedTuple, Tuple, Callable
 
 class VelocityCallable(NamedTuple):
     u: Callable = None
@@ -16,11 +15,9 @@ class SolidVelocitySetup(NamedTuple):
     is_blocks: bool
     is_callable: bool
 
-class SolidTemperatureSetup(NamedTuple):
-    model: str
-    value: Callable
-
 class SolidPropertiesSetup(NamedTuple):
     velocity: SolidVelocitySetup
-    temperature: SolidTemperatureSetup
+    temperature: Callable
     density: float
+    thermal_conductivity: Callable
+    specific_heat_capacity: float

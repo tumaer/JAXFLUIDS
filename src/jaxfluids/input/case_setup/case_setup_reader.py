@@ -1,15 +1,15 @@
 from typing import Dict, Tuple, Any
+import warnings
 
 import jax
 import numpy as np
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.data_types.case_setup import CaseSetup
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.equation_information import (EquationInformation, AVAILABLE_QUANTITIES,
-                                            TUPLE_PRIMES, TUPLE_CHEMICAL_COMPONENTS)
+                                            TUPLE_PRIMES)
 from jaxfluids.input.setup_reader import SetupReader
 from jaxfluids.input.case_setup.read_boundary_conditions import read_boundary_condition_setup
 from jaxfluids.input.case_setup.read_domain import read_domain_setup
@@ -20,7 +20,9 @@ from jaxfluids.input.case_setup.read_material_manager import read_material_manag
 from jaxfluids.input.case_setup.read_restart import read_restart_setup
 from jaxfluids.input.case_setup.read_solid_properties import read_solid_properties_setup
 from jaxfluids.input.case_setup.read_output_quantities import read_output_quantities
-from jaxfluids.input.case_setup import get_setup_value, get_path_to_key
+from jaxfluids.input.case_setup.read_statistics import read_statistics_setup
+from jaxfluids.input.case_setup import get_setup_value, get_path_to_key, \
+    CASE_SETUP_KEYS
 
 class CaseSetupReader(SetupReader):
 
@@ -36,6 +38,14 @@ class CaseSetupReader(SetupReader):
             case_setup_dict: Dict,
             numerical_setup: NumericalSetup
             ) -> Tuple[CaseSetup, EquationInformation]:
+
+        for key in case_setup_dict.keys():
+            if key not in CASE_SETUP_KEYS:
+                warning_str = (
+                    "While reading the case setup file, the unknown key "
+                    f"'{key}' was found. This key will be ignored."
+                )
+                warnings.warn(warning_str, RuntimeWarning)
 
         equation_information = self.get_equation_information(
             case_setup_dict, numerical_setup)
@@ -66,17 +76,15 @@ class CaseSetupReader(SetupReader):
             numerical_setup, self.unit_handler, domain_setup)
         output_quantities_setup = read_output_quantities(
             case_setup_dict, numerical_setup)
+        statistics_setup = read_statistics_setup(
+            case_setup_dict, self.unit_handler)
 
         case_setup = CaseSetup(
-            general_setup=general_setup,
-            restart_setup=restart_setup,
-            domain_setup=domain_setup,
-            boundary_condition_setup=boundary_condition_setup,
-            initial_condition_setup=initial_condition_setup,
-            material_manager_setup=material_manager_setup,
-            solid_properties_setup=solid_properties_setup,
-            forcing_setup=forcing_setup,
-            output_quantities_setup=output_quantities_setup)
+            general_setup, restart_setup, domain_setup,
+            boundary_condition_setup, initial_condition_setup,
+            material_manager_setup, solid_properties_setup,
+            forcing_setup,
+            output_quantities_setup, statistics_setup)
 
         return case_setup, equation_information
 
@@ -115,19 +123,27 @@ class CaseSetupReader(SetupReader):
             alpharho_tuple = tuple([f"alpharho_{i:d}" for i in range(no_fluids)])
             alpha_tuple = tuple([f"alpha_{i:d}" for i in range(no_fluids - 1)])
             primes_tuple = tuple([p for p in TUPLE_PRIMES if p != "rho"])
-            if diffuse_interface_model == "5EQM":
+            if diffuse_interface_model == "4EQM":
+                primes_tuple = alpharho_tuple + primes_tuple
+            elif diffuse_interface_model == "5EQM":
                 primes_tuple = alpharho_tuple + primes_tuple + alpha_tuple
             else:
                 raise NotImplementedError
             AVAILABLE_QUANTITIES["primitives"] += alpharho_tuple + alpha_tuple
             AVAILABLE_QUANTITIES["conservatives"] += alpharho_tuple + alpha_tuple
 
+        # CAVITATION MODEL
+        cavitation_model = numerical_setup.cavitation.model
+
         equation_information = EquationInformation(
             primes_tuple=primes_tuple,
             fluid_names=fluid_names,
             levelset_model=levelset_model,
             diffuse_interface_model=diffuse_interface_model,
+            cavitation_model=cavitation_model,
             active_physics=numerical_setup.active_physics,
-            active_forcings=numerical_setup.active_forcings)
+            active_forcings=numerical_setup.active_forcings,
+            solid_coupling=numerical_setup.levelset.solid_coupling
+            )
 
         return equation_information

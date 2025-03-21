@@ -3,11 +3,13 @@ from jaxfluids.materials.single_materials.safe_ideal_gas import SafeIdealGas
 from jaxfluids.materials.single_materials.stiffened_gas import StiffenedGas
 from jaxfluids.materials.single_materials.stiffened_gas_complete import StiffenedGasComplete
 from jaxfluids.materials.single_materials.tait import Tait
+from jaxfluids.materials.single_materials.barotropic_cavitation_fluid import BarotropicCavitationFluid
 
 DICT_MATERIAL = {
-    'IdealGas': IdealGas,
-    'SafeIdealGas': SafeIdealGas,
-    'StiffenedGas': StiffenedGas,
-    'StiffenedGasComplete': StiffenedGasComplete,
-    'Tait': Tait,
+    "IdealGas": IdealGas,
+    "SafeIdealGas": SafeIdealGas,
+    "StiffenedGas": StiffenedGas,
+    "StiffenedGasComplete": StiffenedGasComplete,
+    "Tait": Tait,
+    "BarotropicCavitationFluid": BarotropicCavitationFluid
 }

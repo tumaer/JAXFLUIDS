@@ -1,11 +1,11 @@
 from typing import Union, Callable, Dict, List, Tuple
 import warnings
 import os
+import sys
 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from jax import Array
 import h5py
 
 from jaxfluids.domain.domain_information import DomainInformation
@@ -13,22 +13,26 @@ from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.equation_manager import EquationManager
 from jaxfluids.halos.halo_manager import HaloManager
-from jaxfluids.levelset.geometry_calculator import GeometryCalculator
-from jaxfluids.levelset.ghost_cell_handler import GhostCellHandler
-from jaxfluids.levelset.interface_quantity_computer import InterfaceQuantityComputer
+from jaxfluids.levelset.geometry.geometry_calculator import GeometryCalculator
 from jaxfluids.levelset.creation.levelset_creator import LevelsetCreator
-from jaxfluids.levelset.reinitialization.levelset_reinitializer import LevelsetReinitializer
-from jaxfluids.initialization.helper_functions import create_field_buffer, get_load_function
+from jaxfluids.levelset.reinitialization.pde_based_reinitializer import PDEBasedReinitializer
+from jaxfluids.data_types.information import LevelsetPositivityInformation, LevelsetResidualInformation
+from jaxfluids.initialization.helper_functions import create_field_buffer, get_load_function, get_h5file_list, parse_restart_files
+from jaxfluids.initialization.cell_index_marker import compute_solid_cell_indices
+from jaxfluids.levelset.geometry.mask_functions import compute_narrowband_mask, compute_fluid_masks
 from jaxfluids.domain.helper_functions import split_buffer_np
-from jaxfluids.data_types.buffers import LevelsetFieldBuffers, MaterialFieldBuffers, TimeControlVariables
+from jaxfluids.data_types.buffers import (
+    LevelsetFieldBuffers, MaterialFieldBuffers, TimeControlVariables,
+    SolidFieldBuffers, LevelsetSolidCellIndices)
 from jaxfluids.data_types.numerical_setup import NumericalSetup
-from jaxfluids.data_types.case_setup.solid_properties import SolidPropertiesSetup
+from jaxfluids.levelset.fluid_solid.solid_properties_manager import SolidPropertiesManager
 from jaxfluids.data_types.case_setup.initial_conditions import InitialConditionLevelset
-from jaxfluids.data_types.case_setup.initial_conditions import VelocityCallable
 from jaxfluids.data_types.case_setup.restart import RestartSetup
 from jaxfluids.levelset.residual_computer import ResidualComputer
-from jaxfluids.levelset.quantity_extender import QuantityExtender
+from jaxfluids.levelset.extension.iterative_extender import IterativeExtender
 from jaxfluids.data_types.information import LevelsetResidualInformation
+
+Array = jax.Array
 
 class LevelsetInitializer:
     """The LevelsetInitializer implements functionality
@@ -45,65 +49,54 @@ class LevelsetInitializer:
             material_manager: MaterialManager,
             halo_manager: HaloManager,
             initial_condition_levelset: InitialConditionLevelset,
-            initial_condition_solid_velocity: VelocityCallable,
-            solid_properties: SolidPropertiesSetup,
-            restart_setup: RestartSetup
+            restart_setup: RestartSetup,
+            solid_properties_manager: SolidPropertiesManager
             ) -> None:
 
         self.domain_information = domain_information
         self.unit_handler = unit_handler
+        self.material_manager = material_manager
+        self.equation_manager = equation_manager
         self.equation_information = equation_manager.equation_information
         self.halo_manager = halo_manager
+        self.solid_properties_manager = solid_properties_manager
+
         self.numerical_setup = numerical_setup
         self.restart_setup = restart_setup
         self.initial_condition_levelset = initial_condition_levelset
-        self.initial_condition_solid_velocity = initial_condition_solid_velocity
         self.is_double_precision = numerical_setup.precision.is_double_precision_compute
-
-        self.geometry_calculator = GeometryCalculator(
-            domain_information = domain_information,
-            levelset_setup = numerical_setup.levelset)
-
-        extender_primes = QuantityExtender(
-            domain_information = domain_information,
-            halo_manager = halo_manager,
-            extension_setup = numerical_setup.levelset.extension,
-            narrowband_setup = numerical_setup.levelset.narrowband,
-            extension_quantity = "primitives")
-        
-        extender_interface = QuantityExtender(
-            domain_information = domain_information,
-            halo_manager = halo_manager,
-            extension_setup = numerical_setup.levelset.extension,
-            narrowband_setup = numerical_setup.levelset.narrowband,
-            extension_quantity = "interface")
-
-        self.ghost_cell_handler = GhostCellHandler(
-            domain_information = domain_information,
-            halo_manager = halo_manager,
-            extender_primes = extender_primes,
-            equation_manager = equation_manager,
-            levelset_setup = numerical_setup.levelset)
-        
-        self.interface_quantity_computer = InterfaceQuantityComputer(
-            domain_information = domain_information,
-            material_manager = material_manager,
-            solid_properties = solid_properties,
-            extender_interface = extender_interface,
-            numerical_setup = numerical_setup)
 
         levelset_setup = numerical_setup.levelset
 
-        reinitialization_setup = levelset_setup.reinitialization_startup
-        nh_geometry = levelset_setup.halo_cells
-        narrowband_setup = levelset_setup.narrowband
-        reinitializer = reinitialization_setup.type
+        self.geometry_calculator = GeometryCalculator(
+            domain_information = domain_information,
+            geometry_setup = numerical_setup.levelset.geometry,
+            halo_cells_geometry = levelset_setup.halo_cells,
+            narrowband_computation = levelset_setup.narrowband.computation_width
+            )
 
-        self.reinitializer: LevelsetReinitializer = reinitializer(
+        self.extender_primes = IterativeExtender(
+            domain_information = domain_information,
+            halo_manager = halo_manager,
+            is_jaxwhileloop = False,
+            residual_threshold = 1e-16,
+            extension_quantity = "primitives")
+        
+        self.extender_interface = IterativeExtender(
+            domain_information = domain_information,
+            halo_manager = halo_manager,
+            is_jaxwhileloop = False,
+            residual_threshold = 1e-16,
+            extension_quantity = "interface")
+
+        narrowband_setup = levelset_setup.narrowband
+
+        reinitialization_setup = levelset_setup.reinitialization_startup
+        reinitializer = reinitialization_setup.type
+        self.reinitializer: PDEBasedReinitializer = reinitializer(
             domain_information = domain_information,
             halo_manager = halo_manager,
             reinitialization_setup = reinitialization_setup,
-            halo_cells = nh_geometry,
             narrowband_setup = narrowband_setup)
 
         self.levelset_creator = LevelsetCreator(
@@ -111,22 +104,12 @@ class LevelsetInitializer:
                 unit_handler = unit_handler,
                 initial_condition_levelset = initial_condition_levelset,
                 is_double_precision = numerical_setup.precision.is_double_precision_compute)
-        
-        self.residual_computer = ResidualComputer(
-            domain_information = domain_information,
-            levelset_reinitializer = self.reinitializer,
-            extender_interface = extender_interface,
-            extender_primes = extender_primes,
-            levelset_setup = levelset_setup)
 
     def initialize(
             self,
-            material_fields: MaterialFieldBuffers,
-            time_control_variables: TimeControlVariables,
             user_levelset_init: Union[np.ndarray, Array] = None,
             user_solid_interface_velocity_init: Union[np.ndarray, Array] = None,
-            ) -> Tuple[MaterialFieldBuffers, LevelsetFieldBuffers,
-                       LevelsetResidualInformation]:
+            ) -> LevelsetFieldBuffers:
         """Initializes the levelset related field buffers. Peforms ghost cell
         treatment on the material fields.
 
@@ -137,8 +120,20 @@ class LevelsetInitializer:
         """
 
         is_restart = self.restart_setup.flag
+        is_interpolate = self.restart_setup.is_interpolate
         is_parallel = self.domain_information.is_parallel
         is_h5_file = self.initial_condition_levelset.is_h5_file
+
+        if is_restart and is_interpolate:
+            is_restart = False
+
+            warning_string = (
+                "For level-set simulations, the level-set field cannot be interpolated "
+                "upon restart. However, in the case setup is_restart and is_interpolate "
+                "are both set True. Default behavior is to overwrite is_restart for level-set "
+                "and to attempt to initialize level-set field from the "
+                "corresponding initial condition.")
+            warnings.warn(warning_string, RuntimeWarning)
 
         if is_restart:
             levelset_fields = self.from_restart_file()
@@ -160,16 +155,21 @@ class LevelsetInitializer:
                 levelset_fields = self.from_levelset_initial_condition(
                     cell_centers)
 
-        if is_parallel:
-            material_fields, levelset_fields = jax.pmap(
-                self.ghost_cell_treatment_and_interface_quantities, axis_name="i", in_axes=(0,0,None))(
-                material_fields, levelset_fields, time_control_variables)
-        else:
-            material_fields, levelset_fields = self.ghost_cell_treatment_and_interface_quantities(
-                material_fields, levelset_fields, time_control_variables)
+        levelset_model = self.equation_information.levelset_model
+        is_moving_levelset = self.equation_information.is_moving_levelset
+        if "FLUID-SOLID" in levelset_model and not is_moving_levelset:
+            solid_cell_indices = compute_solid_cell_indices(
+                levelset_fields, self.geometry_calculator,
+                self.domain_information, self.numerical_setup.levelset)
+            levelset_fields = LevelsetFieldBuffers(
+                levelset = levelset_fields.levelset,
+                volume_fraction = levelset_fields.volume_fraction,
+                apertures = levelset_fields.apertures,
+                solid_cell_indices = solid_cell_indices)
 
-        return levelset_fields, material_fields
+        return levelset_fields
 
+  
     def create_levelset_fields(
             self,
             levelset_np: Array,
@@ -231,27 +231,12 @@ class LevelsetInitializer:
         process_id = self.domain_information.process_id
         levelset_model = self.equation_information.levelset_model
         restart_file_path = self.restart_setup.file_path
-        is_equal_decomposition = self.restart_setup.is_equal_decomposition
+        is_equal_decomposition_multihost = self.restart_setup.is_equal_decomposition_multihost
 
-        # LOAD H5 FILE
-        h5file_basename = os.path.split(restart_file_path)[-1]
-        if "proc" in h5file_basename:
-            if is_equal_decomposition:
-                h5file = h5py.File(restart_file_path, "r")
-                h5file_list = [h5file]
-            else:
-                h5file_path = os.path.split(restart_file_path)[0]
-                time_string = h5file_basename.split("_")[-1]
-                h5file_names = [file for file in os.listdir(h5file_path) if time_string in file]
-                h5file_list = []
-                for i in range(len(h5file_names)):
-                    file_name = f"data_proc{i:d}_{time_string:s}"
-                    file_path = os.path.join(h5file_path, file_name)
-                    h5file = h5py.File(file_path, "r")
-                    h5file_list.append(h5file)
-        else:
-            h5file = h5py.File(restart_file_path, "r")
-            h5file_list = [h5file]
+        restart_file_path = parse_restart_files(restart_file_path)
+        h5file_list = get_h5file_list(restart_file_path, process_id,
+                                      is_equal_decomposition_multihost)
+        h5file = h5file_list[0]
 
         is_parallel_restart = h5file["metadata"]["is_parallel"][()]
         split_factors_restart = h5file["domain"]["split_factors"][:]
@@ -259,8 +244,6 @@ class LevelsetInitializer:
         # SANITY CHECK
         levelset_keys = h5file["metadata"]["available_quantities"]["levelset"][:].astype("U")
         assert "levelset" in levelset_keys, "Levelset not in restart file %s." % restart_file_path
-        if levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            assert "interface_velocity" in levelset_keys, "Solid interface velocity not in restart file %s." % restart_file_path
 
         load_function = get_load_function(is_parallel, is_parallel_restart,
                                           split_factors, split_factors_restart)
@@ -273,27 +256,23 @@ class LevelsetInitializer:
 
         # LOAD DATA FROM H5 INTO NUMPY ARRAYS
         levelset = load_function("levelset/levelset", **load_function_inputs)
-        if levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            interface_velocity = load_function("levelset/interface_velocity", **load_function_inputs, is_vector_buffer=True)
-        else:
-            interface_velocity = None
 
         if is_parallel:
-            if is_multihost and not is_equal_decomposition:
+            if is_multihost and not is_equal_decomposition_multihost:
                 s_ = jnp.s_[process_id*local_device_count:(process_id+1)*local_device_count]
                 levelset = levelset[s_]
             levelset_fields = jax.pmap(self.create_levelset_fields, axis_name="i")(
-                levelset, interface_velocity)
+                levelset)
         else:
             levelset_fields = self.create_levelset_fields(
-                levelset, interface_velocity)
+                levelset)
 
         return levelset_fields
 
     def from_user_specified_buffer(
             self,
             user_levelset_init: Array,
-            user_solid_interface_velocity_init: Array = None,
+            user_solid_interface_velocity_init: Array,
             ) -> LevelsetFieldBuffers:
         """Creates the initial levelset related
         field buffers from user specified buffers.
@@ -318,32 +297,17 @@ class LevelsetInitializer:
         assert_string = ("Initial user levelset buffer does not have the a shape that "
                          "is consistent with the present case setup file.")
         assert tuple(number_of_cells) == user_levelset_init.shape, assert_string
-        
-
-        if user_solid_interface_velocity_init is not None:
-            assert_string = ("User specified initial solid interface velocity provided, "
-                             "however, the levelset model is not FLUID-SOLID-DYNAMIC-COUPLED.")
-            assert levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED", assert_string
-            assert_string = ("Initial user solid interface velocity buffer "
-                            "does not have the a shape that is consistent with the present "
-                            "case setup file.")
-            assert (3,) +tuple(number_of_cells) == user_solid_interface_velocity_init.shape, assert_string
             
         if is_parallel:
             user_levelset_init = split_buffer_np(user_levelset_init, split_factors)
-            if user_solid_interface_velocity_init is not None:
-                user_solid_interface_velocity_init = split_buffer_np(user_solid_interface_velocity_init,
-                                                                     split_factors)
             if is_multihost:
                 s_ = jnp.s_[process_id*local_device_count:(process_id+1)*local_device_count]
                 user_levelset_init = user_levelset_init[s_]
-                if user_solid_interface_velocity_init is not None:
-                    user_solid_interface_velocity_init = user_solid_interface_velocity_init[s_]
             levelset_fields = jax.pmap(self.create_levelset_fields, axis_name="i")(
-                user_levelset_init, user_solid_interface_velocity_init)
+                user_levelset_init)
         else:
             levelset_fields = self.create_levelset_fields(
-                user_levelset_init, user_solid_interface_velocity_init)
+                user_levelset_init)
 
         return levelset_fields
 
@@ -411,7 +375,7 @@ class LevelsetInitializer:
         steps = levelset_setup.reinitialization_startup.steps
         if steps > 1:
             levelset = self.halo_manager.perform_halo_update_levelset(levelset, True, True)
-            levelset = self.reinitializer.perform_reinitialization(
+            levelset, _ = self.reinitializer.perform_reinitialization(
                 levelset, CFL, steps)
 
         # CUTOFF AND HALOS
@@ -423,78 +387,7 @@ class LevelsetInitializer:
         # INTERFACE RECONSTRUCTION
         volume_fraction, apertures = self.geometry_calculator.interface_reconstruction(levelset)
 
-        # INITIAL SOLID VELOCITY FOR COUPLED INTERACTION
-        if self.equation_information.levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            buffer = create_field_buffer(nh, device_number_of_cells, dtype, 3)
-            solid_velocity = []
-            for field in self.initial_condition_solid_velocity._fields:
-                velocity_callable = getattr(self.initial_condition_solid_velocity, field)
-                velocity = velocity_callable(*mesh_grid)
-                solid_velocity.append(velocity)
-            solid_velocity = jnp.stack(solid_velocity)
-            solid_velocity = buffer.at[...,nhx,nhy,nhz].set(solid_velocity)
-        else:
-            solid_velocity = None
-        
         levelset_fields = LevelsetFieldBuffers(
-            levelset, volume_fraction, apertures,
-            solid_velocity)
+            levelset, volume_fraction, apertures)
 
         return levelset_fields
-
-    def ghost_cell_treatment_and_interface_quantities(
-            self,
-            material_fields: MaterialFieldBuffers,
-            levelset_fields: LevelsetFieldBuffers,
-            time_control_variables: TimeControlVariables
-            ) -> Tuple[MaterialFieldBuffers,
-                    LevelsetFieldBuffers]:
-        """Wrapper to perform ghost cell treatment
-        and interface quantity computation.
-
-        :param material_fields: _description_
-        :type material_fields: MaterialFieldBuffers
-        :param levelset_fields: _description_
-        :type levelset_fields: LevelsetFieldBuffers
-        :return: _description_
-        :rtype: Tuple[MaterialFieldBuffers, LevelsetFieldBuffers]
-        """
-        primitives = material_fields.primitives
-        conservatives = material_fields.conservatives
-        levelset = levelset_fields.levelset
-        volume_fraction = levelset_fields.volume_fraction
-        apertures = levelset_fields.apertures
-        interface_velocity = levelset_fields.interface_velocity
-        physical_simulation_time = time_control_variables.physical_simulation_time
-        nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
-        fill_edge_halos = self.numerical_setup.active_physics.is_viscous_flux
-
-        levelset_model = self.equation_information.levelset_model
-        if levelset_model == "FLUID-SOLID-DYNAMIC":
-            solid_velocity = self.interface_quantity_computer.compute_solid_velocity(physical_simulation_time)
-        elif levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            solid_velocity = levelset_fields.interface_velocity
-            solid_velocity = solid_velocity[...,nhx,nhy,nhz]
-        else:
-            solid_velocity = None
-        normal = self.geometry_calculator.compute_normal(levelset)
-        conservatives, primitives, _, _ = self.ghost_cell_handler.perform_ghost_cell_treatment(
-            conservatives, primitives, levelset, volume_fraction,
-            physical_simulation_time, normal, solid_velocity,
-            CFL=0.5, steps=100)
-
-        primitives, conservatives = self.halo_manager.perform_halo_update_material(
-            primitives, physical_simulation_time, fill_edge_halos, False, conservatives)
-        material_fields = MaterialFieldBuffers(
-            conservatives, primitives)
-        
-        if levelset_model == "FLUID-FLUID":
-            curvature = self.geometry_calculator.compute_curvature(levelset)
-            interface_velocity, interface_pressure, _ = \
-            self.interface_quantity_computer.compute_interface_quantities(
-                primitives, levelset, volume_fraction, normal, curvature, steps=100, CFL=0.5)
-            levelset_fields = LevelsetFieldBuffers(
-                levelset, volume_fraction, apertures, interface_velocity,
-                interface_pressure)
-            
-        return material_fields, levelset_fields

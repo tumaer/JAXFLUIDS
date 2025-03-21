@@ -2,21 +2,16 @@ from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
 
 import jax.numpy as jnp
-from jax import Array
-
 if TYPE_CHECKING:
-    from jaxfluids.data_types.numerical_setup import ActivePhysicsSetup, ActiveForcingsSetup
+    from jaxfluids.data_types.numerical_setup import ActivePhysicsSetup, ActiveForcingsSetup, SolidCouplingSetup
 
 TUPLE_PRIMES = ("rho", "u", "v", "w", "p")
-
-TUPLE_CHEMICAL_COMPONENTS = (
-    "H2", "O2", "H2O", "N2", "Ar",
-    "H2O2", "OH_r", "H_r", "O_r", "HO2_r")
 
 AVAILABLE_QUANTITIES = {
     "primitives" : ("density", "velocity", "pressure", "temperature"),
     "conservatives": ("mass", "momentum", "energy"),
     "levelset": ("levelset", "volume_fraction", "interface_pressure", "interface_velocity"),
+    "solids": ("velocity", "temperature", "energy"),
     "real_fluid": ("density", "velocity", "pressure", "temperature",
                     "mass", "momentum", "energy"),
     "miscellaneous": ("mach_number", "schlieren", "absolute_velocity",
@@ -41,9 +36,11 @@ class EquationInformation:
 
     Currently the following equation types are available:
     1) SINGLE-PHASE
-    2) SINGLE-PHASE-SOLID-LS
-    3) TWO-PHASE-LS
-    5) DIFFUSE-INTERFACE-5EQM
+    2) TWO-PHASE-LS
+    3) DIFFUSE-INTERFACE-4EQM
+    4) DIFFUSE-INTERFACE-5EQM
+
+    TODO: should ids_mass and ids_energy be tuples for all equation_types???
     """
 
     def __init__(
@@ -52,8 +49,10 @@ class EquationInformation:
             fluid_names: Tuple,
             levelset_model: str,
             diffuse_interface_model: str,
+            cavitation_model: str,
             active_physics: ActivePhysicsSetup,
             active_forcings: ActiveForcingsSetup,
+            solid_coupling: SolidCouplingSetup
             ) -> None:
         
         self.primes_tuple = primes_tuple
@@ -67,103 +66,123 @@ class EquationInformation:
 
         # LEVEL SET
         self.levelset_model = levelset_model
-        if levelset_model in [
-            "FLUID-FLUID",
-            "FLUID-SOLID-DYNAMIC",
-            "FLUID-SOLID-DYNAMIC-COUPLED"
-        ]:
+        self.solid_coupling = solid_coupling
+        if levelset_model == "FLUID-FLUID":
             self.is_moving_levelset = True
-        else:
-            self.is_moving_levelset = False
-        if levelset_model in [
-            "FLUID-SOLID-STATIC", 
-            "FLUID-SOLID-DYNAMIC", 
-            "FLUID-SOLID-DYNAMIC-COUPLED"
-        ]:
+            self.is_solid_levelset = False
+        elif levelset_model == "FLUID-SOLID":
             self.is_solid_levelset = True
+            # BUG ??? is_moving_levelset should be boolean
+            self.is_moving_levelset = solid_coupling.dynamic in ("ONE-WAY", "TWO-WAY")
         else:
             self.is_solid_levelset = False
+            self.is_moving_levelset = False
 
         # DIFFUSE INTERFACE
         self.diffuse_interface_model = diffuse_interface_model
+
+        # CAVITATION
+        self.cavitation_model = cavitation_model
+
+        is_viscous = active_physics.is_viscous_flux
+        is_heat_flux = active_physics.is_heat_flux
+        self.is_compute_temperature = any((is_viscous, is_heat_flux))
 
         # SINGLE PHASE OR LEVELSET TWO-PHASE
         self.equation_type = "SINGLE-PHASE"
         self.no_equations = 5
         self.shape_equations = (self.no_equations,)
-        self.mass_ids = 0
-        self.mass_slices = jnp.s_[0:1] 
-        self.velocity_ids = (1, 2, 3)
-        self.velocity_slices = jnp.s_[1:4]
-        self.momentum_xi_slices = (jnp.s_[1:2], jnp.s_[2:3], jnp.s_[3:4])
-        self.energy_ids = 4
-        self.energy_slices = jnp.s_[4:5]
-        self.mass_and_energy_ids = (self.mass_ids, self.energy_ids)
-        self.mass_and_vf_ids = None
-        self.momentum_and_energy_ids = self.velocity_ids + (self.energy_ids,)
-        self.momentum_and_energy_slices = jnp.s_[1:5]
-        self.vf_ids = None
-        self.vf_slices = None
-        self.species_ids = None
-        self.species_slices = None
+        self.ids_mass = 0
+        self.s_mass = jnp.s_[0:1] 
+        self.ids_velocity = (1, 2, 3)
+        self.s_velocity = jnp.s_[1:4]
+        self.s_momentum_xi = (jnp.s_[1:2], jnp.s_[2:3], jnp.s_[3:4])
+        self.ids_energy = 4
+        self.s_energy = jnp.s_[4:5]
+        self.ids_mass_and_energy = (self.ids_mass, self.ids_energy)
+        self.ids_mass_and_volume_fraction = None
+        self.ids_momentum_and_energy = self.ids_velocity + (self.ids_energy,)
+        self.s_momentum_and_energy = jnp.s_[1:5]
+        self.ids_volume_fraction = None
+        self.s_volume_fraction = None
+        self.ids_species = None
+        self.s_species = None
         self.velocity_minor_axes = ((2, 3), (3, 1), (1, 2))
         self.conservatives_slices = jnp.s_[:]
 
+        # Multi-component NSE
+        self.species_tuple = None
+        self.partial_density_ids_dict = None
+        self.mass_fraction_ids_dict = None
+        self.mole_fraction_ids_dict = None
+        self.mass_fraction_tuple = None
+        self.mole_fraction_tuple = None
+
         self.material_field_slices = {
             "primitives": {
-                "density": self.mass_slices,
-                "velocity": self.velocity_slices,
-                "pressure": self.energy_slices,
+                "density": self.s_mass,
+                "velocity": self.s_velocity,
+                "pressure": self.s_energy,
             },
             "conservatives": {
-                "mass": self.mass_slices,
-                "momentum": self.velocity_slices,
-                "energy": self.energy_slices,
+                "mass": self.s_mass,
+                "momentum": self.s_velocity,
+                "energy": self.s_energy,
             },
         }
 
         self.primitive_quantities = ("density",) + 3 * ("velocity",) + ("pressure",)
-
-        # LEVEL-SET SOLID
-        if self.is_solid_levelset:
-            self.equation_type = "SINGLE-PHASE-SOLID-LS"
 
         # LEVEL-SET TWO-PHASE
         if self.levelset_model == "FLUID-FLUID":
             self.equation_type = "TWO-PHASE-LS"
             self.shape_equations = (self.no_equations, 2)
 
+        # DIFFUSE INTERFACE MODEL - 4 EQUATION MODEL
+        if self.diffuse_interface_model == "4EQM":
+            self.initialize_diffuse_interface_4eqm()
+
         # DIFFUSE INTERFACE MODEL - 5 EQUATION MODEL
         if self.diffuse_interface_model == "5EQM":
             self.initialize_diffuse_interface_5eqm()
+            
+        # DIFFUSE INTERFACE MODEL - 6 EQUATION MODEL
+        if self.diffuse_interface_model == "6EQM":
+            # TODO 6EQM
+            self.initialize_diffuse_interface_6eqm()
 
-    def initialize_diffuse_interface_5eqm(self) -> None:
-        """ Initializes equation informations for the 5 equation
+        # DIFFUSE INTERFACE MODEL - 7 EQUATION MODEL
+        if self.diffuse_interface_model == "7EQM":
+            # TODO 7EQM
+            self.initialize_diffuse_interface_7eqm()
+    
+    def initialize_diffuse_interface_4eqm(self) -> None:
+        """Initializes equation informations for the 4 equation
         diffuse interface model.
         """
 
         no_fluids = self.no_fluids
 
-        self.equation_type = "DIFFUSE-INTERFACE-5EQM"
-        self.no_equations = 2 * no_fluids + 3
+        self.equation_type = "DIFFUSE-INTERFACE-4EQM"
+        self.no_equations = no_fluids + 4
         self.shape_equations = (self.no_equations,)
         self.conservatives_slices = jnp.s_[:-(no_fluids-1)]
-        self.mass_ids = tuple(range(no_fluids))
-        self.mass_slices = jnp.s_[0:no_fluids]
-        self.velocity_ids = (no_fluids, no_fluids+1, no_fluids+2)
-        self.velocity_slices = jnp.s_[no_fluids:no_fluids+3]
-        self.momentum_xi_slices = (
+        self.ids_mass = tuple(range(no_fluids))
+        self.s_mass = jnp.s_[0:no_fluids]
+        self.ids_velocity = (no_fluids, no_fluids+1, no_fluids+2)
+        self.s_velocity = jnp.s_[no_fluids:no_fluids+3]
+        self.s_momentum_xi = (
             jnp.s_[no_fluids:no_fluids+1],
             jnp.s_[no_fluids+1:no_fluids+2],
             jnp.s_[no_fluids+2:no_fluids+3])
-        self.energy_ids = no_fluids + 3
-        self.energy_slices = jnp.s_[no_fluids+3:no_fluids+4]
-        self.mass_and_energy_ids = self.mass_ids + (self.energy_ids,)
-        self.vf_ids = tuple(range(no_fluids+4,(2*no_fluids+4)-1))
-        self.vf_slices = jnp.s_[no_fluids+4:(2*no_fluids+4)-1]
-        self.mass_and_vf_ids = self.mass_ids + self.vf_ids
-        self.momentum_and_energy_ids = self.velocity_ids + (self.energy_ids,)
-        self.momentum_and_energy_slices = jnp.s_[no_fluids:no_fluids+4]
+        self.ids_energy = no_fluids + 3
+        self.s_energy = jnp.s_[no_fluids+3:no_fluids+4]
+        self.ids_mass_and_energy = self.ids_mass + (self.ids_energy,)
+        self.ids_mass_and_volume_fraction = None
+        self.ids_momentum_and_energy = self.ids_velocity + (self.ids_energy,)
+        self.s_momentum_and_energy = jnp.s_[no_fluids:no_fluids+4]
+        self.ids_volume_fraction = None
+        self.s_volume_fraction = None
         self.velocity_minor_axes = (
             (no_fluids+1, no_fluids+2),
             (no_fluids+2, no_fluids  ),
@@ -176,22 +195,81 @@ class EquationInformation:
 
         self.material_field_slices = {
             "primitives": {
-                "density": self.mass_slices,
-                "velocity": self.velocity_slices,
-                "pressure": self.energy_slices,
-                "volume_fraction": self.vf_slices,
+                "density": self.s_mass,
+                "velocity": self.s_velocity,
+                "pressure": self.s_energy,
             },
             "conservatives": {
-                "mass": self.mass_slices,
-                "momentum": self.velocity_slices,
-                "energy": self.energy_slices,
-                "volume_fraction": self.vf_slices,
+                "mass": self.s_mass,
+                "momentum": self.s_velocity,
+                "energy": self.s_energy,
+            },
+        }
+
+        self.primitive_quantities = self.no_fluids*("density",) \
+            + 3 * ("velocity",) + ("pressure",)
+
+    def initialize_diffuse_interface_5eqm(self) -> None:
+        """ Initializes equation informations for the 5 equation
+        diffuse interface model.
+        """
+
+        no_fluids = self.no_fluids
+
+        self.equation_type = "DIFFUSE-INTERFACE-5EQM"
+        self.no_equations = 2 * no_fluids + 3
+        self.shape_equations = (self.no_equations,)
+        self.conservatives_slices = jnp.s_[:-(no_fluids-1)]
+        self.ids_mass = tuple(range(no_fluids))
+        self.s_mass = jnp.s_[0:no_fluids]
+        self.ids_velocity = (no_fluids, no_fluids+1, no_fluids+2)
+        self.s_velocity = jnp.s_[no_fluids:no_fluids+3]
+        self.s_momentum_xi = (
+            jnp.s_[no_fluids:no_fluids+1],
+            jnp.s_[no_fluids+1:no_fluids+2],
+            jnp.s_[no_fluids+2:no_fluids+3])
+        self.ids_energy = no_fluids + 3
+        self.s_energy = jnp.s_[no_fluids+3:no_fluids+4]
+        self.ids_mass_and_energy = self.ids_mass + (self.ids_energy,)
+        self.ids_volume_fraction = tuple(range(no_fluids+4,(2*no_fluids+4)-1))
+        self.s_volume_fraction = jnp.s_[no_fluids+4:(2*no_fluids+4)-1]
+        self.ids_mass_and_volume_fraction = self.ids_mass + self.ids_volume_fraction
+        self.ids_momentum_and_energy = self.ids_velocity + (self.ids_energy,)
+        self.s_momentum_and_energy = jnp.s_[no_fluids:no_fluids+4]
+        self.velocity_minor_axes = (
+            (no_fluids+1, no_fluids+2),
+            (no_fluids+2, no_fluids  ),
+            (no_fluids  , no_fluids+1),
+        )
+
+        self.primes_tuple_ = get_reduced_primes_tuple_for_diffuse_interface(self.primes_tuple)
+        self.alpharho_i_dict = {f"alpharho_{i:d}": i for i in range(self.no_fluids)}
+        self.alpha_i_dict = {f"alpha_{i:d}": i+self.no_fluids+4 for i in range(self.no_fluids-1)}
+
+        self.material_field_slices = {
+            "primitives": {
+                "density": self.s_mass,
+                "velocity": self.s_velocity,
+                "pressure": self.s_energy,
+                "volume_fraction": self.s_volume_fraction,
+            },
+            "conservatives": {
+                "mass": self.s_mass,
+                "momentum": self.s_velocity,
+                "energy": self.s_energy,
+                "volume_fraction": self.s_volume_fraction,
             },
         }
 
         self.primitive_quantities = self.no_fluids*("density",) + 3 * ("velocity",)\
             + ("pressure",) + (self.no_fluids -1) * ("volume_fraction",)
 
+    def initialize_diffuse_interface_6eqm(self) -> None:
+        raise NotImplementedError
+
+    def initialize_diffuse_interface_7eqm(self) -> None:
+        raise NotImplementedError
+    
     def get_material_field_indices(self, active_axes_indices):
         """Dictioanry assigning material field quantity
         to buffer index.
@@ -203,9 +281,7 @@ class EquationInformation:
         :rtype: _type_
         """
 
-        if self.equation_type in ("SINGLE-PHASE",
-                                  "TWO-PHASE-LS",
-                                  "SINGLE-PHASE-SOLID-LS"):
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS",):
             material_field_indices = {
                 "primitives": {
                     "density": 0,
@@ -232,6 +308,20 @@ class EquationInformation:
                     **{"momentum": jnp.array([self.no_fluids + i for i in active_axes_indices]),
                     "energy": self.no_fluids+3},
                     **self.alpha_i_dict,
+                }
+            }
+
+        elif self.diffuse_interface_model == "4EQM":
+            material_field_indices = {
+                "primitives": {
+                    **self.alpharho_i_dict,
+                    **{"velocity": jnp.array([self.no_fluids + i for i in active_axes_indices]),
+                    "pressure": self.no_fluids+3},
+                },
+                "conservatives": {
+                    **self.alpharho_i_dict,
+                    **{"momentum": jnp.array([self.no_fluids + i for i in active_axes_indices]),
+                    "energy": self.no_fluids+3},
                 }
             }
 

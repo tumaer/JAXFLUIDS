@@ -1,15 +1,16 @@
 {
     "conservatives": {
-        "halo_cells": 4,
+        "halo_cells": 5,
         "time_integration" : {
             "integrator": "RK3",
-            "CFL": 0.9
+            "CFL": 0.5
         },
         "convective_fluxes": {
             "convective_solver": "FLUX-SPLITTING",
-            "flux_splitting": "ROE",
-            "reconstruction_stencil": "WENO5-JS",
-            "frozen_state": "ROE"
+            "flux_splitting": {
+                "flux_splitting": "ROE",
+                "reconstruction_stencil": "WENO6-CU"
+            }
         },
         "dissipative_fluxes": {
             "reconstruction_stencil": "CENTRAL4",
@@ -28,6 +29,7 @@
         "is_double_precision_output": true
     },
     "output":  {
+        "is_xdmf": false,
         "derivative_stencil": "CENTRAL4"
     }
 }

@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_stencil import SpatialStencil
+
+Array = jax.Array
 
 class SpatialDerivative(SpatialStencil):
     """Abstract base class for the computation of spatial derivatives.

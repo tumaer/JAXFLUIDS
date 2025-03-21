@@ -21,6 +21,7 @@ def read_ideal_gas(
     specific_gas_constant = unit_handler.non_dimensionalize(
         specific_gas_constant, "specific_gas_constant")
 
+
     ideal_gas_setup = IdealGasSetup(
         specific_heat_ratio=specific_heat_ratio,
         specific_gas_constant=specific_gas_constant)

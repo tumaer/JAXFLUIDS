@@ -4,13 +4,14 @@ from typing import Tuple, Union
 import jax 
 from jax import vmap
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_information import EquationInformation
 from jaxfluids.config import precision
+
+Array = jax.Array
 
 class Eigendecomposition:
     """ The Eigendecomposition class implements functionality for
@@ -55,14 +56,14 @@ class Eigendecomposition:
 
         # EQUATION INFORMATION
         self.equation_type = equation_information.equation_type
-        self.mass_slices = equation_information.mass_slices
-        self.mass_ids = equation_information.mass_ids
-        self.vel_slices = equation_information.velocity_slices
-        self.vel_ids = equation_information.velocity_ids
-        self.energy_slices = equation_information.energy_slices
-        self.energy_ids = equation_information.energy_ids
-        self.vf_slices = equation_information.vf_slices
-        self.vf_ids = equation_information.vf_ids
+        self.s_mass = equation_information.s_mass
+        self.ids_mass = equation_information.ids_mass
+        self.vel_slices = equation_information.s_velocity
+        self.vel_ids = equation_information.ids_velocity
+        self.s_energy = equation_information.s_energy
+        self.ids_energy = equation_information.ids_energy
+        self.s_volume_fraction = equation_information.s_volume_fraction
+        self.ids_volume_fraction = equation_information.ids_volume_fraction
         self.vel_minors = equation_information.velocity_minor_axes
 
         self.vel_id_eigs = [
@@ -148,73 +149,89 @@ class Eigendecomposition:
             
             if self.equation_type == "DIFFUSE-INTERFACE-5EQM":
                 grueneisen_L = self.material_manager.get_grueneisen(
-                    alpha_rho_i=primitives_L[self.mass_slices], 
-                    alpha_i=primitives_L[self.vf_slices]) 
+                    alpha_rho_i=primitives_L[self.s_mass], 
+                    alpha_i=primitives_L[self.s_volume_fraction]) 
                 grueneisen_R = self.material_manager.get_grueneisen(
-                    alpha_rho_i=primitives_R[self.mass_slices], 
-                    alpha_i=primitives_R[self.vf_slices]) 
+                    alpha_rho_i=primitives_R[self.s_mass], 
+                    alpha_i=primitives_R[self.s_volume_fraction]) 
                 grueneisen_ave = 0.5 * (grueneisen_L + grueneisen_R)
 
                 enthalpy_L = self.material_manager.get_total_enthalpy(
-                    primitives_L[self.energy_ids], 
-                    primitives_L[self.vel_ids[0]], 
-                    primitives_L[self.vel_ids[1]], 
-                    primitives_L[self.vel_ids[2]],
-                    alpha_rho_i=primitives_L[self.mass_slices], 
-                    alpha_i=primitives_L[self.vf_slices])
+                    primitives_L[self.ids_energy], 
+                    primitives_L[self.vel_slices],
+                    alpha_rho_i=primitives_L[self.s_mass], 
+                    alpha_i=primitives_L[self.s_volume_fraction])
                 enthalpy_R = self.material_manager.get_total_enthalpy(
-                    primitives_R[self.energy_ids], 
-                    primitives_R[self.vel_ids[0]], 
-                    primitives_R[self.vel_ids[1]], 
-                    primitives_R[self.vel_ids[2]],
-                    alpha_rho_i=primitives_R[self.mass_slices], 
-                    alpha_i=primitives_R[self.vf_slices])
+                    primitives_R[self.ids_energy], 
+                    primitives_R[self.vel_slices],
+                    alpha_rho_i=primitives_R[self.s_mass], 
+                    alpha_i=primitives_R[self.s_volume_fraction])
                 enthalpy_ave = 0.5 * (enthalpy_L + enthalpy_R)
                 
                 c_L = self.material_manager.get_speed_of_sound(primitives_L)
                 c_R = self.material_manager.get_speed_of_sound(primitives_R)
                 c_ave = 0.5 * (c_L + c_R)
-
-                # grueneisen_ave = self.material_manager.get_grueneisen(
-                #     alpha_rho_i=primes_ave[self.mass_slices], 
-                #     alpha_i=primes_ave[self.vf_slices]) 
-                # enthalpy_ave = self.material_manager.get_total_enthalpy(
-                #     primes_ave[self.energy_ids], 
-                #     primes_ave[self.vel_ids[0]], 
-                #     primes_ave[self.vel_ids[1]], 
-                #     primes_ave[self.vel_ids[2]],
-                #     alpha_rho_i=primes_ave[self.mass_slices], 
-                #     alpha_i=primes_ave[self.vf_slices])
+                # c_ave = jnp.minimum(c_L, c_R)
+                # c_ave = jnp.maximum(c_L, c_R)
                 # c_ave = self.material_manager.get_speed_of_sound(primes_ave)
 
-            elif self.equation_type in ("SINGLE-PHASE",
-                                        "TWO-PHASE-LS",
-                                        "SINGLE-PHASE-SOLID-LS"):
+                # grueneisen_ave = self.material_manager.get_grueneisen(
+                #     alpha_rho_i=primes_ave[self.s_mass], 
+                #     alpha_i=primes_ave[self.s_volume_fraction]) 
+                # enthalpy_ave = self.material_manager.get_total_enthalpy(
+                #     primes_ave[self.ids_energy], 
+                #     primes_ave[self.vel_slices],
+                #     alpha_rho_i=primes_ave[self.s_mass], 
+                #     alpha_i=primes_ave[self.s_volume_fraction])
+                # c_ave = self.material_manager.get_speed_of_sound(primes_ave)
+            
+            elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":
+                # grueneisen_L = self.material_manager.get_grueneisen(
+                #     alpha_rho_i=primitives_L[self.s_mass], 
+                #     alpha_i=primitives_L[self.s_volume_fraction]) 
+                # grueneisen_R = self.material_manager.get_grueneisen(
+                #     alpha_rho_i=primitives_R[self.s_mass], 
+                #     alpha_i=primitives_R[self.s_volume_fraction]) 
+                # grueneisen_ave = 0.5 * (grueneisen_L + grueneisen_R)
+                grueneisen_ave = None
+
+                # enthalpy_L = self.material_manager.get_total_enthalpy(
+                #     primitives_L[self.ids_energy], 
+                #     primitives_L[self.vel_slices], 
+                #     alpha_rho_i=primitives_L[self.s_mass], 
+                #     alpha_i=primitives_L[self.s_volume_fraction])
+                # enthalpy_R = self.material_manager.get_total_enthalpy(
+                #     primitives_R[self.ids_energy], 
+                #     primitives_R[self.vel_slices], 
+                #     alpha_rho_i=primitives_R[self.s_mass], 
+                #     alpha_i=primitives_R[self.s_volume_fraction])
+                # enthalpy_ave = 0.5 * (enthalpy_L + enthalpy_R)
+                enthalpy_ave = None
+                
+                c_L = self.material_manager.get_speed_of_sound(primitives_L)
+                c_R = self.material_manager.get_speed_of_sound(primitives_R)
+                c_ave = 0.5 * (c_L + c_R)
+
+            elif self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
                 temperature_ave = self.material_manager.get_temperature(primes_ave)
-                grueneisen_ave = self.material_manager.get_grueneisen(rho=primes_ave[self.mass_ids], T=temperature_ave) \
-                    * jnp.ones_like(primes_ave[self.mass_ids])
+                grueneisen_ave = self.material_manager.get_grueneisen(rho=primes_ave[self.ids_mass], T=temperature_ave) \
+                    * jnp.ones_like(primes_ave[self.ids_mass])
                 enthalpy_ave = self.material_manager.get_total_enthalpy(
-                    p=primes_ave[self.energy_ids], 
-                    rho=primes_ave[self.mass_ids], 
-                    u=primes_ave[self.vel_ids[0]], 
-                    v=primes_ave[self.vel_ids[1]], 
-                    w=primes_ave[self.vel_ids[2]])
+                    p=primes_ave[self.ids_energy],
+                    velocity_vec=primes_ave[self.vel_slices],
+                    rho=primes_ave[self.ids_mass])
                 c_ave = self.material_manager.get_speed_of_sound(
-                    pressure=primes_ave[self.energy_ids], 
-                    density=primes_ave[self.mass_ids])
+                    pressure=primes_ave[self.ids_energy], 
+                    density=primes_ave[self.ids_mass])
             
             else:
                 raise NotImplementedError
             
             cc_ave = c_ave * c_ave
-            velocity_square = \
-                primes_ave[self.vel_ids[0]] * primes_ave[self.vel_ids[0]] \
-                + primes_ave[self.vel_ids[1]] * primes_ave[self.vel_ids[1]] \
-                + primes_ave[self.vel_ids[2]] * primes_ave[self.vel_ids[2]]
+            velocity_square = jnp.sum(jnp.square(primes_ave[self.vel_slices]), axis=0)
         
         if self.frozen_state == "ROE":
-            if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS",
-                                      "SINGLE-PHASE-SOLID-LS"):
+            if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
                 # TODO Better way to calculate primes_ave
                 primes_ave = self.compute_roe_cons(primitives_L, primitives_R)
                 primes_ave = primes_ave.at[0].set(jnp.sqrt(primitives_L[0] * primitives_R[0]))
@@ -222,33 +239,36 @@ class Eigendecomposition:
                 rho_sqrt_L, rho_sqrt_R = jnp.sqrt(primitives_L[0]), jnp.sqrt(primitives_R[0])
                 rho_div = 1.0 / ( rho_sqrt_L + rho_sqrt_R )
                 
-                enthalpy_L   = self.material_manager.get_total_enthalpy(p=primitives_L[4], rho=primitives_L[0], u=primitives_L[1], v=primitives_L[2], w=primitives_L[3])
-                enthalpy_R   = self.material_manager.get_total_enthalpy(p=primitives_R[4], rho=primitives_R[0], u=primitives_R[1], v=primitives_R[2], w=primitives_R[3])
+                enthalpy_L = self.material_manager.get_total_enthalpy(
+                    p=primitives_L[self.ids_energy],
+                    velocity_vec=primitives_L[self.vel_slices],
+                    rho=primitives_L[self.ids_mass])
+                enthalpy_R = self.material_manager.get_total_enthalpy(
+                    p=primitives_R[self.ids_energy],
+                    velocity_vec=primitives_R[self.vel_slices],
+                    rho=primitives_R[self.ids_mass])
                 enthalpy_ave = (rho_sqrt_L * enthalpy_L + rho_sqrt_R * enthalpy_R) * rho_div
                 
                 psi_L = self.material_manager.get_psi(
-                    p=primitives_L[self.energy_ids], 
-                    rho=primitives_L[self.mass_ids])
+                    p=primitives_L[self.ids_energy], 
+                    rho=primitives_L[self.ids_mass])
                 psi_R = self.material_manager.get_psi(
-                    p=primitives_R[self.energy_ids], 
-                    rho=primitives_R[self.mass_ids])
+                    p=primitives_R[self.ids_energy], 
+                    rho=primitives_R[self.ids_mass])
                 psi_ave = (rho_sqrt_L * psi_L + rho_sqrt_R * psi_R) * rho_div
 
-                grueneisen_L = self.material_manager.get_grueneisen(rho=primitives_L[self.mass_ids])
-                grueneisen_R = self.material_manager.get_grueneisen(rho=primitives_R[self.mass_ids])
+                grueneisen_L = self.material_manager.get_grueneisen(rho=primitives_L[self.ids_mass])
+                grueneisen_R = self.material_manager.get_grueneisen(rho=primitives_R[self.ids_mass])
                 grueneisen_ave = (rho_sqrt_L * grueneisen_L + rho_sqrt_R * grueneisen_R) * rho_div
 
-                squared_velocity_difference = \
-                    (primitives_R[1] - primitives_L[1]) * (primitives_R[1] - primitives_L[1]) + \
-                    (primitives_R[2] - primitives_L[2]) * (primitives_R[2] - primitives_L[2]) + \
-                    (primitives_R[3] - primitives_L[3]) * (primitives_R[3] - primitives_L[3]) 
+                # TODO consistent summation
+                squared_velocity_difference = jnp.sum(jnp.square(primitives_R[self.vel_slices] - primitives_L[self.vel_slices]), axis=0)
 
                 p_over_rho_ave = (rho_sqrt_L * primitives_L[4]/primitives_L[0] + rho_sqrt_R * primitives_R[4]/primitives_R[0]) * rho_div \
                                 + 0.5 * primes_ave[0] * rho_div * rho_div * squared_velocity_difference
 
-                velocity_square = primes_ave[1] * primes_ave[1] \
-                    + primes_ave[2] * primes_ave[2] \
-                    + primes_ave[3] * primes_ave[3]
+                # TODO consistent summation
+                velocity_square = jnp.sum(jnp.square(primes_ave[self.vel_slices]), axis=0)
                 
                 # cc_ave = (self.material_manager.get_gamma() - 1) * (enthalpy_ave - 0.5 * velocity_square)
                 cc_ave = psi_ave + grueneisen_ave * p_over_rho_ave
@@ -270,7 +290,7 @@ class Eigendecomposition:
         :return: Buffer of Roe averaged quantities at the cell face.
         :rtype: Array
         """
-        roe_cons = (jnp.sqrt(prime_L[0]) * prime_L + jnp.sqrt(prime_R[0]) * prime_R) / (jnp.sqrt(prime_L[0]) + jnp.sqrt(prime_R[0]) + self.eps)
+        roe_cons = (jnp.sqrt(prime_L[0]) * prime_L + jnp.sqrt(prime_R[0]) * prime_R) / (jnp.sqrt(prime_L[0]) + jnp.sqrt(prime_R[0]))
         return roe_cons
 
     def eigendecomposition_primitives(
@@ -298,9 +318,7 @@ class Eigendecomposition:
         left_eigs  = [ [jnp.zeros(_s) for _ in range(self.equation_information.no_primes)]
             for _ in range(self.equation_information.no_primes) ]
 
-        if self.equation_type in ("SINGLE-PHASE",
-                                  "TWO-PHASE-LS",
-                                  "SINGLE-PHASE-SOLID-LS"):
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
             # RIGHT EIGENVECTORS
             # MASS
             right_eigs[0][0]  = primes_ave[0]
@@ -332,7 +350,7 @@ class Eigendecomposition:
             rho_ave = self.material_manager.get_density(primes_ave)
 
             # RIGHT EIGENVECTORS
-            for mass_id in self.mass_ids:
+            for mass_id in self.ids_mass:
                 right_eigs[mass_id][0]            = primes_ave[mass_id]
                 right_eigs[mass_id][mass_id + 1]  = jnp.ones(_s)
                 right_eigs[mass_id][-1]           = primes_ave[mass_id]
@@ -341,39 +359,39 @@ class Eigendecomposition:
             right_eigs[self.vel_ids[axis]][-1] = c_ave
             right_eigs[self.vel_minors[axis][0]][self.vel_id_eigs[axis][0]] = jnp.ones(_s)
             right_eigs[self.vel_minors[axis][1]][self.vel_id_eigs[axis][1]] = jnp.ones(_s)
-            right_eigs[self.energy_ids][0]  = cc_ave * rho_ave
+            right_eigs[self.ids_energy][0]  = cc_ave * rho_ave
             if sigma_curvature_ave is not None:
-                right_eigs[self.energy_ids][-2] = sigma_curvature_ave
-            right_eigs[self.energy_ids][-1] = cc_ave * rho_ave
+                right_eigs[self.ids_energy][-2] = sigma_curvature_ave
+            right_eigs[self.ids_energy][-1] = cc_ave * rho_ave
 
-            for vf_id in self.vf_ids:
+            for vf_id in self.ids_volume_fraction:
                 right_eigs[vf_id][vf_id-1] = jnp.ones(_s)
 
             # LEFT EIGENVECTORS
             one_c_ave = 1.0 / c_ave
             one_rho_cc_ave = 1.0 / (cc_ave * rho_ave)
 
-            for mass_id in self.mass_ids:
+            for mass_id in self.ids_mass:
                 left_eigs[mass_id+1][mass_id] = jnp.ones(_s)
 
             left_eigs[0][self.vel_ids[axis]]  = -0.5 * one_c_ave
             left_eigs[-1][self.vel_ids[axis]] = 0.5 * one_c_ave
             left_eigs[self.vel_id_eigs[axis][0]][self.vel_minors[axis][0]] = jnp.ones(_s)
             left_eigs[self.vel_id_eigs[axis][1]][self.vel_minors[axis][1]] = jnp.ones(_s)
-            left_eigs[0][self.energy_ids]  = 0.5 * one_rho_cc_ave
-            left_eigs[-1][self.energy_ids] = 0.5 * one_rho_cc_ave
+            left_eigs[0][self.ids_energy]  = 0.5 * one_rho_cc_ave
+            left_eigs[-1][self.ids_energy] = 0.5 * one_rho_cc_ave
             if sigma_curvature_ave is not None:
                 left_eigs[0][-1] = - 0.5 * sigma_curvature_ave * one_rho_cc_ave
                 left_eigs[-1][-1] = - 0.5 * sigma_curvature_ave * one_rho_cc_ave
 
-            for mass_id in self.mass_ids:
-                left_eigs[mass_id+1][self.energy_ids] = -primes_ave[mass_id] * one_rho_cc_ave
+            for mass_id in self.ids_mass:
+                left_eigs[mass_id+1][self.ids_energy] = -primes_ave[mass_id] * one_rho_cc_ave
                 if sigma_curvature_ave is not None:
                     left_eigs[mass_id+1][-1] = primes_ave[mass_id] * sigma_curvature_ave * one_rho_cc_ave
 
-            for vf_id in self.vf_ids:
+            for vf_id in self.ids_volume_fraction:
                 left_eigs[vf_id-1][vf_id] = jnp.ones(_s)
-                    
+        
         else:
             raise NotImplementedError
 
@@ -400,19 +418,17 @@ class Eigendecomposition:
         
         xout_list = []
 
-        if self.equation_type in ("SINGLE-PHASE",
-                                  "TWO-PHASE-LS",
-                                  "SINGLE-PHASE-SOLID-LS"):
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
             for xin in xin_list:
                 xout = [0 for _ in range(self.equation_information.no_primes)]
                 
-                xout[self.mass_ids] = -0.5 / c_ave * xin[self.vel_ids[axis]] \
-                    + 0.5 / (cc_ave * primes_ave[self.mass_ids]) * xin[self.energy_ids]
-                xout[1] = xin[self.mass_ids] - 1.0 / cc_ave * xin[self.energy_ids]
+                xout[self.ids_mass] = -0.5 / c_ave * xin[self.vel_ids[axis]] \
+                    + 0.5 / (cc_ave * primes_ave[self.ids_mass]) * xin[self.ids_energy]
+                xout[1] = xin[self.ids_mass] - 1.0 / cc_ave * xin[self.ids_energy]
                 xout[self.vel_id_eigs[axis][0]] = xin[self.vel_minors[axis][0]]
                 xout[self.vel_id_eigs[axis][1]] = xin[self.vel_minors[axis][1]]
-                xout[self.energy_ids] = 0.5 / c_ave * xin[self.vel_ids[axis]] \
-                    + 0.5 / (cc_ave * primes_ave[self.mass_ids]) * xin[self.energy_ids]
+                xout[self.ids_energy] = 0.5 / c_ave * xin[self.vel_ids[axis]] \
+                    + 0.5 / (cc_ave * primes_ave[self.ids_mass]) * xin[self.ids_energy]
                 
                 xout_list.append(jnp.array(xout))
 
@@ -423,16 +439,16 @@ class Eigendecomposition:
             for xin in xin_list:
                 xout = [0 for _ in range(self.equation_information.no_primes)]
 
-                for mass_id in self.mass_ids:
+                for mass_id in self.ids_mass:
                     xout[mass_id+1] = xin[mass_id] \
-                        - one_cc_rho_ave * primes_ave[mass_id] * xin[self.energy_ids]
+                        - one_cc_rho_ave * primes_ave[mass_id] * xin[self.ids_energy]
                     if sigma_curvature_ave is not None:
                         xout[mass_id+1] += one_cc_rho_ave * primes_ave[mass_id] * sigma_curvature_ave * xin[-1]
 
                 xout[0] = -0.5 / c_ave * xin[self.vel_ids[axis]] \
-                    + 0.5 * one_cc_rho_ave * xin[self.energy_ids]
+                    + 0.5 * one_cc_rho_ave * xin[self.ids_energy]
                 xout[-1] = 0.5 / c_ave * xin[self.vel_ids[axis]] \
-                    + 0.5 * one_cc_rho_ave * xin[self.energy_ids]
+                    + 0.5 * one_cc_rho_ave * xin[self.ids_energy]
 
                 if sigma_curvature_ave is not None:
                     xout[0] += - 0.5 * one_cc_rho_ave * sigma_curvature_ave * xin[-1]
@@ -441,11 +457,40 @@ class Eigendecomposition:
                 xout[self.vel_id_eigs[axis][0]] = xin[self.vel_minors[axis][0]]
                 xout[self.vel_id_eigs[axis][1]] = xin[self.vel_minors[axis][1]]
 
-                for vf_id in self.vf_ids:
+                for vf_id in self.ids_volume_fraction:
                     xout[vf_id-1] = xin[vf_id]
 
                 xout_list.append(jnp.array(xout))
-                    
+        
+        elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":
+            rho_ave = self.material_manager.get_density(primes_ave)
+            one_cc_rho_ave = 1.0 / (cc_ave * rho_ave)
+
+            for xin in xin_list:
+                xout = [0 for _ in range(self.equation_information.no_primes)]
+
+                for mass_id in self.ids_mass:
+                    xout[mass_id+1] = xin[mass_id] \
+                        - one_cc_rho_ave * primes_ave[mass_id] * xin[self.ids_energy]
+                    if sigma_curvature_ave is not None:
+                        raise NotImplementedError
+                        # xout[mass_id+1] += one_cc_rho_ave * primes_ave[mass_id] * sigma_curvature_ave * xin[-1]
+
+                xout[0] = -0.5 / c_ave * xin[self.vel_ids[axis]] \
+                    + 0.5 * one_cc_rho_ave * xin[self.ids_energy]
+                xout[-1] = 0.5 / c_ave * xin[self.vel_ids[axis]] \
+                    + 0.5 * one_cc_rho_ave * xin[self.ids_energy]
+
+                if sigma_curvature_ave is not None:
+                    raise NotImplementedError
+                    # xout[0] += - 0.5 * one_cc_rho_ave * sigma_curvature_ave * xin[-1]
+                    # xout[-1] += - 0.5 * one_cc_rho_ave * sigma_curvature_ave * xin[-1]
+                
+                xout[self.vel_id_eigs[axis][0]] = xin[self.vel_minors[axis][0]]
+                xout[self.vel_id_eigs[axis][1]] = xin[self.vel_minors[axis][1]]
+
+                xout_list.append(jnp.array(xout))
+        
         else:
             raise NotImplementedError
 
@@ -464,18 +509,16 @@ class Eigendecomposition:
         
         xout_list = []
 
-        if self.equation_type in ("SINGLE-PHASE",
-                                  "TWO-PHASE-LS",
-                                  "SINGLE-PHASE-SOLID-LS"):
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
             
             for xin in xin_list:
                 xout = [0 for _ in range(self.equation_information.no_primes)]
                 
-                xout[self.mass_ids] = primes_ave[self.mass_ids] * (xin[0] + xin[4]) + xin[1]
+                xout[self.ids_mass] = primes_ave[self.ids_mass] * (xin[0] + xin[4]) + xin[1]
                 xout[self.vel_ids[axis]] = c_ave * (-xin[0] + xin[4])
                 xout[self.vel_minors[axis][0]] = xin[self.vel_id_eigs[axis][0]]
                 xout[self.vel_minors[axis][1]] = xin[self.vel_id_eigs[axis][1]]
-                xout[self.energy_ids] = cc_ave * primes_ave[self.mass_ids] * (xin[0] + xin[4])
+                xout[self.ids_energy] = cc_ave * primes_ave[self.ids_mass] * (xin[0] + xin[4])
                 
                 xout_list.append(jnp.array(xout))
 
@@ -485,7 +528,7 @@ class Eigendecomposition:
             for xin in xin_list:
                 xout = [0 for _ in range(self.equation_information.no_primes)]
 
-                for mass_id in self.mass_ids:
+                for mass_id in self.ids_mass:
                     xout[mass_id] = primes_ave[mass_id] * (xin[0] + xin[-1]) \
                         + xin[mass_id + 1]
 
@@ -493,16 +536,38 @@ class Eigendecomposition:
                 xout[self.vel_minors[axis][0]] = xin[self.vel_id_eigs[axis][0]]
                 xout[self.vel_minors[axis][1]] = xin[self.vel_id_eigs[axis][1]]
 
-                xout[self.energy_ids] = cc_ave * rho_ave * (xin[0] + xin[-1])
+                xout[self.ids_energy] = cc_ave * rho_ave * (xin[0] + xin[-1])
                 if sigma_curvature_ave is not None:
                     # TODO check index -2 for more than 2 components
-                    xout[self.energy_ids] += sigma_curvature_ave * xin[-2]
+                    xout[self.ids_energy] += sigma_curvature_ave * xin[-2]
 
-                for vf_id in self.vf_ids:
+                for vf_id in self.ids_volume_fraction:
                     xout[vf_id] = xin[vf_id-1]
             
                 xout_list.append(jnp.array(xout))
-                    
+        
+        elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":
+            rho_ave = self.material_manager.get_density(primes_ave)
+
+            for xin in xin_list:
+                xout = [0 for _ in range(self.equation_information.no_primes)]
+
+                for mass_id in self.ids_mass:
+                    xout[mass_id] = primes_ave[mass_id] * (xin[0] + xin[-1]) \
+                        + xin[mass_id + 1]
+
+                xout[self.vel_ids[axis]] = c_ave * (-xin[0] + xin[-1])
+                xout[self.vel_minors[axis][0]] = xin[self.vel_id_eigs[axis][0]]
+                xout[self.vel_minors[axis][1]] = xin[self.vel_id_eigs[axis][1]]
+
+                xout[self.ids_energy] = cc_ave * rho_ave * (xin[0] + xin[-1])
+                if sigma_curvature_ave is not None:
+                    raise NotImplementedError
+                    # TODO check index -2 for more than 2 components
+                    # xout[self.ids_energy] += sigma_curvature_ave * xin[-2]
+            
+                xout_list.append(jnp.array(xout))
+        
         else:
             raise NotImplementedError
 
@@ -537,9 +602,7 @@ class Eigendecomposition:
         left_eigs  = [ [jnp.zeros(_s) for ii in range(self.equation_information.no_primes)] 
             for ii in range(self.equation_information.no_primes) ]
 
-        if self.equation_information.equation_type in ["SINGLE-PHASE",
-                                                       "TWO-PHASE-LS",
-                                                       "SINGLE-PHASE-SOLID-LS"]:
+        if self.equation_information.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
             # RIGHT EIGENVECTORS
             # MASS
             right_eigs[0][0]                        = jnp.ones(_s)
@@ -677,3 +740,67 @@ class Eigendecomposition:
         :rtype: Array
         """
         return jnp.einsum("ij...,j...->i...", right_eig, stencil)
+    
+
+    def get_amplitude_variations_from_primitives(self, dq_dx: Array, primitives: Array, axis: int) -> Array:
+
+        speed_of_sound = self.material_manager.get_speed_of_sound(primitives)
+
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
+            vel_id_major = self.vel_ids[axis]
+            vel_id_minor_0 = self.vel_minors[axis][0]
+            vel_id_minor_1 = self.vel_minors[axis][1]
+
+            lambda_min = primitives[vel_id_major] - speed_of_sound
+            lambda_mid = primitives[vel_id_major]
+            lambda_max = primitives[vel_id_major] + speed_of_sound
+
+            L_waves = [0 for _ in range(self.equation_information.no_primes)]
+        
+            L_waves[self.ids_mass]              = lambda_min * (-speed_of_sound * primitives[self.ids_mass] * dq_dx[vel_id_major] + dq_dx[self.ids_energy])
+            L_waves[1]                          = lambda_mid * (jnp.square(speed_of_sound) * dq_dx[self.ids_mass] - dq_dx[self.ids_energy])
+            L_waves[self.vel_id_eigs[axis][0]]  = lambda_mid * dq_dx[vel_id_minor_0]
+            L_waves[self.vel_id_eigs[axis][1]]  = lambda_mid * dq_dx[vel_id_minor_1]
+            L_waves[self.ids_energy]            = lambda_max * (speed_of_sound * primitives[self.ids_mass] * dq_dx[vel_id_major] + dq_dx[self.ids_energy])
+            
+            L_waves = jnp.array(L_waves)
+
+        else:
+            raise NotImplementedError
+        
+        return L_waves
+
+    def get_primitives_from_amplitude_variations(self, L_waves: Array, primitives: Array, axis: int) -> Array:
+
+        speed_of_sound = self.material_manager.get_speed_of_sound(primitives)
+
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
+
+            vel_id_major = self.vel_ids[axis]
+            vel_id_minor_0 = self.vel_minors[axis][0]
+            vel_id_minor_1 = self.vel_minors[axis][1]
+
+            one_speed_of_sound = 1.0 / speed_of_sound
+            one_speed_of_sound_squared = jnp.square(one_speed_of_sound)
+
+            one_lambda_min = 1.0 / (primitives[vel_id_major] - speed_of_sound)
+            one_lambda_mid = 1.0 / (primitives[vel_id_major] + 1e-10)
+            one_lambda_max = 1.0 / (primitives[vel_id_major] + speed_of_sound)
+
+            dq_dx = [0 for _ in range(self.equation_information.no_primes)]
+
+            dq_dx[self.ids_mass] = one_speed_of_sound_squared * (
+                0.5 * one_lambda_min * L_waves[0] + one_lambda_mid * L_waves[1] + 0.5 * one_lambda_max * L_waves[4])
+            dq_dx[vel_id_major] = 0.5 * one_speed_of_sound / primitives[self.ids_mass] * (
+                -one_lambda_min * L_waves[0] + one_lambda_max * L_waves[4])
+            dq_dx[self.vel_minors[axis][0]] = one_lambda_mid * L_waves[self.vel_id_eigs[axis][0]]
+            dq_dx[self.vel_minors[axis][1]] = one_lambda_mid * L_waves[self.vel_id_eigs[axis][1]]
+            dq_dx[self.ids_energy] = 0.5 * (one_lambda_min * L_waves[0] + one_lambda_max * L_waves[4])
+
+            dq_dx = jnp.array(dq_dx)
+
+        else:
+            raise NotImplementedError
+
+        return dq_dx
+ 

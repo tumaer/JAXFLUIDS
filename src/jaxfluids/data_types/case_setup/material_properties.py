@@ -1,9 +1,8 @@
 from collections import namedtuple
-from typing import NamedTuple, Tuple, \
-    Callable, Union, Dict, List
+from typing import NamedTuple, Tuple, Callable, Union, Dict, List
 
 import jax.numpy as jnp
-from jax import Array
+import numpy as np
 
 
 class SutherlandParameters(NamedTuple):
@@ -34,10 +33,6 @@ class ThermalConductivitySetup(NamedTuple):
     prandtl_number: float = None
     sutherland_parameters: SutherlandParameters = None
 
-class MassDiffusivitySetup(NamedTuple):
-    model: str
-    value: Dict = None
-
 class TransportPropertiesSetup(NamedTuple):
     dynamic_viscosity: DynamicViscositySetup
     bulk_viscosity: float
@@ -59,6 +54,23 @@ class StiffenedGasSetup(NamedTuple):
     background_pressure: float
     energy_translation_factor: float
     thermal_energy_factor: float
+
+class BarotropicCavitationFluidSetup(NamedTuple):
+    mixture_phase_model: str
+    liquid_phase_model: str
+    temperature_ref: float
+    density_liquid_ref: float
+    density_vapor_ref: float
+    pressure_ref: float
+    speed_of_sound_liquid_ref: float
+    speed_of_sound_vapor_ref: float
+    speed_of_sound_mixture: float
+    enthalpy_of_evaporation_ref: float
+    cp_liquid_ref: float
+    cp_vapor_ref: float
+
+class FullThermodynamicCavitationFluidSetup(NamedTuple):
+    pass
 
 class StiffenedGasCompleteParameters(NamedTuple):
     specific_heat_ratio: float = None
@@ -88,6 +100,7 @@ class EquationOfStatePropertiesSetup(NamedTuple):
     ideal_gas_setup: IdealGasSetup
     stiffened_gas_setup: StiffenedGasSetup
     tait_setup: TaitSetup
+    barotropic_cavitation_fluid_setup: BarotropicCavitationFluidSetup
 
 class MaterialPropertiesSetup(NamedTuple):
     """Specifies the properties of a single fluid material.

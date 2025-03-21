@@ -1,12 +1,15 @@
 from typing import List, Union
 import types
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.material_properties import MaterialPropertiesSetup
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class IdealGas(Material):
     """Implements the ideal gas law.
@@ -70,50 +73,66 @@ class IdealGas(Material):
     def get_pressure(self, e: Array, rho: Array) -> Array:
         """See base class. """
         return (self.gamma - 1.0) * e * rho
+    
+    def get_density_from_pressure_and_temperature(self, p: Array, T: Array) -> Array:
+        """See base class. """
+        return p / (T * self.R)
 
     def get_temperature(self, p: Array, rho: Array) -> Array:
         """See base class. """
         return p / (rho * self.R)
 
-    def get_specific_energy(self, p:Array, rho:Array) -> Array:
+    def get_specific_energy(self, p: Array, rho: Array) -> Array:
         """See base class. """
         # Specific internal energy
         return p / (rho * (self.gamma - 1.0))
 
     def get_total_energy(
             self,
-            p:Array,
-            rho:Array,
-            u:Array,
-            v:Array,
-            w:Array
+            p: Array,
+            rho: Array,
+            velocity_vec: Array,
             ) -> Array:
         """See base class. """
         # Total energy per unit volume
         # (sensible, i.e., without heat of formation)
-        return p / (self.gamma - 1) + 0.5 * rho * ( (u * u + v * v + w * w) )
+        return p / (self.gamma - 1) + 0.5 * rho * sum3_consistent(*jnp.square(velocity_vec))
 
     def get_total_enthalpy(
             self,
-            p:Array,
-            rho:Array,
-            u:Array,
-            v:Array,
-            w:Array
+            p: Array,
+            rho: Array,
+            velocity_vec: Array,
             ) -> Array:
         """See base class. """
         # Total specific enthalpy
         # (sensible, i.e., without heat of formation)
-        return (self.get_total_energy(p, rho, u, v, w) + p) / rho
+        return (self.get_total_energy(p, rho, velocity_vec) + p) / rho
 
     def get_stagnation_temperature(
             self,
-            p:Array,
-            rho:Array,
-            u:Array,
-            v:Array,
-            w:Array
+            p: Array,
+            rho: Array,
+            velocity_vec: Array,
         ) -> Array:
         T = self.get_temperature(p, rho)
         cp = self.get_specific_heat_capacity(T)
-        return T + 0.5 * (u * u + v * v + w * w) / cp
+        return T + 0.5 * sum3_consistent(*jnp.square(velocity_vec)) / cp
+
+    def get_entropy(
+            self,
+            p: Array,
+            T: Array,
+        ) -> Array:
+        """_summary_
+
+        :param p: _description_
+        :type p: Array
+        :param T: _description_
+        :type T: Array
+        :return: _description_
+        :rtype: Array
+        """
+        R = self.R
+        cp = self.get_specific_heat_capacity(T)
+        return cp * jnp.log(T) - R * jnp.log(p)

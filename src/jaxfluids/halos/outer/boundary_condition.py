@@ -3,15 +3,15 @@ from typing import Dict, List, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.halos.halo_slices import HaloSlices
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace
-from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS, FACE_LOCATIONS
+from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS, FACE_LOCATIONS, EDGE_LOCATIONS_TO_RUNNING_AXIS
 from jaxfluids.halos.outer import EDGE_TYPES, VERTEX_TYPES
 
+Array = jax.Array
 
 class BoundaryCondition(ABC):
     """ The BoundaryCondition class implements functionality to enforce user-
@@ -42,6 +42,18 @@ class BoundaryCondition(ABC):
             nh_geometry = domain_information.nh_geometry,
             active_axes_indices = domain_information.active_axes_indices)
 
+        # NOTE is_multiple_types_at_face is a dict which indicates
+        # for each face location whether multiple boundary conditions are active
+        is_multiple_types_at_face = {}
+        for face_location in self.domain_information.active_face_locations:
+            boundary_condition_face: Tuple[BoundaryConditionsFace] = getattr(
+                self.boundary_conditions, face_location)
+            if len(boundary_condition_face) > 1:
+                is_multiple_types_at_face[face_location] = True
+            else:
+                is_multiple_types_at_face[face_location] = False
+        self.is_multiple_types_at_face: Dict[str, bool] = is_multiple_types_at_face
+
         # FACE LOCATION TO ACTIVE AXIS INDICES
         active_axes_indices = domain_information.active_axes_indices
         self.face_location_to_axis_indices = {}
@@ -71,6 +83,24 @@ class BoundaryCondition(ABC):
             self.face_halo_mask = self.get_face_halo_mask()
             self.edge_halo_mask = self.get_edge_halo_mask()
             self.vertex_halo_mask = self.get_vertex_halo_mask()
+
+        # NOTE 
+        # edge_adjacent_boundary_conditions_dict is a dictionary which maps an active edge location
+        # to all adjacent boundary conditions. I.e.:
+        # {edge_location: {adjacent_face_location: [(bc_0_id, bc_0_type), (bc_1_id, bc_1_type), ...]}}
+
+        # is_boundary_condition_adjacent_to_edge_dict is a dictionary which maps for each active face location
+        # to a tuple of dictionaries. Each dictionary corresponds to a boundary condition and indicates
+        # which edge locations this boundary condition is adjacent to. I.e.:
+        # {face_location: ({edge_location_0: bool, edge_location_1: bool, ...})}
+
+        self.edge_adjacent_boundary_conditions_dict, \
+        self.is_boundary_condition_adjacent_to_edge_dict \
+        = self.get_edge_boundary_conditions()
+
+
+        self.sanity_check()
+
 
     def get_boundary_coordinates_at_location(
             self,
@@ -330,6 +360,182 @@ class BoundaryCondition(ABC):
     def vertex_halo_update(self, **args): 
         pass
 
+
+    def sanity_check(self) -> None:
+        
+        # Checks that active boundary faces are covered with non-overlapping
+        # regions if multiple boundary conditions are active at the given
+        # face location.
+        for face_location in self.domain_information.active_face_locations:
+
+            if self.is_multiple_types_at_face[face_location]:
+
+                boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = getattr(
+                    self.boundary_conditions, face_location)
+
+                cell_centers = self.domain_information.get_global_cell_centers_unsplit()
+                cell_centers = [xi.flatten() for xi in cell_centers]
+                indices = self.face_location_to_axis_indices[face_location]
+                coordinates = []
+                for axis_index in indices:
+                    coordinates.append(cell_centers[axis_index])
+                meshgrid = jnp.meshgrid(*coordinates, indexing="ij")
+
+                mask_face_location = 0
+
+                for boundary_conditions_face in boundary_conditions_face_tuple:
+                    mask_face_location += boundary_conditions_face.bounding_domain_callable(*meshgrid) 
+
+                assert_str = (
+                    "Consistency in boundary condition setups. Overlapping or missing boundary conditions "
+                    f"at {face_location} face. Please ensure that the whole face is covered with "
+                    "non-overlapping regions when multiple boundary conditions are active at a given face location."
+                )
+                assert jnp.all(mask_face_location == 1), assert_str
+
+            else:
+                pass
+
+
+        # # Check that only a single boundary condition is active at any given edge
+        # if self.domain_information.dim == 3:
+        #     for edge_location in self.domain_information.active_edge_locations:
+
+        #         domain_size = self.domain_information.domain_size
+                
+        #         # Active axis along the edge
+        #         running_axis = EDGE_LOCATIONS_TO_RUNNING_AXIS[edge_location]
+        #         running_axis_id = self.domain_information.axis_to_axis_id[running_axis]
+        #         cell_centers_running_axis = (self.domain_information.get_global_cell_centers_unsplit()[running_axis_id]).flatten()
+
+        #         neighboring_faces = edge_location.split("_")
+        #         neighboring_axes_to_faces = {self.domain_information.face_location_to_axis[face]: face for face in neighboring_faces}
+
+        #         # Build edge coordinates
+        #         edge_coordinates = []
+        #         for i, axis in enumerate(("x","y","z")):
+        #             if axis != running_axis:
+        #                 face = neighboring_axes_to_faces[axis]
+        #                 axis_side = self.domain_information.face_location_to_axis_side[face]
+        #                 edge_coordinates.append(domain_size[i][axis_side] * jnp.ones_like(cell_centers_running_axis))
+        #             else:
+        #                 edge_coordinates.append(cell_centers_running_axis)
+
+        #         for face_location in edge_location.split("_"):
+                    
+        #             if self.is_multiple_types_at_face[face_location]:
+
+        #                 indices = self.face_location_to_axis_indices[face_location]
+        #                 coordinates = []
+        #                 for axis_index in indices:
+        #                     coordinates.append(edge_coordinates[axis_index])
+
+        #                 boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = getattr(
+        #                     self.boundary_conditions, face_location)
+                        
+        #                 for boundary_condition_face in boundary_conditions_face_tuple:
+        #                     mask_edge_location = boundary_condition_face.bounding_domain_callable(*coordinates)
+                        
+        #                     assert_str = (
+        #                         "Consistency in boundary condition setups. Multiple boundary conditions identified "
+        #                         f"at {edge_location} edge. Please ensure that only a single boundary condition is "
+        #                         "applicable at any given edge."
+        #                     )
+        #                     assert jnp.all(mask_edge_location == 1) or jnp.all(mask_edge_location == 0), assert_str
+
+        #             else:
+        #                 pass
+
+
+    def get_edge_boundary_conditions(self) -> Tuple[
+        Dict[str, Dict[str, Tuple[Tuple[int, str]]]],
+        Dict[str, Tuple[Dict[str, bool]]]]:
+        """Creates two mappings 
+
+        edge_adjacent_boundary_conditions_dict is a dictionary which maps an active edge location
+        to all adjacent boundary conditions. I.e.:
+        {edge_location: {adjacent_face_location: [(bc_0_id, bc_0_type), (bc_1_id, bc_1_type), ...]}}
+
+        is_boundary_condition_adjacent_to_edge_dict is a dictionary which maps for each active face location
+        to a tuple of dictionaries. Each dictionary corresponds to a boundary condition and indicates
+        which edge locations this boundary condition is adjacent to. I.e.:
+        {face_location: ({edge_location_0: bool, edge_location_1: bool, ...})}
+        
+        :return: _description_
+        :rtype: Tuple[ Dict[str, Dict[str, List[Tuple[int, str]]]], Dict[str, Tuple[Dict[str, bool]]]]
+        """
+
+        active_edge_locations = self.domain_information.active_edge_locations
+        active_face_locations = self.domain_information.active_face_locations
+        active_face_locations_to_edge_locations = self.domain_information.active_face_locations_to_edge_locations
+
+        domain_size = self.domain_information.domain_size
+        global_cell_centers_unsplit = self.domain_information.get_global_cell_centers_unsplit()
+
+        edge_adjacent_boundary_conditions_dict = {}
+        for edge_location in active_edge_locations:
+            edge_adjacent_boundary_conditions_dict[edge_location] = {}
+            edge_coordinates = get_edge_coordinates(
+                global_cell_centers_unsplit, domain_size, edge_location)
+
+            for face_location in edge_location.split("_"):
+                boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = getattr(
+                        self.boundary_conditions, face_location)
+
+                if self.is_multiple_types_at_face[face_location]:
+                    # If there are multiple boundary conditions active at a given face,
+                    # check which boundary conditions are edge-adjacent
+                    indices = self.face_location_to_axis_indices[face_location]
+                    coordinates = [edge_coordinates[axis_id] for axis_id in indices]
+                    
+                    adjacent_boundary_conditions = []
+                    for boundary_condition_id, boundary_condition_face in enumerate(boundary_conditions_face_tuple):
+                        mask_edge_location = boundary_condition_face.bounding_domain_callable(*coordinates)
+
+                        if jnp.any(mask_edge_location == 1):
+                            boundary_type = boundary_condition_face.boundary_type
+                            adjacent_boundary_conditions.append(
+                                (boundary_condition_id, boundary_type))
+                        else:
+                            continue
+
+                else:
+                    boundary_type = boundary_conditions_face_tuple[0].boundary_type
+                    adjacent_boundary_conditions = [(0, boundary_type),]
+
+                edge_adjacent_boundary_conditions_dict[edge_location][face_location] = tuple(adjacent_boundary_conditions)
+
+        is_boundary_condition_adjacent_to_edge_dict = {}
+        for face_location in active_face_locations:
+            active_edge_locations_at_face = active_face_locations_to_edge_locations[face_location]
+            boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = getattr(
+                self.boundary_conditions, face_location)
+
+            is_adjacent_boundary_conditions = []
+            for boundary_condition_face in boundary_conditions_face_tuple:
+                adjacent_edges_dict = {}
+
+                for edge_location in active_edge_locations_at_face:
+                    edge_coordinates = get_edge_coordinates(
+                        global_cell_centers_unsplit, domain_size, edge_location)
+
+                    if self.is_multiple_types_at_face[face_location]:
+                        indices = self.face_location_to_axis_indices[face_location]
+                        coordinates = [edge_coordinates[axis_id] for axis_id in indices]
+                        mask_edge_location = boundary_condition_face.bounding_domain_callable(*coordinates)
+                        is_at_edge = bool(jnp.any(mask_edge_location == 1))
+
+                    else:
+                        is_at_edge = True
+                    
+                    adjacent_edges_dict[edge_location] = is_at_edge
+
+                is_adjacent_boundary_conditions.append(adjacent_edges_dict)
+
+            is_boundary_condition_adjacent_to_edge_dict[face_location] = tuple(is_adjacent_boundary_conditions)
+
+        return edge_adjacent_boundary_conditions_dict, is_boundary_condition_adjacent_to_edge_dict
+
 def get_face_slices_retrieve(
         nh: int,
         nhx: Tuple,
@@ -386,6 +592,14 @@ def get_face_slices_retrieve(
             "south"     :   jnp.s_[..., nhx, nh:nh+1, nhz], 
             "top"       :   jnp.s_[..., nhx, nhy, -nh-1:-nh], 
             "bottom"    :   jnp.s_[..., nhx, nhy, nh:nh+1], 
+        },
+        "LINEAREXTRAPOLATION": {
+            "east"      :   (jnp.s_[..., -nh-1:-nh, nhy, nhz], jnp.s_[..., -1:, :, :], jnp.s_[-nh-1,:,:], jnp.s_[-nh:,:,:]), 
+            "west"      :   (jnp.s_[..., nh:nh+1, nhy, nhz]  , jnp.s_[..., :1, :, :]  , jnp.s_[nh,:,:]   , jnp.s_[:nh,:,:]), 
+            "north"     :   (jnp.s_[..., nhx, -nh-1:-nh, nhz], jnp.s_[..., :, -1:, :], jnp.s_[:,-nh-1,:], jnp.s_[:,-nh:,:]), 
+            "south"     :   (jnp.s_[..., nhx, nh:nh+1, nhz]  , jnp.s_[..., :, :1, :]  , jnp.s_[:,nh,:]   , jnp.s_[:,:nh,:]), 
+            "top"       :   (jnp.s_[..., nhx, nhy, -nh-1:-nh], jnp.s_[..., :, :, -1:], jnp.s_[:,:,-nh-1], jnp.s_[:,:,-nh:]), 
+            "bottom"    :   (jnp.s_[..., nhx, nhy, nh:nh+1]  , jnp.s_[..., :, :, :1]  , jnp.s_[:,:,nh]   , jnp.s_[:,:,:nh]), 
         }
     }
     return face_slices_retrieve
@@ -519,7 +733,7 @@ def get_signs_symmetry(
     def get_signs(
             LOCATIONS: Tuple[str],
             TYPES: Tuple[str]
-            ) -> Dict[str, Dict[str,Array]]:
+            ) -> Dict[str, Dict[str, Array]]:
         signs_dict = {}
         for location in LOCATIONS:
             temp_dict = {}
@@ -546,3 +760,37 @@ def get_signs_symmetry(
     vertex_signs = get_signs(VERTEX_LOCATIONS, VERTEX_TYPES)
 
     return face_signs, edge_signs, vertex_signs
+
+
+def get_edge_coordinates(
+        global_cell_centers_unsplit: Tuple[Array], 
+        domain_size: Tuple[np.ndarray], 
+        edge_location: str
+        ) -> Tuple[Array]:
+
+    axis_to_axis_id = DomainInformation.axis_to_axis_id
+    face_location_to_axis = DomainInformation.face_location_to_axis
+    face_location_to_axis_side = DomainInformation.face_location_to_axis_side
+
+    # Active axis along the edge
+    running_axis_name = EDGE_LOCATIONS_TO_RUNNING_AXIS[edge_location]
+    running_axis_id = axis_to_axis_id[running_axis_name]
+    cell_centers_running_axis = (global_cell_centers_unsplit[running_axis_id]).flatten()
+
+    neighboring_faces_list = edge_location.split("_")
+    neighboring_axes_to_faces = {face_location_to_axis[face]: face for face in neighboring_faces_list}
+
+    # Build edge coordinates
+    edge_coordinates = []
+    for axis_id, axis_name in enumerate(("x","y","z")):
+        if axis_name != running_axis_name:
+            face = neighboring_axes_to_faces[axis_name]
+            axis_side = face_location_to_axis_side[face]
+            edge_coordinates.append(
+                domain_size[axis_id][axis_side] * jnp.ones_like(cell_centers_running_axis))
+        else:
+            edge_coordinates.append(cell_centers_running_axis)
+
+    edge_coordinates = tuple(edge_coordinates)
+
+    return edge_coordinates

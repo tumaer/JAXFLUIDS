@@ -1,15 +1,17 @@
 from typing import Dict, Any
+import warnings
 
 from jaxfluids.input.setup_reader import SetupReader
 from jaxfluids.data_types.numerical_setup import *
 from jaxfluids.unit_handler import UnitHandler
 
+from jaxfluids.input.numerical_setup import NUMERICAL_SETUP_KEYS
 from jaxfluids.input.numerical_setup.read_conservatives import read_conservatives_setup
 from jaxfluids.input.numerical_setup.read_active_physics import read_active_physics_setup
 from jaxfluids.input.numerical_setup.read_levelset import read_levelset_setup
 from jaxfluids.input.numerical_setup.read_diffuse_interface import read_diffuse_interface_setup
+from jaxfluids.input.numerical_setup.read_cavitation import read_cavitation_setup
 from jaxfluids.input.numerical_setup.read_active_forcings import read_active_forcings_setup
-from jaxfluids.input.numerical_setup.read_turbulence_statistics import read_turbulence_statistics_setup
 from jaxfluids.input.numerical_setup.read_output import read_output_setup
 from jaxfluids.input.numerical_setup.read_precision import read_precision_setup
 
@@ -24,6 +26,14 @@ class NumericalSetupReader(SetupReader):
 
     def initialize_numerical_setup(self, numerical_setup_dict: Dict) -> NumericalSetup:
 
+        for key in numerical_setup_dict.keys():
+            if key not in NUMERICAL_SETUP_KEYS:
+                warning_str = (
+                    "While reading the numerical setup file, the unknown key "
+                    f"'{key}' was found. This key will be ignored."
+                )
+                warnings.warn(warning_str, RuntimeWarning)
+
         active_physics_setup = read_active_physics_setup(numerical_setup_dict)
         active_forcings_setup = read_active_forcings_setup(numerical_setup_dict)
         conservatives_setup = read_conservatives_setup(numerical_setup_dict,
@@ -35,7 +45,7 @@ class NumericalSetupReader(SetupReader):
         diffuse_interface_setup = read_diffuse_interface_setup(numerical_setup_dict,
                                                                conservatives_setup,
                                                                self.unit_handler)
-        turbulence_statistics_setup = read_turbulence_statistics_setup(numerical_setup_dict, self.unit_handler)
+        cavitation_setup = read_cavitation_setup(numerical_setup_dict)
         output_setup = read_output_setup(numerical_setup_dict, conservatives_setup)
         precision_setup = read_precision_setup(numerical_setup_dict)
 
@@ -43,9 +53,9 @@ class NumericalSetupReader(SetupReader):
             conservatives_setup,
             levelset_setup,
             diffuse_interface_setup,
+            cavitation_setup,
             active_physics_setup,
             active_forcings_setup,
-            turbulence_statistics_setup,
             output_setup,
             precision_setup)
 
@@ -60,7 +70,7 @@ class NumericalSetupReader(SetupReader):
         diffuse_interface_model = numerical_setup.diffuse_interface.model
 
         if levelset_model:
-            model_tuple = ("diffuse_interface",)
+            model_tuple = ("diffuse_interface", "cavitation")
             for model_str in model_tuple:
                 model_setup = getattr(numerical_setup, model_str)
                 assert_string = (
@@ -80,7 +90,8 @@ class NumericalSetupReader(SetupReader):
 
 
         if diffuse_interface_model:
-            model_tuple = ("levelset",)
+            model_tuple = (
+                "levelset", "cavitation")
             for model_str in model_tuple:
                 model_setup = getattr(numerical_setup, model_str)
                 assert_string = (

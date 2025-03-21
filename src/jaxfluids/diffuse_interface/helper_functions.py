@@ -1,5 +1,7 @@
+import jax
 import jax.numpy as jnp
-from jax import Array
+
+Array = jax.Array
 
 def smoothed_interface_function(
         volume_fraction: Array, 
@@ -37,3 +39,39 @@ def heaviside(
     """
     x = (volume_fraction * (1.0 - volume_fraction)) / const_heaviside
     return jnp.tanh(x * x)
+
+def compute_interface_center(volume_fraction: Array, beta_xi: Array) -> Array:
+    
+    @jax.custom_vjp
+    def _compute_interface_center(
+            volume_fraction: Array,
+            beta_xi: Array
+        ):
+        tmp = 2.0 * beta_xi
+        A = jnp.exp(tmp)
+        B = jnp.exp(tmp * volume_fraction)
+        xc = 1.0 / tmp * jnp.log((B - 1.0) / (A - B))
+        return xc
+
+    def f_fwd(volume_fraction, beta_xi):
+        # Returns primal output and residuals to be used in backward pass by f_bwd.
+        return _compute_interface_center(volume_fraction, beta_xi), (volume_fraction, beta_xi)
+
+    def f_bwd(res, g):
+        volume_fraction, beta_xi = res # Gets residuals computed in f_fwd
+        tmp = 2.0 * beta_xi
+        A = jnp.exp(tmp)
+        B = jnp.exp(tmp * volume_fraction)
+        one_beta_xi = 1.0 / beta_xi
+        return (
+            ((1.0 - A) * B / ((1.0 - B) * (A - B))) * g,
+            (
+                one_beta_xi * volume_fraction * B / (B - 1.0) \
+                + one_beta_xi * (volume_fraction * B - A) / (A - B) \
+                - 0.5 * one_beta_xi * one_beta_xi * jnp.log((B - 1.0) / (A - B))
+            ) * g
+        )
+
+    _compute_interface_center.defvjp(f_fwd, f_bwd)
+
+    return _compute_interface_center(volume_fraction, beta_xi)

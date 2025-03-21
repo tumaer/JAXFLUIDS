@@ -1,10 +1,12 @@
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.config import precision
 from jaxfluids.domain.domain_information import DomainInformation 
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.equation_manager import EquationManager
+
+Array = jax.Array
 
 class PositivityLimiterState:
 
@@ -21,14 +23,14 @@ class PositivityLimiterState:
         
         self.domain_slices_conservatives = domain_information.domain_slices_conservatives
         
-        self.mass_ids = self.equation_information.mass_ids
-        self.mass_slices = self.equation_information.mass_slices
-        self.vel_ids = self.equation_information.velocity_ids
-        self.vel_slices = self.equation_information.velocity_slices
-        self.energy_ids = self.equation_information.energy_ids
-        self.energy_slices = self.equation_information.energy_slices
-        self.vf_ids = self.equation_information.vf_ids
-        self.vf_slices = self.equation_information.vf_slices
+        self.ids_mass = self.equation_information.ids_mass
+        self.s_mass = self.equation_information.s_mass
+        self.vel_ids = self.equation_information.ids_velocity
+        self.vel_slices = self.equation_information.s_velocity
+        self.ids_energy = self.equation_information.ids_energy
+        self.s_energy = self.equation_information.s_energy
+        self.ids_volume_fraction = self.equation_information.ids_volume_fraction
+        self.s_volume_fraction = self.equation_information.s_volume_fraction
     
     def correct_volume_fraction(self, conservatives: Array) -> Array:
         """Corrects the volume fraction in cells which produce a negative
@@ -50,10 +52,10 @@ class PositivityLimiterState:
             # TODO this check is not very nice
             if self.material_manager.diffuse_5eqm_mixture.is_volume_fraction_admissible:
 
-                alpha_rho_vec = conservatives[(self.mass_slices,) + self.domain_slices_conservatives]
-                alpha_vec = conservatives[(self.vf_slices,) + self.domain_slices_conservatives]
+                alpha_rho_vec = conservatives[(self.s_mass,) + self.domain_slices_conservatives]
+                alpha_vec = conservatives[(self.s_volume_fraction,) + self.domain_slices_conservatives]
                 momentum_vec = conservatives[(self.vel_slices,) + self.domain_slices_conservatives]
-                total_energy = conservatives[(self.energy_ids,) + self.domain_slices_conservatives]
+                total_energy = conservatives[(self.ids_energy,) + self.domain_slices_conservatives]
 
                 rho = self.material_manager.get_density(conservatives[(...,) + self.domain_slices_conservatives])
                 gamma_mix, pb_mix = self.material_manager.diffuse_5eqm_mixture.compute_mixture_EOS_params(alpha_vec)
@@ -105,7 +107,7 @@ class PositivityLimiterState:
                 # print(alpha_cor_2[mask_neg_pressure])
                 # input()
 
-                conservatives = conservatives.at[(self.vf_slices,) + self.domain_slices_conservatives].set(alpha_vec)
+                conservatives = conservatives.at[(self.s_volume_fraction,) + self.domain_slices_conservatives].set(alpha_vec)
                 counter = jnp.sum(mask)
                 
             else:

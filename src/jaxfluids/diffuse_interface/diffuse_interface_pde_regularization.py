@@ -1,6 +1,5 @@
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.data_types.numerical_setup.diffuse_interface import DiffuseInterfaceSetup
 from jaxfluids.diffuse_interface.diffuse_interface_geometry_calculator import DiffuseInterfaceGeometryCalculator
@@ -8,6 +7,8 @@ from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_information import EquationInformation
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.config import precision
+
+Array = jax.Array
 
 class DiffuseInterfacePDERegularizationComputer:
     """Implements functionality for the evaluation of ACDI/CDI-based
@@ -90,16 +91,15 @@ class DiffuseInterfacePDERegularizationComputer:
             ) -> Array:
 
         equation_type = self.equation_information.equation_type
-        vel_slices = self.equation_information.velocity_slices
-        vf_ids = self.equation_information.vf_ids
+        vel_slices = self.equation_information.s_velocity
+        ids_volume_fraction = self.equation_information.ids_volume_fraction
         slice_p, slice_pp = self.slices_LR[axis]
 
         if equation_type == "DIFFUSE-INTERFACE-5EQM":
-            volume_fraction = conservatives[vf_ids]
+            volume_fraction = conservatives[ids_volume_fraction]
     
         # INTERFACE FLUX
         velocity_max = self._compute_maximal_velocity(primitives)
-        # velocity_max = 0.25
         interface_regularization_flux_xi = self.compute_interface_regularization_flux(
             volume_fraction, velocity_max, axis, numerical_dissipation)
 
@@ -152,7 +152,7 @@ class DiffuseInterfacePDERegularizationComputer:
                     * interface_regularization_flux_xi
         
         elif self.diffusion_sharpening_model in ("MODELB", "MODELD"):
-            mass_slices = self.equation_information.mass_slices
+            s_mass = self.equation_information.s_mass
             
             # # CENTRAL
             # phi_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(volume_fraction, axis)
@@ -167,7 +167,7 @@ class DiffuseInterfacePDERegularizationComputer:
             one_minus_phi_cf_threshold = (one_minus_cf - self.vf_threshold)
 
             # MASS
-            rhoalpha_cf = self.compute_rhoalpha_cf_xi(primitives[mass_slices],
+            rhoalpha_cf = self.compute_rhoalpha_cf_xi(primitives[s_mass],
                                                       axis,
                                                       interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
             mass_regularization_flux = [
@@ -203,20 +203,21 @@ class DiffuseInterfacePDERegularizationComputer:
         elif self.diffusion_sharpening_model == "MODELC":
             # Analytically introduce degenerate mobility of form 4 * phi * (1-phi)
             # to avoid division by volume fraction.
-            mass_slices = self.equation_information.mass_slices
+            s_mass = self.equation_information.s_mass
             
             interface_regularization_flux_xi *= 4.0
 
             # phi_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(volume_fraction, axis)
-            phi_cf = self.compute_volume_fraction_cf_xi(volume_fraction,
-                                                        axis,
-                                                        interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
+            phi_cf = self.compute_volume_fraction_cf_xi(
+                volume_fraction, axis,
+                interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
 
             # MASS
-            # rhoalpha_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(primitives[mass_slices], axis)
-            rhoalpha_cf = self.compute_rhoalpha_cf_xi(primitives[mass_slices],
-                                                      axis,
-                                                      interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
+            # rhoalpha_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(primitives[s_mass], axis)
+            rhoalpha_cf = self.compute_rhoalpha_cf_xi(
+                primitives[s_mass], axis,
+                interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
+            
             mass_regularization_flux = [
                 rhoalpha_cf[0] * (1.0 - self.vf_threshold - phi_cf) * interface_regularization_flux_xi,
                 rhoalpha_cf[1] * (phi_cf - self.vf_threshold) * interface_regularization_flux_xi,]
@@ -224,20 +225,18 @@ class DiffuseInterfacePDERegularizationComputer:
             # MOMENTUM
             # velocity_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(primitives[vel_slices], axis)
             velocity_cf = self.compute_velocity_cf_xi(
-                primitives[vel_slices],
-                axis,
+                primitives[vel_slices], axis,
                 interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
             momentum_regularization_flux = (mass_regularization_flux[0] - mass_regularization_flux[1]) * velocity_cf
             
             # ENERGY
             kinetic_energy_cf = self.compute_kinetic_energy_cf_xi(
-                primitives,
-                axis,
+                primitives, axis,
                 interface_regularization_flux_xi if self.reconstruction_type_kinetic_energy == "UPWIND" else None)
             phasic_volume_specific_enthalpy_cf = self.compute_phasic_phasic_volume_specific_enthalpy_cf_xi(
-                primitives,
-                axis,
+                primitives, axis,
                 interface_regularization_flux_xi if self.reconstruction_type == "UPWIND" else None)
+
             energy_regularization_flux = \
                 (mass_regularization_flux[0] - mass_regularization_flux[1]) * kinetic_energy_cf \
                 + (phasic_volume_specific_enthalpy_cf[0] - phasic_volume_specific_enthalpy_cf[1]) \
@@ -252,7 +251,16 @@ class DiffuseInterfacePDERegularizationComputer:
             raise NotImplementedError
 
         # ASSEMBLE FINAL FLUX
-        if equation_type == "DIFFUSE-INTERFACE-5EQM":
+        if equation_type == "DIFFUSE-INTERFACE-4EQM":
+            regularization_flux = jnp.stack([
+                mass_regularization_flux[0],
+                -mass_regularization_flux[1],
+                momentum_regularization_flux[0],
+                momentum_regularization_flux[1],
+                momentum_regularization_flux[2],
+                energy_regularization_flux,
+                ], axis=0)
+        elif equation_type == "DIFFUSE-INTERFACE-5EQM":
             regularization_flux = jnp.stack([
                 mass_regularization_flux[0],
                 -mass_regularization_flux[1],
@@ -269,7 +277,7 @@ class DiffuseInterfacePDERegularizationComputer:
     
     def _compute_maximal_velocity(self, primitives: Array) -> Array:
         nhx, nhy, nhz = self.nhx, self.nhy, self.nhz
-        vel_ids = self.equation_information.velocity_ids
+        vel_ids = self.equation_information.ids_velocity
 
         primitives = primitives[...,nhx,nhy,nhz]
         
@@ -288,7 +296,7 @@ class DiffuseInterfacePDERegularizationComputer:
     
     def _compute_maximal_dilatation(self, primitives: Array) -> Array:
         cell_sizes = self.domain_information.get_device_cell_sizes()
-        vel_ids = self.equation_information.velocity_ids
+        vel_ids = self.equation_information.ids_velocity
         dilatation = 0.0
         for axis_i in self.active_axes_indices:
             dilatation += self.derivative_stencil_conservatives_center.derivative_xi(
@@ -403,10 +411,7 @@ class DiffuseInterfacePDERegularizationComputer:
         
         return flux_xi
 
-    def compute_timestep(
-            self,
-            primitives: Array
-            ) -> Array:
+    def compute_timestep(self, primitives: Array) -> Array:
         """Computes the time step criterion for CDI/ACDI
         regularization terms.
 
@@ -481,25 +486,36 @@ class DiffuseInterfacePDERegularizationComputer:
             axis: int
             ) -> Array:
         equation_type = self.equation_information.equation_type
-        mass_slices = self.equation_information.mass_slices
-        energy_ids = self.equation_information.energy_ids
-        vf_slices = self.equation_information.vf_slices
+        s_mass = self.equation_information.s_mass
+        ids_energy = self.equation_information.ids_energy
+        s_volume_fraction = self.equation_information.s_volume_fraction
 
         # PHASIC DENSITIES
         if self.density_model == "INCOMPRESSIBLE":
             phasic_densities_cf = self.incompressible_density
 
         elif self.density_model == "COMPRESSIBLE":
-            rhoalpha_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
-                primitives[mass_slices], axis)
-            alpha_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
-                primitives[vf_slices], axis)
-            phasic_densities_cf = self.material_manager.get_phasic_density(
-                alpha_rho_i=rhoalpha_cf, alpha_i=alpha_cf)
-            # phasic_densities = self.material_manager.get_phasic_density(
-            #     alpha_rho_i=primitives[mass_slices], alpha_i=primitives[vf_slices])
-            # phasic_densities_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
-            #     phasic_densities, axis)
+            if equation_type == "DIFFUSE-INTERFACE-4EQM":
+                # temperature = self.material_manager.get_temperature(
+                #     primitives[ids_energy], alpha_rho_i=primitives[s_mass])
+                temperature = self.material_manager.get_temperature(primitives)
+                phasic_densities = self.material_manager.get_phasic_density(
+                    p=primitives[ids_energy], T=temperature)
+                phasic_densities_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
+                    phasic_densities, axis)
+            elif equation_type == "DIFFUSE-INTERFACE-5EQM":
+                rhoalpha_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
+                    primitives[s_mass], axis)
+                alpha_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
+                    primitives[s_volume_fraction], axis)
+                phasic_densities_cf = self.material_manager.get_phasic_density(
+                    alpha_rho_i=rhoalpha_cf, alpha_i=alpha_cf)
+                # phasic_densities = self.material_manager.get_phasic_density(
+                #     alpha_rho_i=primitives[s_mass], alpha_i=primitives[s_volume_fraction])
+                # phasic_densities_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(
+                #     phasic_densities, axis)
+            else:
+                raise NotImplementedError
 
         else:
             raise NotImplementedError
@@ -527,14 +543,20 @@ class DiffuseInterfacePDERegularizationComputer:
             regularization_flux: Array = None
             ) -> Array:
         equation_type = self.equation_information.equation_type
-        mass_slices = self.equation_information.mass_slices
-        energy_ids = self.equation_information.energy_ids
-        vf_slices = self.equation_information.vf_slices
-    
-
-        if equation_type == "DIFFUSE-INTERFACE-5EQM":
+        s_mass = self.equation_information.s_mass
+        ids_energy = self.equation_information.ids_energy
+        s_volume_fraction = self.equation_information.s_volume_fraction
+        
+        if equation_type == "DIFFUSE-INTERFACE-4EQM":
+            temperature = self.material_manager.get_temperature(primitives)
+            phasic_densities = self.material_manager.get_phasic_density(
+                p=primitives[ids_energy], T=temperature)
             phasic_volume_specific_enthalpy = self.material_manager.get_phasic_volume_specific_enthalpy(
-                primitives[energy_ids])
+                primitives[ids_energy], rho_k=phasic_densities)
+
+        elif equation_type == "DIFFUSE-INTERFACE-5EQM":
+            phasic_volume_specific_enthalpy = self.material_manager.get_phasic_volume_specific_enthalpy(
+                primitives[ids_energy])
 
         else:
             raise NotImplementedError
@@ -561,8 +583,8 @@ class DiffuseInterfacePDERegularizationComputer:
             ) -> Array:
 
         slice_p, slice_pp = self.slices_LR[axis]
-        vel_ids = self.equation_information.velocity_ids
-        vel_slices = self.equation_information.velocity_slices  
+        vel_ids = self.equation_information.ids_velocity
+        vel_slices = self.equation_information.s_velocity  
 
         if self.reconstruction_type_kinetic_energy == "CENTRAL":
             # Kinetic energy: k_{i+1/2} = 0.5 * (k_i + k_{i+1})
@@ -574,6 +596,7 @@ class DiffuseInterfacePDERegularizationComputer:
             # kinetic_energy_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(kinetic_energy, axis)
 
             velocity_cf = self.reconstruction_stencil_conservatives.reconstruct_xi(primitives[vel_slices], axis)
+            # TODO consistent sum
             kinetic_energy_cf = 0.5 * jnp.sum(velocity_cf * velocity_cf, axis=0)
         
         elif self.reconstruction_type_kinetic_energy == "MIXED":

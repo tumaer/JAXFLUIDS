@@ -1,13 +1,15 @@
 from typing import List, Tuple
 
+import jax
 import jax.numpy as jnp
-from jax import Array
+
+Array = jax.Array
 
 def compute_coefficients_stretched_mesh_muscl3(
-        is_mesh_stretching: List,
-        cell_sizes: List,
+        is_mesh_stretching: List[bool],
+        cell_sizes: Tuple[Array],
         slices_mesh: List,
-        slices_cell_sizes: List
+        slices_cell_sizes: Tuple[Array]
     ) -> Tuple[List, List, List]:
     """Computes coefficients for the MUSCL3 cell-face reconstruction.
     Specifically, we compute coefficients for the central/upwind differences ratio
@@ -16,16 +18,18 @@ def compute_coefficients_stretched_mesh_muscl3(
     :param is_mesh_stretching: _description_
     :type is_mesh_stretching: List
     :param cell_sizes: _description_
-    :type cell_sizes: List
+    :type cell_sizes: Tuple[Array]
     :return: _description_
     :rtype: Tuple[List, List, List]
     """
     # TODO: refactor such that return values are jax arrays,
     # with simpler slicing for device_id
 
-    c_upwind_ = [[], []]
-    c_ratio_ = [[], []]
+    c_upwind_vec = []
+    c_ratio_vec = []
     for j in [0, 1]:
+        c_upwind_i_vec = []
+        c_ratio_i_vec = []
         for i, axis in enumerate(["x", "y", "z"]):
             cell_sizes_i = cell_sizes[i]
             if is_mesh_stretching[i]:
@@ -44,22 +48,21 @@ def compute_coefficients_stretched_mesh_muscl3(
                 c_ratio = (delta_x0 + delta_x1) / (delta_x1 + delta_x2) 
 
             else:
-                c_upwind = 0.5
-                c_ratio = 1.0
+                c_upwind = c_ratio = None
 
-            c_upwind_[j].append(jnp.array(c_upwind))
-            c_ratio_[j].append(jnp.array(c_ratio))
+            c_upwind_i_vec.append(c_upwind)
+            c_ratio_i_vec.append(c_ratio)
 
-    return c_upwind_, c_ratio_
+        c_upwind_vec.append(c_upwind_i_vec)
+        c_ratio_vec.append(c_ratio_i_vec)
+
+    return c_upwind_vec, c_ratio_vec
 
 def compute_coefficients_stretched_mesh_weno3(
-        cr_uniform: List,
-        betar_uniform: List,
-        dr_uniform: List,
-        is_mesh_stretching: List,
-        cell_sizes: List,
+        is_mesh_stretching: List[bool],
+        cell_sizes: Tuple[Array],
         slices_mesh: List,
-        slices_cell_sizes: List
+        slices_cell_sizes: Tuple[Array]
     ) -> Tuple[List, List, List]:
     """Computes coefficients for the WENO3 cell-face reconstruction 
     polynomials, the smoothness measures, and the ideal weights for 
@@ -68,17 +71,21 @@ def compute_coefficients_stretched_mesh_weno3(
     :param is_mesh_stretching: _description_
     :type is_mesh_stretching: List
     :param cell_sizes: _description_
-    :type cell_sizes: List
+    :type cell_sizes: Tuple[Array]
     :return: _description_
     :rtype: Tuple[List, List, List]
     """
     # TODO: refactor such that return values are jax arrays,
     # with simpler slicing for device_id
 
-    cr_ = [[], []]
-    betar_ = [[], []]
-    dr_ = [[], []]
+    cr_vec = []
+    betar_vec = []
+    dr_vec = []
+
     for j in [0, 1]:
+        cr_i_vec = []
+        betar_i_vec = []
+        dr_i_vec = []
         for i, axis in enumerate(["x", "y", "z"]):
             cell_sizes_i = cell_sizes[i]
             if is_mesh_stretching[i]:
@@ -110,37 +117,36 @@ def compute_coefficients_stretched_mesh_weno3(
                 d0 = delta_x2 / (delta_x0 + delta_x1 + delta_x2)
                 d1 = (delta_x0 + delta_x1) / (delta_x0 + delta_x1 + delta_x2)
 
+                cr_j = jnp.stack([
+                    jnp.stack([c0_0,c0_1], axis=-4),
+                    jnp.stack([c1_0,c1_1], axis=-4),
+                ], axis=-5)
+
+                betar_j = jnp.stack([
+                    jnp.stack([beta0_0,beta0_1], axis=-4),
+                    jnp.stack([beta1_0,beta1_1], axis=-4),
+                ], axis=-5)
+
+                dr_j = jnp.stack([d0,d1], axis=-4)
+
             else:
-                c0_0, c0_1 = cr_uniform[0]
-                c1_0, c1_1 = cr_uniform[1]
+                betar_j = cr_j = dr_j = None
 
-                beta0_0, beta0_1 = betar_uniform[0]
-                beta1_0, beta1_1 = betar_uniform[1]
+            cr_i_vec.append(cr_j)
+            betar_i_vec.append(betar_j)
+            dr_i_vec.append(dr_j)
+    
+        cr_vec.append(cr_i_vec)
+        betar_vec.append(betar_i_vec)
+        dr_vec.append(dr_i_vec)
 
-                d0, d1 = dr_uniform
-
-            cr_[j].append([
-                [jnp.array(c0_0), jnp.array(c0_1)],
-                [jnp.array(c1_0), jnp.array(c1_1)]
-            ])
-
-            betar_[j].append([
-                [jnp.array(beta0_0), jnp.array(beta0_1)],
-                [jnp.array(beta1_0), jnp.array(beta1_1)]
-            ])
-
-            dr_[j].append([jnp.array(d0), jnp.array(d1)])
-
-    return cr_, betar_, dr_
+    return cr_vec, betar_vec, dr_vec
 
 def compute_coefficients_stretched_mesh_weno5(
-        cr_uniform: List,
-        betar_uniform: List,
-        dr_uniform: List,
-        is_mesh_stretching: List,
-        cell_sizes: List,
+        is_mesh_stretching: List[bool],
+        cell_sizes: Tuple[Array],
         slices_mesh: List,
-        slices_cell_sizes: List
+        slices_cell_sizes: Tuple[Array]
     ) -> Tuple[List, List, List]:
     """Computes coefficients for the WENO5 cell-face reconstruction
     polynomials, the smoothness measures, and the ideal weights for
@@ -149,15 +155,19 @@ def compute_coefficients_stretched_mesh_weno5(
     :param is_mesh_stretching: _description_
     :type is_mesh_stretching: List
     :param cell_sizes: _description_
-    :type cell_sizes: List
+    :type cell_sizes: Tuple[Array]
     :return: _description_
     :rtype: Tuple[List, List, List]
     """
 
-    cr_ = [[], []]
-    betar_ = [[], []]
-    dr_ = [[], []]
+    cr_vec = []
+    betar_vec = []
+    dr_vec = []
+
     for j in [0, 1]:
+        cr_i_vec = []
+        betar_i_vec = []
+        dr_i_vec = []
         for i, axis in enumerate(["x", "y", "z"]):
             cell_sizes_i = cell_sizes[i]
             if is_mesh_stretching[i]:
@@ -177,6 +187,8 @@ def compute_coefficients_stretched_mesh_weno5(
                 delta_x4 = cell_sizes_i[s4_] # x_{i+2}
 
                 # POLYNOMIALS P_03, P_13, P_23
+
+                # P_03: u_{i-2}, u_{i-1}, u_{i}
                 one_c0 = 1.0 / (delta_x0 + delta_x1) / (delta_x1 + delta_x2) / (delta_x0 + delta_x1 + delta_x2) 
                 c0_0 = one_c0 * delta_x2 * (
                     (delta_x2 + delta_x1) * (delta_x2 + delta_x1))
@@ -194,6 +206,7 @@ def compute_coefficients_stretched_mesh_weno5(
                     1 * delta_x1 * delta_x1 + \
                     1 * delta_x1 * delta_x0)
 
+                # P_13: u_{i-1}, u_{i}, u_{i+1}
                 one_c1 = 1.0 / (delta_x1 + delta_x2) / (delta_x2 + delta_x3) / (delta_x1 + delta_x2 + delta_x3) 
                 c1_0 = one_c1 * (-delta_x2) * delta_x3 * (delta_x2 + delta_x3)
                 c1_1 = one_c1 * delta_x3 * (
@@ -204,6 +217,7 @@ def compute_coefficients_stretched_mesh_weno5(
                     1 * delta_x1 * delta_x1)
                 c1_2 = one_c1 * delta_x2 * (delta_x2 + delta_x1) * (delta_x2 + delta_x1)
 
+                # P_23: u_{i}, u_{i+1}, u_{i+2}
                 one_c2 = 1.0 / (delta_x2 + delta_x3) / (delta_x3 + delta_x4) / (delta_x2 + delta_x3 + delta_x4) 
                 c2_0 = one_c2 * delta_x3 * (delta_x3 + delta_x4) * (delta_x3 + delta_x4)
                 c2_1 = one_c2 * delta_x2 * (
@@ -235,44 +249,38 @@ def compute_coefficients_stretched_mesh_weno5(
                     (delta_x2 + delta_x3 + delta_x4 + delta_x1 + delta_x0)
                 )
 
+                cr_j = jnp.stack([
+                    jnp.stack([c0_0,c0_1,c0_2], axis=-4),
+                    jnp.stack([c1_0,c1_1,c1_2], axis=-4),
+                    jnp.stack([c2_0,c2_1,c2_2], axis=-4),
+                ], axis=-5)
+
+                betar_j = jnp.stack([
+                    jnp.stack([beta0_0,beta0_1,beta0_2,beta0_3,beta0_4,beta0_5], axis=-4),
+                    jnp.stack([beta1_0,beta1_1,beta1_2,beta1_3,beta1_4,beta1_5], axis=-4),
+                    jnp.stack([beta2_0,beta2_1,beta2_2,beta2_3,beta2_4,beta2_5], axis=-4),
+                ], axis=-5)
+
+                dr_j = jnp.stack([d0,d1,d2], axis=-4)
+
             else:
-                c0_0, c0_1, c0_2 = cr_uniform[0]
-                c1_0, c1_1, c1_2 = cr_uniform[1]
-                c2_0, c2_1, c2_2 = cr_uniform[2]
+                betar_j = cr_j = dr_j = None
+           
+            cr_i_vec.append(cr_j)
+            betar_i_vec.append(betar_j)
+            dr_i_vec.append(dr_j)
 
-                beta0_0, beta0_1, beta0_2, beta0_3, beta0_4, beta0_5 = betar_uniform[0]
-                beta1_0, beta1_1, beta1_2, beta1_3, beta1_4, beta1_5 = betar_uniform[1]
-                beta2_0, beta2_1, beta2_2, beta2_3, beta2_4, beta2_5 = betar_uniform[2]
+        cr_vec.append(cr_i_vec)
+        betar_vec.append(betar_i_vec)
+        dr_vec.append(dr_i_vec)
 
-                d0, d1, d2 = dr_uniform
-
-            cr_[j].append([
-                [jnp.array(c0_0), jnp.array(c0_1), jnp.array(c0_2)],
-                [jnp.array(c1_0), jnp.array(c1_1), jnp.array(c1_2)],
-                [jnp.array(c2_0), jnp.array(c2_1), jnp.array(c2_2)],
-            ])
-
-            betar_[j].append([
-                [jnp.array(beta0_0), jnp.array(beta0_1), jnp.array(beta0_2),
-                 jnp.array(beta0_3), jnp.array(beta0_4), jnp.array(beta0_5)],
-                [jnp.array(beta1_0), jnp.array(beta1_1), jnp.array(beta1_2),
-                 jnp.array(beta1_3), jnp.array(beta1_4), jnp.array(beta1_5)],
-                [jnp.array(beta2_0), jnp.array(beta2_1), jnp.array(beta2_2),
-                 jnp.array(beta2_3), jnp.array(beta2_4), jnp.array(beta2_5)],
-            ])
-
-            dr_[j].append([jnp.array(d0), jnp.array(d1), jnp.array(d2)])
-
-    return cr_, betar_, dr_
+    return cr_vec, betar_vec, dr_vec
 
 def compute_coefficients_stretched_mesh_weno6(
-        cr_uniform: List,
-        betar_uniform: List,
-        dr_uniform: List,
-        is_mesh_stretching: List,
-        cell_sizes: List,
+        is_mesh_stretching: List[bool],
+        cell_sizes: Tuple[Array],
         slices_mesh: List,
-        slices_cell_sizes: List
+        slices_cell_sizes: Tuple[Array]
     ) -> Tuple[List, List, List]:
     """Computes coefficients for the WENO6 cell-face reconstruction 
     polynomials, the smoothness measures, and the ideal weights for 
@@ -281,17 +289,23 @@ def compute_coefficients_stretched_mesh_weno6(
     :param is_mesh_stretching: _description_
     :type is_mesh_stretching: List
     :param cell_sizes: _description_
-    :type cell_sizes: List
+    :type cell_sizes: Tuple[Array]
     :return: _description_
     :rtype: Tuple[List, List, List]
     """
 
-    cr_ = [[], []]
-    betar_ = [[], []]
-    dr_ = [[], []]
-    cicj_ = [[], []]
-    ci_ = [[], []]
+    cr_vec = []
+    betar_vec = []
+    dr_vec = []
+    ci_vec = []
+    cicj_vec = []
+
     for j in [0, 1]:
+        cr_i_vec = []
+        betar_i_vec = []
+        dr_i_vec = []
+        ci_i_vec = []
+        cicj_i_vec = []
         for i, axis in enumerate(["x", "y", "z"]):
             cell_sizes_i = cell_sizes[i]
             if is_mesh_stretching[i]:
@@ -350,78 +364,62 @@ def compute_coefficients_stretched_mesh_weno6(
                 d3 = c6_5 / c3_2
                 d2 = (c6_4 - c3_1 * d3) / c2_2
 
+                cr_j = jnp.stack([
+                    jnp.stack([c0_0,c0_1,c0_2], axis=-4),
+                    jnp.stack([c1_0,c1_1,c1_2], axis=-4),
+                    jnp.stack([c2_0,c2_1,c2_2], axis=-4),
+                    jnp.stack([c3_0,c3_1,c3_2], axis=-4),
+                ], axis=-5)
+
+                betar_j = jnp.stack([
+                    jnp.stack([beta0_0,beta0_1,beta0_2,beta0_3,beta0_4,beta0_5], axis=-4),
+                    jnp.stack([beta1_0,beta1_1,beta1_2,beta1_3,beta1_4,beta1_5], axis=-4),
+                    jnp.stack([beta2_0,beta2_1,beta2_2,beta2_3,beta2_4,beta2_5], axis=-4),
+                    jnp.stack([beta3_0,beta3_1,beta3_2,beta3_3,beta3_4,beta3_5], axis=-4),
+                ], axis=-5)
+
+                dr_j = jnp.stack([d0,d1,d2,d3], axis=-4)
+
+                ci_j = jnp.stack([
+                    C00,
+                    C10,C11,
+                    C20,C21,C22,
+                    C30,C31,C32,C33,
+                    C40,C41,C42,C43,C44,
+                    C50,C51,C52,C53,C54,C55
+                ], axis=-4)
+
+                cicj_j = jnp.stack([
+                    coeff_C0C0,coeff_C0C1,coeff_C0C2,coeff_C0C3,coeff_C0C4,coeff_C0C5,
+                    coeff_C1C1,coeff_C1C2,coeff_C1C3,coeff_C1C4,coeff_C1C5,
+                    coeff_C2C2,coeff_C2C3,coeff_C2C4,coeff_C2C5,
+                    coeff_C3C3,coeff_C3C4,coeff_C3C5,
+                    coeff_C4C4,coeff_C4C5,
+                    coeff_C5C5
+                ], axis=-4)
+
             else:
-                c0_0, c0_1, c0_2 = cr_uniform[0]
-                c1_0, c1_1, c1_2 = cr_uniform[1]
-                c2_0, c2_1, c2_2 = cr_uniform[2]
-                c3_0, c3_1, c3_2 = cr_uniform[3]
+                betar_j = cr_j = dr_j = ci_j = cicj_j = None
 
-                beta0_0, beta0_1, beta0_2, beta0_3, beta0_4, beta0_5 = betar_uniform[0]
-                beta1_0, beta1_1, beta1_2, beta1_3, beta1_4, beta1_5 = betar_uniform[1]
-                beta2_0, beta2_1, beta2_2, beta2_3, beta2_4, beta2_5 = betar_uniform[2]
-                beta3_0, beta3_1, beta3_2, beta3_3, beta3_4, beta3_5 = betar_uniform[3]
+            cr_i_vec.append(cr_j)
+            betar_i_vec.append(betar_j)
+            dr_i_vec.append(dr_j)
+            ci_i_vec.append(ci_j)
+            cicj_i_vec.append(cicj_j)
 
-                C00 = C10 = C11 = C20 = C21 = C22 = C30 = C31 = C32 = C33 \
-                = C40 = C41 = C42 = C43 = C44 = C50 = C51 = C52 = C53 \
-                = C54 = C55 = 0
+        cr_vec.append(cr_i_vec)
+        betar_vec.append(betar_i_vec)
+        dr_vec.append(dr_i_vec)
+        ci_vec.append(ci_i_vec)
+        cicj_vec.append(cicj_i_vec)
 
-                coeff_C0C0 = coeff_C0C1 = coeff_C0C2 = coeff_C0C3 = coeff_C0C4 = coeff_C0C5 \
-                = coeff_C1C1 = coeff_C1C2 = coeff_C1C3 = coeff_C1C4 = coeff_C1C5 \
-                = coeff_C2C2 = coeff_C2C3 = coeff_C2C4 = coeff_C2C5 \
-                = coeff_C3C3 = coeff_C3C4 = coeff_C3C5 \
-                = coeff_C4C4 = coeff_C4C5 \
-                = coeff_C5C5 = 0
-
-                d0, d1, d2, d3 = dr_uniform
-
-            cr_[j].append([
-                [jnp.array(c0_0), jnp.array(c0_1), jnp.array(c0_2)],
-                [jnp.array(c1_0), jnp.array(c1_1), jnp.array(c1_2)],
-                [jnp.array(c2_0), jnp.array(c2_1), jnp.array(c2_2)],
-                [jnp.array(c3_0), jnp.array(c3_1), jnp.array(c3_2)],
-            ])
-
-            betar_[j].append([
-                [jnp.array(beta0_0), jnp.array(beta0_1), jnp.array(beta0_2),
-                 jnp.array(beta0_3), jnp.array(beta0_4), jnp.array(beta0_5)],
-                [jnp.array(beta1_0), jnp.array(beta1_1), jnp.array(beta1_2),
-                 jnp.array(beta1_3), jnp.array(beta1_4), jnp.array(beta1_5)],
-                [jnp.array(beta2_0), jnp.array(beta2_1), jnp.array(beta2_2),
-                 jnp.array(beta2_3), jnp.array(beta2_4), jnp.array(beta2_5)],
-                [jnp.array(beta3_0), jnp.array(beta3_1), jnp.array(beta3_2),
-                 jnp.array(beta3_3), jnp.array(beta3_4), jnp.array(beta3_5)],
-            ])
-
-            ci_[j].append([
-                jnp.array(C00),
-                jnp.array(C10), jnp.array(C11),
-                jnp.array(C20), jnp.array(C21), jnp.array(C22),
-                jnp.array(C30), jnp.array(C31), jnp.array(C32), jnp.array(C33),
-                jnp.array(C40), jnp.array(C41), jnp.array(C42), jnp.array(C43), jnp.array(C44),
-                jnp.array(C50), jnp.array(C51), jnp.array(C52), jnp.array(C53), jnp.array(C54), jnp.array(C55),
-            ])
-
-            cicj_[j].append([
-                jnp.array(coeff_C0C0), jnp.array(coeff_C0C1), jnp.array(coeff_C0C2), jnp.array(coeff_C0C3), jnp.array(coeff_C0C4), jnp.array(coeff_C0C5),
-                jnp.array(coeff_C1C1), jnp.array(coeff_C1C2), jnp.array(coeff_C1C3), jnp.array(coeff_C1C4), jnp.array(coeff_C1C5),
-                jnp.array(coeff_C2C2), jnp.array(coeff_C2C3), jnp.array(coeff_C2C4), jnp.array(coeff_C2C5),
-                jnp.array(coeff_C3C3), jnp.array(coeff_C3C4), jnp.array(coeff_C3C5),
-                jnp.array(coeff_C4C4), jnp.array(coeff_C4C5),
-                jnp.array(coeff_C5C5),
-            ])
-
-            dr_[j].append([jnp.array(d0), jnp.array(d1), jnp.array(d2), jnp.array(d3)])
-
-    return cr_, betar_, dr_, ci_, cicj_
+    return cr_vec, betar_vec, dr_vec, ci_vec, cicj_vec
 
 def compute_coefficients_stretched_mesh_teno6(
-        cr_uniform: List,
-        betar_uniform: List,
-        dr_uniform: List,
-        is_mesh_stretching: List,
-        cell_sizes: List,
+        is_mesh_stretching: List[bool],
+        cell_sizes: Tuple[Array],
         slices_mesh: List,
-        slices_cell_sizes: List
+        slices_cell_sizes: Tuple[Array]
     ) -> Tuple[List, List, List]:
     """Computes coefficients for the TENO6 cell-face reconstruction 
     polynomials, the smoothness measures, and the ideal weights for 
@@ -430,19 +428,29 @@ def compute_coefficients_stretched_mesh_teno6(
     :param is_mesh_stretching: _description_
     :type is_mesh_stretching: List
     :param cell_sizes: _description_
-    :type cell_sizes: List
+    :type cell_sizes: Tuple[Array]
     :return: _description_
     :rtype: Tuple[List, List, List]
     """
 
-    cr_ = [[], []]
-    betar_ = [[], []]
-    dr_ = [[], []]
-    cicj_ = [[], []]
-    ci_ = [[], []]
-    ci_beta4_ = [[], []]
-    cicj_beta4_ = [[], []]
+    cr_vec = []
+    c4_vec = []
+    betar_vec = []
+    dr_vec = []
+    ci_vec = []
+    cicj_vec = []
+    ci_beta4_vec = []
+    cicj_beta4_vec = []
+
     for j in [0, 1]:
+        cr_i_vec = []
+        c4_i_vec = []
+        betar_i_vec = []
+        dr_i_vec = []
+        ci_i_vec = []
+        cicj_i_vec = []
+        ci_beta4_i_vec = []
+        cicj_beta4_i_vec = []
         for i, axis in enumerate(["x", "y", "z"]):
             cell_sizes_i = cell_sizes[i]
             if is_mesh_stretching[i]:
@@ -514,95 +522,78 @@ def compute_coefficients_stretched_mesh_teno6(
                 d3 = c6_5 / c3_3
                 d2 = (c6_4 - c3_2 * d3) / c2_2
 
+                cr_j = jnp.stack([
+                    jnp.stack([c0_0,c0_1,c0_2], axis=-4),
+                    jnp.stack([c1_0,c1_1,c1_2], axis=-4),
+                    jnp.stack([c2_0,c2_1,c2_2], axis=-4),
+                ], axis=-5)
+
+                c4_j = jnp.stack([c3_0,c3_1,c3_2,c3_3], axis=-4)
+
+                betar_j = jnp.stack([
+                    jnp.stack([beta0_0,beta0_1,beta0_2,beta0_3,beta0_4,beta0_5], axis=-4),
+                    jnp.stack([beta1_0,beta1_1,beta1_2,beta1_3,beta1_4,beta1_5], axis=-4),
+                    jnp.stack([beta2_0,beta2_1,beta2_2,beta2_3,beta2_4,beta2_5], axis=-4),
+                ], axis=-5)
+
+                dr_j = jnp.stack([d0,d1,d2,d3], axis=-4)
+
+                ci_j = jnp.stack([
+                    C00,
+                    C10,C11,
+                    C20,C21,C22,
+                    C30,C31,C32,C33,
+                    C40,C41,C42,C43,C44,
+                    C50,C51,C52,C53,C54,C55
+                ], axis=-4)
+
+                cicj_j = jnp.stack([
+                    coeff_C0C0,coeff_C0C1,coeff_C0C2,coeff_C0C3,coeff_C0C4,coeff_C0C5,
+                    coeff_C1C1,coeff_C1C2,coeff_C1C3,coeff_C1C4,coeff_C1C5,
+                    coeff_C2C2,coeff_C2C3,coeff_C2C4,coeff_C2C5,
+                    coeff_C3C3,coeff_C3C4,coeff_C3C5,
+                    coeff_C4C4,coeff_C4C5,
+                    coeff_C5C5
+                ], axis=-4)
+
+                ci_beta4_j = jnp.stack([
+                    beta_C00,beta_C10,beta_C11,
+                    beta_C20,beta_C21,beta_C22,
+                    beta_C30,beta_C31,beta_C32,beta_C33
+                ], axis=-4)
+
+                cicj_beta4_j = jnp.stack([
+                    coeff_beta3_C0C0,coeff_beta3_C0C1,coeff_beta3_C0C2,coeff_beta3_C0C3,
+                    coeff_beta3_C1C1,coeff_beta3_C1C2,coeff_beta3_C1C3,
+                    coeff_beta3_C2C2,coeff_beta3_C2C3,
+                    coeff_beta3_C3C3
+                ], axis=-4)
+
             else:
-                c0_0, c0_1, c0_2 = cr_uniform[0]
-                c1_0, c1_1, c1_2 = cr_uniform[1]
-                c2_0, c2_1, c2_2 = cr_uniform[2]
-                c3_0, c3_1, c3_2, c3_3 = cr_uniform[3]
+                cr_j = c4_j = betar_j = dr_j \
+                = ci_j = cicj_j = ci_beta4_j \
+                = cicj_beta4_j = None
 
-                beta0_0, beta0_1, beta0_2, beta0_3, beta0_4, beta0_5 = betar_uniform[0]
-                beta1_0, beta1_1, beta1_2, beta1_3, beta1_4, beta1_5 = betar_uniform[1]
-                beta2_0, beta2_1, beta2_2, beta2_3, beta2_4, beta2_5 = betar_uniform[2]
-                beta3_0, beta3_1, beta3_2, beta3_3, beta3_4, beta3_5, \
-                beta3_6, beta3_7, beta3_8, beta3_9 = betar_uniform[3]
+            cr_i_vec.append(cr_j)
+            c4_i_vec.append(c4_j)
+            betar_i_vec.append(betar_j)
+            dr_i_vec.append(dr_j)
+            ci_i_vec.append(ci_j)
+            cicj_i_vec.append(cicj_j)
+            ci_beta4_i_vec.append(ci_beta4_j)
+            cicj_beta4_i_vec.append(cicj_beta4_j)
 
-                d0, d1, d2, d3 = dr_uniform
-
-                C00 = C10 = C11 = C20 = C21 = C22 = C30 = C31 = C32 = C33 \
-                = C40 = C41 = C42 = C43 = C44 = C50 = C51 = C52 = C53 \
-                = C54 = C55 = 0
-
-                coeff_C0C0 = coeff_C0C1 = coeff_C0C2 = coeff_C0C3 = coeff_C0C4 = coeff_C0C5 \
-                = coeff_C1C1 = coeff_C1C2 = coeff_C1C3 = coeff_C1C4 = coeff_C1C5 \
-                = coeff_C2C2 = coeff_C2C3 = coeff_C2C4 = coeff_C2C5 \
-                = coeff_C3C3 = coeff_C3C4 = coeff_C3C5 \
-                = coeff_C4C4 = coeff_C4C5 \
-                = coeff_C5C5 = 0
-
-                beta_C00 = beta_C10 = beta_C11 \
-                = beta_C20 = beta_C21 = beta_C22 \
-                = beta_C30 = beta_C31 = beta_C32 = beta_C33 = 0
-
-                coeff_beta3_C0C0 = coeff_beta3_C0C1 = coeff_beta3_C0C2 = coeff_beta3_C0C3 \
-                = coeff_beta3_C1C1 = coeff_beta3_C1C2 = coeff_beta3_C1C3 \
-                = coeff_beta3_C2C2 = coeff_beta3_C2C3 \
-                = coeff_beta3_C3C3 = 0
-
-            cr_[j].append([
-                [jnp.array(c0_0), jnp.array(c0_1), jnp.array(c0_2)],
-                [jnp.array(c1_0), jnp.array(c1_1), jnp.array(c1_2)],
-                [jnp.array(c2_0), jnp.array(c2_1), jnp.array(c2_2)],
-                [jnp.array(c3_0), jnp.array(c3_1), jnp.array(c3_2), jnp.array(c3_3)],
-            ])
-
-            betar_[j].append([
-                [jnp.array(beta0_0), jnp.array(beta0_1), jnp.array(beta0_2),
-                 jnp.array(beta0_3), jnp.array(beta0_4), jnp.array(beta0_5)],
-                [jnp.array(beta1_0), jnp.array(beta1_1), jnp.array(beta1_2),
-                 jnp.array(beta1_3), jnp.array(beta1_4), jnp.array(beta1_5)],
-                [jnp.array(beta2_0), jnp.array(beta2_1), jnp.array(beta2_2),
-                 jnp.array(beta2_3), jnp.array(beta2_4), jnp.array(beta2_5)],
-                # [jnp.array(beta3_0), jnp.array(beta3_1), jnp.array(beta3_2),
-                #  jnp.array(beta3_3), jnp.array(beta3_4), jnp.array(beta3_5),
-                #  jnp.array(beta3_6), jnp.array(beta3_7), jnp.array(beta3_8),
-                #  jnp.array(beta3_9)],
-            ])
-
-            ci_[j].append([
-                jnp.array(C00),
-                jnp.array(C10), jnp.array(C11),
-                jnp.array(C20), jnp.array(C21), jnp.array(C22),
-                jnp.array(C30), jnp.array(C31), jnp.array(C32), jnp.array(C33),
-                jnp.array(C40), jnp.array(C41), jnp.array(C42), jnp.array(C43), jnp.array(C44),
-                jnp.array(C50), jnp.array(C51), jnp.array(C52), jnp.array(C53), jnp.array(C54), jnp.array(C55),
-            ])
-
-            cicj_[j].append([
-                jnp.array(coeff_C0C0), jnp.array(coeff_C0C1), jnp.array(coeff_C0C2), jnp.array(coeff_C0C3), jnp.array(coeff_C0C4), jnp.array(coeff_C0C5),
-                jnp.array(coeff_C1C1), jnp.array(coeff_C1C2), jnp.array(coeff_C1C3), jnp.array(coeff_C1C4), jnp.array(coeff_C1C5),
-                jnp.array(coeff_C2C2), jnp.array(coeff_C2C3), jnp.array(coeff_C2C4), jnp.array(coeff_C2C5),
-                jnp.array(coeff_C3C3), jnp.array(coeff_C3C4), jnp.array(coeff_C3C5),
-                jnp.array(coeff_C4C4), jnp.array(coeff_C4C5),
-                jnp.array(coeff_C5C5),
-            ])
-
-            ci_beta4_[j].append([
-                jnp.array(beta_C00),
-                jnp.array(beta_C10), jnp.array(beta_C11),
-                jnp.array(beta_C20), jnp.array(beta_C21), jnp.array(beta_C22),
-                jnp.array(beta_C30), jnp.array(beta_C31), jnp.array(beta_C32), jnp.array(beta_C33),
-            ])
-
-            cicj_beta4_[j].append([
-                jnp.array(coeff_beta3_C0C0), jnp.array(coeff_beta3_C0C1), jnp.array(coeff_beta3_C0C2), jnp.array(coeff_beta3_C0C3), 
-                jnp.array(coeff_beta3_C1C1), jnp.array(coeff_beta3_C1C2), jnp.array(coeff_beta3_C1C3),
-                jnp.array(coeff_beta3_C2C2), jnp.array(coeff_beta3_C2C3),
-                jnp.array(coeff_beta3_C3C3),
-            ])
-
-            dr_[j].append([jnp.array(d0), jnp.array(d1), jnp.array(d2), jnp.array(d3)])
-
-    return cr_, betar_, dr_, ci_, cicj_, ci_beta4_, cicj_beta4_
+        cr_vec.append(cr_i_vec)
+        c4_vec.append(c4_i_vec)
+        betar_vec.append(betar_i_vec)
+        dr_vec.append(dr_i_vec)
+        ci_vec.append(ci_i_vec)
+        cicj_vec.append(cicj_i_vec)
+        ci_beta4_vec.append(ci_beta4_i_vec)
+        cicj_beta4_vec.append(cicj_beta4_i_vec)
+            
+    return cr_vec, c4_vec, betar_vec, dr_vec, \
+        ci_vec, cicj_vec, ci_beta4_vec, cicj_beta4_vec
 
 def compute_smothnesses3_old():
     # BETA_0

@@ -12,9 +12,8 @@ initialization_manager = InitializationManager(input_manager)
 sim_manager = SimulationManager(input_manager)
 
 # RUN SIMULATION
-simulation_buffers, time_control_variables,\
-forcing_parameters = initialization_manager.initialization()
-sim_manager.simulate(simulation_buffers, time_control_variables)
+jxf_buffers = initialization_manager.initialization()
+sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
@@ -22,17 +21,21 @@ quantities = [
     "density", "schlieren", "mach_number", 
     "levelset", "volume_fraction", "pressure"
 ]
-cell_centers, cell_sizes, times, data_dict = load_data(path, quantities)
+jxf_data = load_data(path, quantities)
 
-mask_real = data_dict["volume_fraction"] > 0.0
+cell_centers = jxf_data.cell_centers
+data = jxf_data.data
+times = jxf_data.times
+
+mask_real = data["volume_fraction"] > 0.0
 
 # PLOT
 nrows_ncols = (1,4)
 plot_dict = {
-    "density"       : data_dict["density"]* mask_real,
-    "pressure"      : data_dict["pressure"]* mask_real,
-    "mach_number"   : np.clip(data_dict["mach_number"] * mask_real, 0.0, 3.0),
-    "schlieren"     : np.clip(data_dict["schlieren"] * mask_real, 1e0, 5e2)
+    "density"       : data["density"]* mask_real,
+    "pressure"      : data["pressure"]* mask_real,
+    "mach_number"   : np.clip(data["mach_number"] * mask_real, 0.0, 3.0),
+    "schlieren"     : np.clip(data["schlieren"] * mask_real, 1e0, 5e2)
 }
 
 # CREATE ANIMATION

@@ -1,13 +1,16 @@
 from typing import Dict, List, Union, Tuple
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials import DICT_MATERIAL
 from jaxfluids.materials.mixture_materials.mixture import Mixture
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.data_types.case_setup.material_properties import DiffuseMixtureSetup, MaterialPropertiesSetup
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class DiffuseMixture(Mixture):
     """DiffuseMixture
@@ -177,8 +180,7 @@ class DiffuseMixture(Mixture):
         """
         return self.gamma_vec * self.one_gamma_vec_ * p + self.gamma_pb_vec_
 
-    def get_total_energy(self, p: Array, rho: Array, u: Array, v:Array,
-        w:Array, alpha_i: Array) -> Array:
+    def get_total_energy(self, p: Array, rho: Array, velocity_vec: Array, alpha_i: Array) -> Array:
         """Computes total energy per unit volume from pressure, density, and velocities.
         E = E(p, rho, velX, velY, velZ)
 
@@ -186,20 +188,15 @@ class DiffuseMixture(Mixture):
         :type p: Array
         :param rho: Density buffer
         :type rho: Array
-        :param u: Velocity in x direction
-        :type u: Array
-        :param v: Velocity in y direction
-        :type v: Array
-        :param w: Velocity in z direction
-        :type w: Array
+        :param velocity_vec: Velocity vector, shape = (N_vel,Nx,Ny,Nz)
+        :type velocity_vec: Array
         :return: Total energy per unit volume
         :rtype: Array
         """
         gamma, pb = self.compute_mixture_EOS_params(alpha_i)
-        return ( p + gamma * pb ) / (gamma - 1) + 0.5 * rho * ( (u * u + v * v + w * w) )
+        return ( p + gamma * pb ) / (gamma - 1) + 0.5 * rho * sum3_consistent(*jnp.square(velocity_vec))
 
-    def get_total_enthalpy(self, p: Array, rho: Array, u: Array, v: Array, 
-        w: Array, alpha_i: Array) -> Array:
+    def get_total_enthalpy(self, p: Array, rho: Array, velocity_vec: Array, alpha_i: Array) -> Array:
         """Computes total specific enthalpy from pressure, density, and velocities.
         H = H(p, rho, velX, velY, velZ)
 
@@ -207,16 +204,12 @@ class DiffuseMixture(Mixture):
         :type p: Array
         :param rho: Density buffer
         :type rho: Array
-        :param u: Velocity in x direction
-        :type u: Array
-        :param v: Velocity in y direction
-        :type v: Array
-        :param w: Velocity in z direction
-        :type w: Array
+        :param velocity_vec: Velocity vector, shape = (N_vel,Nx,Ny,Nz)
+        :type velocity_vec: Array
         :return: Total specific enthalpy buffer
         :rtype: Array
         """
-        return ( self.get_total_energy(p, rho, u, v, w, alpha_i) + p ) / rho
+        return ( self.get_total_energy(p, rho, velocity_vec, alpha_i) + p ) / rho
 
     def get_psi(self, p: Array, rho: Array, alpha_i: Array) -> Array:
         """Computes psi from pressure and density.

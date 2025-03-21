@@ -1,10 +1,14 @@
 from typing import List, Union
+
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.material_properties import MaterialPropertiesSetup
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class StiffenedGas(Material):
     """Implements the stiffened gas equation of state.
@@ -47,6 +51,9 @@ class StiffenedGas(Material):
         # TODO
         return ( p + self.pb ) / (rho * self.R)
 
+    def get_density_from_pressure_and_temperature(self, p: Array, T: Array) -> Array:
+        return ( p + self.pb ) / (T * self.R)
+
     def get_specific_energy(self, p: Array, rho: Array) -> Array:
         # Specific internal energy
         # e = (p + \gamma \pi_{inf}) / (\rho (\gamma - 1))
@@ -67,13 +74,13 @@ class StiffenedGas(Material):
         # \rho h = \rho e + p = (\gamma (p + \pi_{inf})) / (\gamma - 1)
         return (p + self.pb) * self.gamma / (self.gamma - 1.0)
 
-    def get_total_energy(self, p:Array, rho:Array, u:Array, v:Array, w:Array) -> Array:
+    def get_total_energy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         # Total energy per unit volume
-        return (p + self.gamma * self.pb) / (self.gamma - 1) + 0.5 * rho * (u * u + v * v + w * w)
+        return (p + self.gamma * self.pb) / (self.gamma - 1) + 0.5 * rho * sum3_consistent(*jnp.square(velocity_vec))
 
-    def get_total_enthalpy(self, p:Array, rho:Array, u:Array, v:Array, w:Array) -> Array:
+    def get_total_enthalpy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         # Total specific enthalpy
-        return ( self.get_total_energy(p, rho, u, v, w) + p ) / rho
+        return ( self.get_total_energy(p, rho, velocity_vec) + p ) / rho
     
     def get_specific_heat_capacity(self, T: Array) -> Union[float, Array]:
         """Calculates the specific heat coefficient per unit mass.
@@ -89,11 +96,9 @@ class StiffenedGas(Material):
     
     def get_stagnation_temperature(
             self,
-            p:Array,
-            rho:Array,
-            u:Array,
-            v:Array,
-            w:Array
+            p: Array,
+            rho: Array,
+            velocity_vec: Array,
         ) -> Array:
         """Computes the stagnation temperature
 

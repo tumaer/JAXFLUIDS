@@ -4,7 +4,6 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.halos.outer.boundary_condition import BoundaryCondition, get_signs_symmetry
@@ -14,7 +13,12 @@ from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.equation_manager import EquationManager
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace, \
     VelocityCallable, WallMassTransferSetup, PrimitivesTable
-from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS, AXES
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
+from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+from jaxfluids.halos.outer.helper_function import get_derivative_stencils_linear_extrapolation
+from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS, AXES, FACE_LOCATIONS
+
+Array = jax.Array
 
 class BoundaryConditionMaterial(BoundaryCondition):
     """ The BoundaryConditionMaterial class implements functionality
@@ -24,14 +28,12 @@ class BoundaryConditionMaterial(BoundaryCondition):
     def __init__(
             self,
             domain_information: DomainInformation,
-            material_manager: MaterialManager, 
             equation_manager: EquationManager,
             boundary_conditions: BoundaryConditionsField
             ) -> None:
 
         super().__init__(domain_information, boundary_conditions)
 
-        self.material_manager = material_manager
         self.equation_manager = equation_manager
         self.equation_information = equation_manager.equation_information
 
@@ -43,17 +45,37 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         no_primes = self.equation_information.no_primes
         equation_type = self.equation_information.equation_type
-        vel_indices = self.equation_information.velocity_ids
+        vel_indices = self.equation_information.ids_velocity
         self.face_signs_symmetry, self.edge_signs_symmetry, \
         self.vertex_signs_symmetry = get_signs_symmetry(
             no_primes, equation_type, vel_indices)
 
+        active_face_locations = self.domain_information.active_face_locations
+
+        # LINEAR EXTRAPOLATION BOUNDARY CONDITION
+        self.is_linear_extrapolation = False
+        for face_location in active_face_locations:
+            boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] \
+                = getattr(boundary_conditions, face_location)
+
+            for i, boundary_conditions_face in enumerate(boundary_conditions_face_tuple):
+                boundary_type = boundary_conditions_face.boundary_type
+
+                if boundary_type == "LINEAREXTRAPOLATION":
+                    self.is_linear_extrapolation = True
+
+        if self.is_linear_extrapolation:
+            self.derivative_upwind: SpatialDerivative = None
+            self.derivative_downwind: SpatialDerivative = None
+            
+ 
     def face_halo_update(
             self,
             primitives: Array,
             physical_simulation_time: float,
             conservatives: Array = None,
-            ) -> Tuple[Array, Array]:
+            ml_setup: MachineLearningSetup = None
+        ) -> Tuple[Array, Array]:
         """Fills the face halo cells of the primitive and
         variable buffer. If conservatives is passed,
         then the corresponding conservatives are
@@ -69,95 +91,137 @@ class BoundaryConditionMaterial(BoundaryCondition):
         :rtype: Tuple[Array, Array]
         """
 
-        is_parallel = self.domain_information.is_parallel
-
-        if conservatives != None:
+        if conservatives is not None:
             compute_conservatives = True
         else:
             compute_conservatives = False
 
-        active_face_locations = self.domain_information.active_face_locations
-        for face_location in active_face_locations:
+        def update_loop(
+                primitives: Array, physical_simulation_time: 
+                float, conservatives: Array = None,
+            ) -> Tuple[Array, Array]:
+            
+            active_face_locations = self.domain_information.active_face_locations
+            for face_location in active_face_locations:
 
-            boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = \
-            getattr(self.boundary_conditions, face_location)
-            if len(boundary_conditions_face_tuple) > 1:
-                multiple_types_at_face = True
-            else:
-                multiple_types_at_face = False
+                boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = \
+                getattr(self.boundary_conditions, face_location)
 
-            for i, boundary_conditions_face in enumerate(boundary_conditions_face_tuple):
-
-                boundary_type = boundary_conditions_face.boundary_type
-                
-                if boundary_type in ["SYMMETRY", "PERIODIC", "ZEROGRADIENT"]:
-                    halos_primes = self.miscellaneous(
-                        primitives, boundary_type, face_location)
-
-                elif boundary_type in ["ISOTHERMALWALL", "WALL"]:
-                    wall_velocity_callable = boundary_conditions_face.wall_velocity_callable
-                    halos_primes = self.wall(
-                        primitives, face_location,
-                        wall_velocity_callable,
-                        physical_simulation_time)
-
-                elif boundary_type in ["ISOTHERMALMASSTRANSFERWALL", "MASSTRANSFERWALL"]:
-                    wall_velocity_callable = boundary_conditions_face.wall_velocity_callable
-                    wall_mass_transfer = boundary_conditions_face.wall_mass_transfer
-                    halos_primes = self.masstransferwall(
-                        primitives, face_location, wall_velocity_callable,
-                        wall_mass_transfer, physical_simulation_time)
-                
-                elif boundary_type == "DIRICHLET":
-                    primitives_callable = boundary_conditions_face.primitives_callable
-                    primitives_table = boundary_conditions_face.primitives_table
-                    halos_primes = self.dirichlet(
-                        face_location, primitives_callable,
-                        physical_simulation_time, primitives_table)
-
-                elif boundary_type == "NEUMANN":
-                    primitives_callable = boundary_conditions_face.primitives_callable
-                    halos_primes = self.neumann(
-                        primitives, face_location, primitives_callable,
-                        physical_simulation_time)
-                
+                if len(boundary_conditions_face_tuple) > 1:
+                    multiple_types_at_face = True
                 else:
-                    raise NotImplementedError
+                    multiple_types_at_face = False
 
-                if compute_conservatives:
-                    halos_cons = self.equation_manager.get_conservatives_from_primitives(
-                        halos_primes)
+                for bc_id, boundary_conditions_face in enumerate(boundary_conditions_face_tuple):
+
+                    boundary_type = boundary_conditions_face.boundary_type
+                    
+
+                    if boundary_type in ["SYMMETRY", "PERIODIC", "ZEROGRADIENT"]:
+                        halos_primes = self.miscellaneous(
+                            primitives, boundary_type, face_location)
+                        
+                    elif boundary_type == "LINEAREXTRAPOLATION":
+                        halos_primes = self.linear_extrapolation(
+                            primitives, boundary_type, face_location
+                        )
+
+                    elif boundary_type in ["ISOTHERMALWALL", "WALL"]:
+                        wall_velocity_callable = boundary_conditions_face.wall_velocity_callable
+                        halos_primes = self.wall(
+                            primitives, face_location,
+                            wall_velocity_callable,
+                            physical_simulation_time)
+
+                    elif boundary_type in ["ISOTHERMALMASSTRANSFERWALL", "MASSTRANSFERWALL"]:
+                        wall_velocity_callable = boundary_conditions_face.wall_velocity_callable
+                        wall_mass_transfer = boundary_conditions_face.wall_mass_transfer
+                        halos_primes = self.masstransferwall(
+                            primitives, face_location, wall_velocity_callable,
+                            wall_mass_transfer, physical_simulation_time)
+                    
+                    elif boundary_type == "DIRICHLET":
+                        primitives_callable = boundary_conditions_face.primitives_callable
+                        primitives_table = boundary_conditions_face.primitives_table
+                        halos_primes = self.dirichlet(
+                            face_location, primitives_callable,
+                            physical_simulation_time, primitives_table)
+                    
+                    elif boundary_type == "DIRICHLET_PARAMETERIZED":
+                        primitives_callable = getattr(
+                            ml_setup.callables.boundary_conditions.primitives,
+                            face_location)[bc_id].primitives
+                        primitives_parameters = getattr(
+                            ml_setup.parameters.boundary_conditions.primitives,
+                            face_location)[bc_id].primitives
+                        
+                        halos_primes = self.dirichlet_parameterized(
+                            face_location, primitives_callable,
+                            primitives_parameters, physical_simulation_time
+                        )
+
+                    elif boundary_type == "NEUMANN":
+                        primitives_callable = boundary_conditions_face.primitives_callable
+                        halos_primes = self.neumann(
+                            primitives, face_location, primitives_callable,
+                            physical_simulation_time)
+
+                    elif boundary_type == "SIMPLE_INFLOW":
+                        primitives_callable = boundary_conditions_face.primitives_callable
+                        halos_primes = self.simple_inflow(
+                            primitives, face_location, primitives_callable,
+                            physical_simulation_time)
+
+                    elif boundary_type == "SIMPLE_OUTFLOW":
+                        primitives_callable = boundary_conditions_face.primitives_callable
+                        halos_primes = self.simple_outflow(
+                            primitives, face_location, primitives_callable,
+                            physical_simulation_time)
+
+                    else:
+                        raise NotImplementedError
+
+                    if compute_conservatives:
+                        halos_cons = self.equation_manager.get_conservatives_from_primitives(
+                            halos_primes)
+                    
+                    if multiple_types_at_face:
+                        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(
+                            face_location)
+                        bounding_domain_callable = boundary_conditions_face.bounding_domain_callable
+                        bounding_domain_mask = bounding_domain_callable(*meshgrid)
+                        for axis in axes_to_expand:
+                            bounding_domain_mask = jnp.expand_dims(bounding_domain_mask, axis)
+                    else:
+                        bounding_domain_mask = 1.0
+
+                    if self.domain_information.is_parallel:
+                        device_id = jax.lax.axis_index(axis_name="i")
+                        device_mask = self.face_halo_mask
+                        device_mask = device_mask[face_location][device_id]
+                        mask = bounding_domain_mask * device_mask
+                    else:
+                        mask = bounding_domain_mask
+
+                    slices_fill = self.halo_slices.face_slices_conservatives[face_location]
+                    primitives = primitives.at[slices_fill].mul(1 - mask)
+                    primitives = primitives.at[slices_fill].add(halos_primes * mask)
+                    if compute_conservatives:
+                        conservatives = conservatives.at[slices_fill].mul(1 - mask)
+                        conservatives = conservatives.at[slices_fill].add(halos_cons * mask)
+
+            return primitives, conservatives
                 
-                if multiple_types_at_face:
-                    meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(
-                        face_location)
-                    bounding_domain_callable = boundary_conditions_face.bounding_domain_callable
-                    bounding_domain_mask = bounding_domain_callable(*meshgrid)
-                    for axis in axes_to_expand:
-                        bounding_domain_mask = jnp.expand_dims(bounding_domain_mask, axis)
-                else:
-                    bounding_domain_mask = 1.0
-
-                if is_parallel:
-                    device_id = jax.lax.axis_index(axis_name="i")
-                    device_mask = self.face_halo_mask
-                    device_mask = device_mask[face_location][device_id]
-                    mask = bounding_domain_mask * device_mask
-                else:
-                    mask = bounding_domain_mask
-
-                slices_fill = self.halo_slices.face_slices_conservatives[face_location]
-                primitives = primitives.at[slices_fill].mul(1 - mask)
-                primitives = primitives.at[slices_fill].add(halos_primes * mask)
-                if compute_conservatives:
-                    conservatives = conservatives.at[slices_fill].mul(1 - mask)
-                    conservatives = conservatives.at[slices_fill].add(halos_cons * mask)
+        primitives, conservatives = update_loop(
+            primitives, physical_simulation_time, 
+            conservatives
+        )
 
         if compute_conservatives:
             return primitives, conservatives
         else:
             return primitives
-    
+
     def edge_halo_update(
             self,
             primitives: Array,
@@ -376,9 +440,9 @@ class BoundaryConditionMaterial(BoundaryCondition):
                 wall_velocity = jnp.expand_dims(wall_velocity, axis_index)
             wall_velocity_list.append(wall_velocity)
 
-        vel_slices = self.equation_information.velocity_slices
-        mass_slices = self.equation_information.mass_slices
-        energy_slices = self.equation_information.energy_slices
+        vel_slices = self.equation_information.s_velocity
+        s_mass = self.equation_information.s_mass
+        s_energy = self.equation_information.s_energy
 
         velocity = primitives[vel_slices]
         slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
@@ -387,19 +451,19 @@ class BoundaryConditionMaterial(BoundaryCondition):
         w_halo = 2 * wall_velocity_list[2] - velocity[(jnp.s_[2:3],) + slices_retrieve]
 
         halos_primes = jnp.concatenate([
-            primitives[(mass_slices,) + slices_retrieve],
+            primitives[(s_mass,) + slices_retrieve],
             u_halo,
             v_halo,
             w_halo,
-            primitives[(energy_slices,) + slices_retrieve]
+            primitives[(s_energy,) + slices_retrieve]
         ], axis=0)
 
         diffuse_interface_model = self.equation_information.diffuse_interface_model
         if diffuse_interface_model:
-            vf_slices = self.equation_information.vf_slices
+            s_volume_fraction = self.equation_information.s_volume_fraction
             halos_primes = jnp.concatenate([
                 halos_primes,
-                primitives[(vf_slices,) + slices_retrieve]
+                primitives[(s_volume_fraction,) + slices_retrieve]
             ], axis=0)
 
         return halos_primes
@@ -467,12 +531,12 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
 
-        energy_slices = self.equation_information.energy_slices
-        mass_slices = self.equation_information.mass_slices
-        vel_slices = self.equation_information.velocity_slices
+        s_energy = self.equation_information.s_energy
+        s_mass = self.equation_information.s_mass
+        vel_slices = self.equation_information.s_velocity
         s_vel = (vel_slices,) + slices_retrieve
 
-        halos_mass = halos_primes[mass_slices]
+        halos_mass = halos_primes[s_mass]
         halos_mass = jnp.repeat(halos_mass, nh, axis=-3+axis_index)
         halos_velocity = halos_primes[vel_slices]
         halos_velocity = 2 * halos_velocity - primitives[s_vel]
@@ -480,7 +544,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
             halos_vf = halos_primes[-no_fluids+1:]
             halos_vf = jnp.repeat(halos_vf, nh, axis=-3+axis_index)
         slices_retrieve = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
-        halos_pressure = primitives[(energy_slices,)+slices_retrieve]
+        halos_pressure = primitives[(s_energy,)+slices_retrieve]
         halos_pressure = jnp.repeat(halos_pressure, nh, axis=-3+axis_index)
         
         if diffuse_interface_model:
@@ -510,7 +574,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
             primitives_callable: NamedTuple,
             physical_simulation_time: float,
             primitives_table: PrimitivesTable
-            ) -> Array:
+        ) -> Array:
         """Computes the halo cells from
         a DIRICHLET condition.
 
@@ -562,12 +626,40 @@ class BoundaryConditionMaterial(BoundaryCondition):
             for prime_state in primitives_callable._fields:
                 prime_callable: Callable = getattr(primitives_callable, prime_state)
                 halos = prime_callable(*meshgrid, physical_simulation_time)
+                # TODO we should also allow scalar return values of the boundary callable
                 for axis in axes_to_expand:
                     halos = jnp.expand_dims(halos, axis)
                 halos_primes_list.append(halos)
             halos_primes = jnp.stack(halos_primes_list, axis=0)
             if levelset_model == "FLUID-FLUID": # TODO INTRODUCE DIRICHLET BOUNDARIES FOR BOTH POSITIVE AND NEGATIVE
                 halos_primes = jnp.stack([halos_primes, halos_primes], axis=1)
+    
+        return halos_primes
+
+    def dirichlet_parameterized(
+            self,
+            face_location: str,
+            primitives_callable: NamedTuple,
+            primitives_parameters: NamedTuple,
+            physical_simulation_time: float,
+    ) -> Array:
+
+        levelset_model = self.equation_information.levelset_model
+
+        meshgrid, axes_to_expand = \
+        self.get_boundary_coordinates_at_location(
+            face_location)
+        halos_primes_list = []
+        for prime_state in primitives_callable._fields:
+            prime_callable: Callable = getattr(primitives_callable, prime_state)
+            prime_parameters = getattr(primitives_parameters, prime_state)
+            halos = prime_callable(*meshgrid, physical_simulation_time, prime_parameters)
+            for axis in axes_to_expand:
+                halos = jnp.expand_dims(halos, axis)
+            halos_primes_list.append(halos)
+        halos_primes = jnp.stack(halos_primes_list, axis=0)
+        if levelset_model == "FLUID-FLUID": # TODO INTRODUCE DIRICHLET BOUNDARIES FOR BOTH POSITIVE AND NEGATIVE
+            halos_primes = jnp.stack([halos_primes, halos_primes], axis=1)
     
         return halos_primes
 
@@ -638,11 +730,127 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         slices_retrieve = self.face_slices_retrieve_conservatives[boundary_type][face_location]
         halos_primes = primitives[slices_retrieve]
+
         if boundary_type == "SYMMETRY":
             halos_primes *= self.face_signs_symmetry[face_location]
 
         return halos_primes
-    
+
+
+    def simple_inflow(
+            self,
+            primitives: Array,
+            face_location: str,
+            primitives_callable: NamedTuple,
+            physical_simulation_time: float, 
+        ) -> Array:
+
+        levelset_model = self.equation_information.levelset_model
+        diffuse_interface_model = self.equation_information.diffuse_interface_model
+
+        s_mass = self.equation_information.s_mass
+        vel_slices = self.equation_information.s_velocity
+        s_energy = self.equation_information.s_energy
+        s_volume_fraction = self.equation_information.s_volume_fraction
+        no_fluids = self.equation_information.no_fluids
+
+        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(
+            face_location)
+
+        # Retrieve pressure from inside the domain
+        slices_retrieve = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
+        halos_pressure = primitives[(s_energy,) + slices_retrieve]
+
+        # Evaluate inflow callables, i.e., 
+        # density and velocity (and volume fraction)
+        halos_primes_list = []
+        primes_tuple = self.equation_information.primes_tuple
+        primes_tuple = [state for state in primes_tuple if state != "p"]
+        for prime_state in primes_tuple:
+            prime_state_callable = getattr(primitives_callable, prime_state)
+            halos = prime_state_callable(*meshgrid, physical_simulation_time)
+            for axis in axes_to_expand:
+                halos = jnp.expand_dims(halos, axis)
+            halos_primes_list.append(halos)
+        halos_primes = jnp.stack(halos_primes_list, axis=0) 
+
+        if levelset_model == "FLUID-FLUID":
+            halos_primes = jnp.stack([halos_primes, halos_primes], axis=1)
+
+        # Concatenate inflow callables with pressure
+        if diffuse_interface_model:
+            halos_primes = jnp.concatenate([
+                halos_primes[s_mass],
+                halos_primes[vel_slices],
+                halos_pressure,
+                halos_primes[-no_fluids+1:]
+            ], axis=0)
+        else:
+            halos_primes = jnp.concatenate([
+                halos_primes[s_mass],
+                halos_primes[vel_slices],
+                halos_pressure
+            ], axis=0)
+
+        return halos_primes
+
+
+    def simple_outflow(
+            self,
+            primitives: Array,
+            face_location: str,
+            primitives_callable: NamedTuple,
+            physical_simulation_time: float, 
+        ) -> Array:
+
+        s_energy = self.equation_information.s_energy
+
+        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(face_location)
+
+        # Retrieve all variables from inside the domain
+        slices_retrieve = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
+        halos_primes = primitives[slices_retrieve]
+
+        # Evaluate pressure callable
+        pressure_callable = getattr(primitives_callable, "p")
+        halos_pressure = pressure_callable(*meshgrid, physical_simulation_time)
+        for axis in axes_to_expand:
+            halos_pressure = jnp.expand_dims(halos_pressure, axis)
+        
+        # Overwrite pressure with pressure callable
+        halos_primes = halos_primes.at[s_energy].set(halos_pressure)
+
+        return halos_primes
+
+
+    def linear_extrapolation(
+            self,
+            primitives: Array,
+            boundary_type: str,
+            face_location: str,
+            ) -> Array:
+        
+        axis = self.domain_information.face_location_to_axis_index[face_location]
+        cell_sizes = self.domain_information.get_device_cell_sizes()
+        cell_centers_halos = self.domain_information.get_device_cell_centers_halos()[axis]
+
+        slices_retrieve, slices_retrieve_deriv, slice_cc, slice_cc_halos \
+            = self.face_slices_retrieve_conservatives[boundary_type][face_location]
+
+        if face_location in ("east", "north", "top"):
+            dW_dx = self.derivative_upwind.derivative_xi(primitives, cell_sizes[axis], axis)
+        elif face_location in ("west", "south", "bottom"):
+            dW_dx = self.derivative_downwind.derivative_xi(primitives, cell_sizes[axis], axis)
+        else:
+            raise NotImplementedError
+
+        dW_dx = dW_dx[slices_retrieve_deriv]
+        dx = cell_centers_halos[slice_cc_halos] - cell_centers_halos[slice_cc]
+        halos_primes = primitives[slices_retrieve] + dx * dW_dx
+
+        return halos_primes
+
+    # NOTE @aaron introduce temperature boundary condition class ?
     def face_halo_update_temperature(
             self,
             temperature: Array,
@@ -773,3 +981,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
             index = indices[face_location]
             dx = jnp.squeeze(dx)[index]
         return dx
+    
+    def set_stencils_linear_extrapolation(self) -> None:
+        self.derivative_upwind, self.derivative_downwind \
+            = get_derivative_stencils_linear_extrapolation(self.domain_information)

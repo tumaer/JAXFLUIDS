@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.config import precision
 
@@ -31,6 +30,7 @@ class SpatialStencil(ABC):
         self.nhy_ = jnp.s_[:] if "y" in inactive_axes else jnp.s_[offset:-offset if offset > 0 else None]    
         self.nhz_ = jnp.s_[:] if "z" in inactive_axes else jnp.s_[offset:-offset if offset > 0 else None]
 
+        # TODO dbezgin: remove these members, as no longer needed?
         self.s_nh_ = jnp.s_[self.nhx_, self.nhy_, self.nhz_]
         self.s_nh_xi = [
             jnp.s_[...,self.nhx_, :, :],
@@ -42,7 +42,7 @@ class SpatialStencil(ABC):
         self.s_mesh = None
         self._stencil_size = None
 
-    def array_slices(self, idx_ranges: List, at_cell_center: bool = False) -> None:
+    def array_slices(self, idx_ranges: List[Tuple[int]], at_cell_center: bool = False) -> None:
         """Generates array slice objects and sets these as a member. Array slices
         are used to compute derivatives and cell-face reconstruction. Exemplary domain
         slices are:
@@ -82,10 +82,12 @@ class SpatialStencil(ABC):
             slices_x, slices_y, slices_z = [], [], []
             slices_x_mesh, slices_y_mesh, slices_z_mesh = [], [], []
             for k in idx_range:
+                # NOTE this should be self.n_left + k
                 nlo = self.n + k
                 assert_msg = f"Stencil with left-shift {k} is too wide for domain with {self.n} halo cells."
                 assert nlo >= 0, assert_msg
-                
+
+                # NOTE this should be -self.n_right + k + 1 - at_cell_center
                 nhi = -self.n + k + 1 - at_cell_center
                 if nhi == 0:
                     nhi = None 
@@ -106,5 +108,6 @@ class SpatialStencil(ABC):
         if len(idx_ranges) == 1:
             slices = slices[0] 
             slices_mesh = slices_mesh[0]
+
         self.s_ = slices
         self.s_mesh = slices_mesh

@@ -6,7 +6,6 @@ import os
 import h5py
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.domain.domain_information import DomainInformation
@@ -17,6 +16,8 @@ from jaxfluids.levelset.creation.generic_shapes import (
 from jaxfluids.domain.helper_functions import split_buffer
 from jaxfluids.data_types.case_setup.initial_conditions import InitialConditionLevelset
 from jaxfluids.unit_handler import UnitHandler
+
+Array = jax.Array
 
 class LevelsetCreator:
 
@@ -103,7 +104,3 @@ class LevelsetCreator:
             raise NotImplementedError
 
         return levelset
-    
-    # TODO AARON SOME SORT OF CHECK IF INTERFACE IS ON SMALLEST CELL SIZE
-    def sanity_check():
-        pass

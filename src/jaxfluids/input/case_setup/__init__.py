@@ -5,6 +5,14 @@ from jaxfluids.input.setup_reader import _get_setup_value, _loop_fields, get_pat
 
 SETUP = "case"
 
+MANDATORY_CASE_SETUP_KEYS = ("boundary_conditions", "domain", "general",  
+                             "initial_condition", "material_properties",
+                             )
+OPTIONAL_CASE_SETUP_KEYS = ("forcings", 
+                            "nondimensionalization_parameters", "restart", 
+                            "solid_properties", "output", "statistics")
+CASE_SETUP_KEYS = MANDATORY_CASE_SETUP_KEYS + OPTIONAL_CASE_SETUP_KEYS
+
 def get_setup_value(
         setup_dict: Dict,
         key: str,

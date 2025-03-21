@@ -2,7 +2,6 @@ from typing import Dict, Callable, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.halos.outer.boundary_condition import BoundaryCondition
@@ -11,6 +10,8 @@ from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace
 from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS
 from jaxfluids.halos.outer import EDGE_TYPES, VERTEX_TYPES
+
+Array = jax.Array
 
 class BoundaryConditionLevelset(BoundaryCondition):
     """ The BoundaryConditionLevelset class implements functionality to enforce user-
@@ -247,7 +248,5 @@ class BoundaryConditionLevelset(BoundaryCondition):
             slice_objects = self.halo_slices.face_slices_geometry[loc]
             mask = mask.at[slice_objects].set(1)
         return mask
-    
-
 
 

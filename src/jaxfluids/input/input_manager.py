@@ -4,9 +4,7 @@ import os
 from typing import Dict, Union, Tuple
 import warnings
 
-import jax
-import jax.numpy as jnp
-from jax import Array, numpy as np
+import jax, jax.numpy as jnp, numpy as np
 
 from jaxfluids.config import precision as precision_config
 from jaxfluids.data_types.case_setup.nondimensionalization import NondimensionalizationParameters
@@ -14,11 +12,14 @@ from jaxfluids.data_types.numerical_setup.precision import PrecisionSetup, Epsil
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_manager import EquationManager
 from jaxfluids.halos.halo_manager import HaloManager
+from jaxfluids.input.setup_reader import _get_setup_value, get_path_to_key
 from jaxfluids.input.case_setup.case_setup_reader import CaseSetupReader
 from jaxfluids.input.numerical_setup.numerical_setup_reader import NumericalSetupReader
+from jaxfluids.levelset.fluid_solid.solid_properties_manager import SolidPropertiesManager
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.solvers.convective_fluxes import HighOrderGodunov, FluxSplittingScheme
+
 
 class InputManager:
     """ The InputManager class reads a case setup
@@ -72,12 +73,19 @@ class InputManager:
         self.domain_information = DomainInformation(
             domain_setup=self.case_setup.domain_setup,
             nh_conservatives=self.numerical_setup.conservatives.halo_cells,
-            nh_geometry=nh_geometry)
+            nh_geometry=nh_geometry
+            )
 
         self.material_manager = MaterialManager(
             equation_information=self.equation_information,
             unit_handler=self.unit_handler,
-            material_manager_setup=self.case_setup.material_manager_setup)
+            material_manager_setup=self.case_setup.material_manager_setup,
+        )
+
+        self.solid_properties_manager = SolidPropertiesManager(
+            domain_information=self.domain_information,
+            solid_properties_setup=self.case_setup.solid_properties_setup
+            )
 
         self.equation_manager = EquationManager(
             material_manager=self.material_manager,
@@ -86,15 +94,20 @@ class InputManager:
         self.halo_manager = HaloManager(
             numerical_setup=self.numerical_setup,
             domain_information=self.domain_information,
-            material_manager=self.material_manager,
             equation_manager=self.equation_manager,
-            boundary_conditions_setup=self.case_setup.boundary_condition_setup)
+            boundary_conditions_setup=self.case_setup.boundary_condition_setup,
+            solid_properties_manager=self.solid_properties_manager
+            )
 
         # WE SET THE CELL SIZES WITH HALOS HERE FOR NOW, SINCE MESH IS STATIC
         cell_sizes_halos = self.halo_manager.get_cell_sizes_with_halos()
         self.domain_information.set_global_cell_sizes_with_halos(cell_sizes_halos)
         cell_centers_halos, cell_centers_difference = self.halo_manager.get_cell_centers_with_halos()
         self.domain_information.set_global_cell_centers_with_halos(cell_centers_halos, cell_centers_difference)
+
+        if self.halo_manager.boundary_condition_material.is_linear_extrapolation:
+            self.halo_manager.boundary_condition_material.set_stencils_linear_extrapolation()
+
         self.sanity_check()
 
     def sanity_check(self) -> None:
@@ -104,8 +117,15 @@ class InputManager:
         is_mesh_streching = self.domain_information.is_mesh_stretching
         if any(is_mesh_streching):
             if convective_solver in (HighOrderGodunov, FluxSplittingScheme):
-                reconstruction_stencil = self.numerical_setup.conservatives.convective_fluxes.reconstruction_stencil
-                split_reconstruction_setup = self.numerical_setup.conservatives.convective_fluxes.split_reconstruction
+                if convective_solver == HighOrderGodunov:
+                    godunov_setup = self.numerical_setup.conservatives.convective_fluxes.godunov
+                    reconstruction_stencil = godunov_setup.reconstruction_stencil
+                    split_reconstruction_setup = godunov_setup.split_reconstruction
+
+                elif convective_solver == FluxSplittingScheme:
+                    flux_splitting_setup = self.numerical_setup.conservatives.convective_fluxes.flux_splitting
+                    reconstruction_stencil = flux_splitting_setup.reconstruction_stencil
+                    split_reconstruction_setup = flux_splitting_setup.split_reconstruction
                 
                 if reconstruction_stencil is not None:
                     if not reconstruction_stencil.is_for_adaptive_mesh:
@@ -297,6 +317,8 @@ class InputManager:
         precision_config.set_thinc_limiter_eps(
             **thinc_limiter_epsilons)
 
+        if precision_setup.is_consistent_summation:
+            precision_config.enable_consistent_summation()
 
 def get_unit_handler(case_setup_dict: Dict) -> UnitHandler:
     """Initializes a UniHandler based on
@@ -329,40 +351,6 @@ def read_json_setup(setup: Union[str, Dict], name: str) -> Dict:
             "Consistency error reading json setup file. "
             f"{name} file does not exist.")
         setup = json.load(open(setup))
-
-    elif isinstance(setup, dict):
-        pass
-
-    else:
-        setup_type = type(setup)
-        assert False, (f"{name} has to be of type str or dict, "
-            f"but is of type {setup_type}.")
-
-    return setup
-
-def read_json_or_yaml_setup(setup: Union[str, Dict], name: str) -> Dict:
-    """Reads the provided setup which can be
-    a path to a json file, a path to a yaml file
-    or a Python dictionary.
-
-    :param setup: _description_
-    :type setup: Union[str, Dict]
-    :param name: _description_
-    :type name: str
-    :return: _description_
-    :rtype: Dict
-    """
-    if isinstance(setup, str):
-        assert os.path.isfile(setup), (
-            "Consistency error reading json setup file. "
-            f"{name} file does not exist.")
-
-        if setup.endswith("json"):
-            setup = json.load(open(setup))
-        elif setup.endswith(("yaml", "yml")):
-            setup = yaml.safe_load(open(setup))
-        else:
-            raise NotImplementedError
 
     elif isinstance(setup, dict):
         pass

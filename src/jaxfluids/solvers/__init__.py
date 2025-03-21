@@ -1,7 +1,3 @@
-TUPLE_POSITIVITY_FIXES = (
-    "SIMPLE", "NASA", "HAS"
-)
-
 TUPLE_FLUX_SPLITTING = (
     "ROE", "CLLF", "LLF", "CLF"
 )

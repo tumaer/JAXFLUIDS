@@ -1,5 +1,2 @@
-from jaxfluids.levelset.mixing.lauer_mixer import LauerMixer
-
-DICT_LEVELSET_MIXER = {
-    "LAUER": LauerMixer,
-}
+from jaxfluids.levelset.mixing.conservatives_mixer import ConservativeMixer
+from jaxfluids.levelset.mixing.solids_mixer import SolidsMixer

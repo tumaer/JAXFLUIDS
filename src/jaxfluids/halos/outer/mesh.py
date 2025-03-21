@@ -2,11 +2,12 @@ from typing import Dict, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.halos.outer.boundary_condition import BoundaryCondition
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace
+
+Array = jax.Array
 
 class BoundaryConditionMesh(BoundaryCondition):
 
@@ -74,7 +75,8 @@ class BoundaryConditionMesh(BoundaryCondition):
             else:
                 boundary_type = boundary_condition_face[0].boundary_type
             
-            if boundary_type in ["DIRICHLET", "NEUMANN"]:
+            if boundary_type in ("DIRICHLET", "NEUMANN", "LINEAREXTRAPOLATION", "SIMPLE_OUTFLOW", "SIMPLE_INFLOW",
+                                 "DIRICHLET_PARAMETERIZED"):
                 boundary_type = "ZEROGRADIENT"
             elif "WALL" in boundary_type:
                 boundary_type = "SYMMETRY"

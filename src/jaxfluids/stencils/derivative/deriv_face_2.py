@@ -1,9 +1,11 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+
+Array = jax.Array
 
 class DerivativeSecondOrderFace(SpatialDerivative):
     """2nd order stencil for 1st derivative at the cell face
@@ -33,8 +35,14 @@ class DerivativeSecondOrderFace(SpatialDerivative):
             buffer: Array,
             dxi: Array,
             axis: int,
+            is_use_s_mesh: bool = False,
             **kwargs
         ) -> Array:
-        s1_ = self.s_[axis]
-        deriv_xi = (1.0 / dxi) * (-buffer[s1_[0]] + buffer[s1_[1]])
+
+        if is_use_s_mesh:
+            s_ = self.s_mesh[axis]
+        else:
+            s_ = self.s_[axis]
+
+        deriv_xi = (1.0 / dxi) * (buffer[s_[1]] - buffer[s_[0]])
         return deriv_xi

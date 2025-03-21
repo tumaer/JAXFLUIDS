@@ -1,10 +1,13 @@
 from functools import partial
 from typing import List, Tuple
 
-import jax.numpy as jnp
-from jax import Array
-import numpy as np
 import jax
+import jax.numpy as jnp
+import numpy as np
+
+from jaxfluids.helper_functions import roll_tuple
+
+Array = jax.Array
 
 def split_buffer(
         buffer: Array,
@@ -193,7 +196,7 @@ def reassemble_buffer(
     Buffer shape must be (Ni,...,Nx+2*Nh,Ny+2*Nh,Nz+2*Nh)
     if is_transpose is False or
     (Ni,Nz+2*Nh,Ny+2*Nh,Nx+2*Nh,...) if
-    is_transpose is True.
+    is_transpose is True. Ni is the number of devices.
 
     :param buffer: _description_
     :type buffer: Array
@@ -227,12 +230,12 @@ def reassemble_buffer(
 
 
 def reassemble_buffer_np(
-        buffer: Array,
+        buffer: np.ndarray,
         split_factors: Tuple,
         nh: int = None,
         is_transpose: bool = False,
         keep_transpose: bool = False
-        ) -> Array:
+        ) -> np.ndarray:
     """Numpy version of reassemble_buffer().
 
     :param buffer: _description_
@@ -408,3 +411,120 @@ def reassemble_cell_faces(
 
         cell_faces_xi.append(fxi)
     return cell_faces_xi
+
+
+def add_halo_offset(
+        indices: Tuple[Array],
+        nh: int,
+        active_axes_indices: Tuple[int]
+        ) -> Tuple[Array]:
+    """Adds number of halo cells to the cell indices arrays.
+
+    :param indices: _description_
+    :type indices: Tuple[Array]
+    :param nh: _description_
+    :type nh: int
+    :param active_axes_indices: _description_
+    :type active_axes_indices: Tuple[int]
+    :return: _description_
+    :rtype: Tuple[Array]
+    """
+    indices_offset = []
+    for axis_index in range(3):
+        s_ = indices[axis_index]
+        if axis_index in active_axes_indices:
+            s_offset = s_ + nh
+        else:
+            s_offset = s_
+        indices_offset.append(s_offset)
+    indices_offset = (...,) + tuple(indices_offset)
+    return indices_offset
+
+
+def trim_buffer(
+    buffer: Array,
+    trim: int | Tuple[int],
+    ) -> Array:
+
+    if isinstance(trim, int):
+        assert trim >= 0, "trim has to be >= 0."
+        trim = tuple([trim] * 3)
+    elif isinstance(trim, (tuple, list)):
+        assert len(trim) == 3, "If trim is of type sequence, it has to be of length 3."
+        for axis in range(3):
+            trim_xi = trim[axis]
+            if isinstance(trim_xi, int):
+                assert trim_xi >= 0, "trim has to be >= 0."
+            elif isinstance(trim_xi, (tuple, list)):
+                assert len(trim_xi) == 2
+                assert trim_xi[0] >= 0 and trim_xi[1] >= 0, "trim has to be >= 0."
+            else:
+                raise ValueError
+    else:
+        raise ValueError
+
+    s_ = (...,)
+    for axis in range(3):
+        if buffer.shape[-3+axis] > 1:
+            trim_xi = trim[axis]
+
+            if isinstance(trim_xi, int):
+                trim_left = trim_right = trim_xi
+            elif isinstance(trim_xi, (tuple, list)):
+                trim_left, trim_right = trim_xi
+
+            trim_left = None if trim_left == 0 else trim_left
+            trim_right = None if trim_right == 0 else -trim_right
+        
+            s_ += (jnp.s_[trim_left:trim_right],)
+
+        else:
+            s_ += (jnp.s_[:],)
+    
+    buffer_trimmed = buffer[s_]
+
+    return buffer_trimmed
+
+
+def trim_cell_sizes(
+    cell_sizes: Tuple[Array],
+    trim: int | Tuple[int],
+    ) -> Tuple[Array]:
+
+    if isinstance(trim, int):
+        assert trim >= 0, "trim has to be >= 0."
+        trim = tuple([trim] * 3)
+    elif isinstance(trim, (tuple, list)):
+        assert len(trim) == 3, "If trim is of type sequence, it has to be of length 3."
+        for axis in range(3):
+            trim_xi = trim[axis]
+            if isinstance(trim_xi, int):
+                assert trim_xi >= 0, "trim has to be >= 0."
+            elif isinstance(trim_xi, (tuple, list)):
+                assert len(trim_xi) == 2
+                assert trim_xi[0] >= 0 and trim_xi[1] >= 0, "trim has to be >= 0."
+            else:
+                raise ValueError
+    else:
+        raise ValueError
+
+    cell_sizes_trimmed = []
+    for axis in range(3):
+        cell_sizes_xi = cell_sizes[axis]
+
+        is_mesh_stretching = cell_sizes_xi.shape[-3:] != (1,1,1)
+        if is_mesh_stretching:
+            trim_xi = trim[axis]
+            if isinstance(trim_xi, int):
+                trim_left = trim_right = trim_xi
+            elif isinstance(trim_xi, (tuple, list)):
+                trim_left, trim_right = trim_xi
+
+            trim_left = None if trim_left == 0 else trim_left
+            trim_right = None if trim_right == 0 else -trim_right
+            s_ = jnp.s_[...,] + roll_tuple(jnp.s_[trim_left:trim_right,:,:], axis)
+            cell_sizes_xi = cell_sizes_xi[s_]
+
+        cell_sizes_trimmed.append(cell_sizes_xi)
+
+    return tuple(cell_sizes_trimmed)

@@ -1,11 +1,14 @@
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.shock_sensor.shock_sensor import ShockSensor
 from jaxfluids.stencils.derivative.deriv_center_2 import DerivativeSecondOrderCenter
 from jaxfluids.stencils.derivative.deriv_center_adap_2 import DerivativeSecondOrderAdapCenter
-from jaxfluids.stencils.reconstruction.central_adap_2 import CentralSecondOrderAdapReconstruction
+from jaxfluids.stencils.reconstruction.central.central_adap_2 import CentralSecondOrderAdapReconstruction
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 
 class Ducros(ShockSensor):
@@ -79,7 +82,7 @@ class Ducros(ShockSensor):
             # curl_3 = self.reconstruction_stencil_face.reconstruct_xi(curl_3, axis)
 
             div  = jnp.abs(div)
-            curl = jnp.sqrt(curl_1 * curl_1 + curl_2 * curl_2 + curl_3 * curl_3) 
+            curl = jnp.sqrt(sum3_consistent(curl_1 * curl_1, curl_2 * curl_2, curl_3 * curl_3)) 
 
             fs = jnp.where(div / (div + curl + self.eps) >= 0.95, 1, 0)
 

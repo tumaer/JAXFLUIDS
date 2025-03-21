@@ -3,11 +3,12 @@ from typing import Callable, Tuple, Union
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.equation_manager import EquationManager
 from jaxfluids.config import precision
+
+Array = jax.Array
 
 class RiemannSolver(ABC):
     """Abstract base class for Riemann solvers.
@@ -37,16 +38,16 @@ class RiemannSolver(ABC):
         self.equation_type = self.equation_information.equation_type
         self.is_surface_tension = self.equation_information.active_physics.is_surface_tension
 
-        self.mass_ids = self.equation_manager.equation_information.mass_ids
-        self.mass_slices = self.equation_manager.equation_information.mass_slices
-        self.velocity_ids = self.equation_manager.equation_information.velocity_ids
-        self.velocity_slices = self.equation_manager.equation_information.velocity_slices
-        self.energy_ids = self.equation_manager.equation_information.energy_ids
-        self.energy_slices = self.equation_manager.equation_information.energy_slices
-        self.vf_ids = self.equation_manager.equation_information.vf_ids
-        self.vf_slices = self.equation_manager.equation_information.vf_slices
-        self.species_ids = self.equation_manager.equation_information.species_ids
-        self.species_slices = self.equation_manager.equation_information.species_slices
+        self.ids_mass = self.equation_manager.equation_information.ids_mass
+        self.s_mass = self.equation_manager.equation_information.s_mass
+        self.ids_velocity = self.equation_manager.equation_information.ids_velocity
+        self.s_velocity = self.equation_manager.equation_information.s_velocity
+        self.ids_energy = self.equation_manager.equation_information.ids_energy
+        self.s_energy = self.equation_manager.equation_information.s_energy
+        self.ids_volume_fraction = self.equation_manager.equation_information.ids_volume_fraction
+        self.s_volume_fraction = self.equation_manager.equation_information.s_volume_fraction
+        self.ids_species = self.equation_manager.equation_information.ids_species
+        self.s_species = self.equation_manager.equation_information.s_species
     
     def solve_riemann_problem_xi(
             self, 
@@ -62,7 +63,8 @@ class RiemannSolver(ABC):
         one of
 
         1) _solve_riemann_problem_xi_single_phase
-        2) _solve_riemann_problem_xi_diffuse_five_equation
+        2) _solve_riemann_problem_xi_diffuse_four_equation
+        3) _solve_riemann_problem_xi_diffuse_five_equation
 
         :param primitives_L: primtive variable buffer left of cell face
         :type primitives_L: Array
@@ -78,10 +80,14 @@ class RiemannSolver(ABC):
         :rtype: Tuple[Array, Union[Array, None], Union[Array, None]]
         """
 
-        if self.equation_type in ("SINGLE-PHASE",
-                                  "TWO-PHASE-LS",
-                                  "SINGLE-PHASE-SOLID-LS"):
+        if self.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
             return self._solve_riemann_problem_xi_single_phase(
+                primitives_L, primitives_R,
+                conservatives_L, conservatives_R,
+                axis, **kwargs)
+
+        elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":
+            return self._solve_riemann_problem_xi_diffuse_four_equation(
                 primitives_L, primitives_R,
                 conservatives_L, conservatives_R,
                 axis, **kwargs)
@@ -91,7 +97,7 @@ class RiemannSolver(ABC):
                 primitives_L, primitives_R,
                 conservatives_L, conservatives_R,
                 axis, **kwargs)
-    
+
         else:
             raise NotImplementedError
 
@@ -107,6 +113,34 @@ class RiemannSolver(ABC):
         ) -> Tuple[Array, Union[Array, None], Union[Array, None]]:
         """Solves one-dimensional single-phase Riemann problem
         in the direction as specified by the axis argument.
+
+        :param primitives_L: _description_
+        :type primitives_L: Array
+        :param primitives_R: _description_
+        :type primitives_R: Array
+        :param conservatives_L: _description_
+        :type conservatives_L: Array
+        :param conservatives_R: _description_
+        :type conservatives_R: Array
+        :param axis: _description_
+        :type axis: int
+        :return: _description_
+        :rtype: Tuple[Array, Union[Array, None], Union[Array, None]]
+        """
+        pass
+
+    @abstractmethod
+    def _solve_riemann_problem_xi_diffuse_four_equation(
+            self,
+            primitives_L: Array, 
+            primitives_R: Array,
+            conservatives_L: Array, 
+            conservatives_R: Array, 
+            axis: int,
+            **kwargs
+        ) -> Tuple[Array, Union[Array, None], Union[Array, None]]:
+        """Solves one-dimensional Riemann problem for the diffuse-interface
+        four-equation model in the direction as specified by the axis argument.
 
         :param primitives_L: _description_
         :type primitives_L: Array

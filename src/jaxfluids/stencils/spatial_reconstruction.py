@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_stencil import SpatialStencil
+
+Array = jax.Array
 
 class SpatialReconstruction(SpatialStencil):
     """This is an abstract spatial reconstruction class. SpatialReconstruction

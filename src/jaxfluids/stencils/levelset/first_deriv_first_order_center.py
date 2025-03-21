@@ -1,9 +1,11 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+
+Array = jax.Array
 
 class FirstDerivativeFirstOrderCenter(SpatialDerivative):
     

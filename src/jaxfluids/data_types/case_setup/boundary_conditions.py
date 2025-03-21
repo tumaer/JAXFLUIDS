@@ -1,7 +1,9 @@
-from typing import NamedTuple, Tuple, \
-    Callable
+from typing import NamedTuple, Tuple, Callable, List
+
+import jax
 import jax.numpy as jnp
-from jax import Array
+
+Array = jax.Array
 
 class PrimitivesTable(NamedTuple):
     primitives: Array = None
@@ -17,6 +19,17 @@ class WallMassTransferSetup(NamedTuple):
     primitives_callable: NamedTuple = None
     bounding_domain_callable: Callable = None
 
+class SimpleInflowSetup(NamedTuple):
+    primitives_callable: NamedTuple = None
+
+class SimpleOutflowSetup(NamedTuple):
+    primitives_callable: NamedTuple = None
+
+class VelocityTuple(NamedTuple):
+    u: float
+    v: float
+    w: float
+
 class BoundaryConditionsFace(NamedTuple):
     boundary_type: str = None
     bounding_domain_callable: Callable = None
@@ -26,6 +39,9 @@ class BoundaryConditionsFace(NamedTuple):
     wall_temperature_callable: Callable = None
     wall_mass_transfer: WallMassTransferSetup = None
     primitives_table: PrimitivesTable = None
+    simple_inflow: SimpleInflowSetup = None
+    simple_outflow: SimpleOutflowSetup = None
+    temperature_callable: Callable = None # NOTE for coupled solids
 
 class BoundaryConditionsField(NamedTuple):
     east: Tuple[BoundaryConditionsFace] = None
@@ -38,3 +54,4 @@ class BoundaryConditionsField(NamedTuple):
 class BoundaryConditionSetup(NamedTuple):
     primitives: BoundaryConditionsField = None
     levelset: BoundaryConditionsField = None
+    solids: BoundaryConditionsField = None

@@ -2,12 +2,13 @@ from typing import Callable, Tuple, Union
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.solvers.riemann_solvers.riemann_solver import RiemannSolver
 from jaxfluids.solvers.riemann_solvers.signal_speeds import compute_sstar
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.equation_manager import EquationManager
+
+Array = jax.Array
 
 class HLLC_SIMPLEALPHA(RiemannSolver):
     """HLLC Riemann Solver
@@ -26,6 +27,17 @@ class HLLC_SIMPLEALPHA(RiemannSolver):
         self.s_star = compute_sstar
 
     def _solve_riemann_problem_xi_single_phase(
+            self,
+            primitives_L: Array,
+            primitives_R: Array,
+            conservatives_L: Array,
+            conservatives_R: Array,
+            axis: int,
+            **kwargs
+        )  -> Tuple[Array, Union[Array, None], Union[Array, None]]:
+        raise NotImplementedError
+
+    def _solve_riemann_problem_xi_diffuse_four_equation(
             self,
             primitives_L: Array,
             primitives_R: Array,
@@ -55,17 +67,17 @@ class HLLC_SIMPLEALPHA(RiemannSolver):
         rho_L = self.material_manager.get_density(primitives_L)
         rho_R = self.material_manager.get_density(primitives_R)
 
-        u_L   = primitives_L[self.velocity_ids[axis]]
-        u_R   = primitives_R[self.velocity_ids[axis]]
+        u_L   = primitives_L[self.ids_velocity[axis]]
+        u_R   = primitives_R[self.ids_velocity[axis]]
 
-        p_L   = primitives_L[self.energy_ids]
-        p_R   = primitives_R[self.energy_ids]
+        p_L   = primitives_L[self.ids_energy]
+        p_R   = primitives_R[self.ids_energy]
 
         fluxes_L  = self.equation_manager.get_fluxes_xi(primitives_L, conservatives_L, axis)
         fluxes_R = self.equation_manager.get_fluxes_xi(primitives_R, conservatives_R, axis)
 
-        speed_of_sound_L = self.material_manager.get_speed_of_sound(p = p_L, rho = rho_L, alpha_i = primitives_L[self.vf_slices])
-        speed_of_sound_R = self.material_manager.get_speed_of_sound(p = p_R, rho = rho_R, alpha_i = primitives_R[self.vf_slices])
+        speed_of_sound_L = self.material_manager.get_speed_of_sound(p = p_L, rho = rho_L, alpha_i = primitives_L[self.s_volume_fraction])
+        speed_of_sound_R = self.material_manager.get_speed_of_sound(p = p_R, rho = rho_R, alpha_i = primitives_R[self.s_volume_fraction])
 
         wave_speed_simple_L, wave_speed_simple_R = self.signal_speed(
             u_L, 
@@ -97,27 +109,27 @@ class HLLC_SIMPLEALPHA(RiemannSolver):
         pre_factor_R = (wave_speed_simple_R - u_R) / (wave_speed_simple_R - wave_speed_contact)
 
         u_star_L = [
-            *primitives_L[self.mass_slices], 
+            *primitives_L[self.s_mass], 
             rho_L, 
             rho_L, 
             rho_L, 
-            conservatives_L[self.energy_ids] + (wave_speed_contact - u_L) * (rho_L * wave_speed_contact + p_L / (wave_speed_simple_L - u_L) ),
-            *primitives_L[self.vf_slices], 
+            conservatives_L[self.ids_energy] + (wave_speed_contact - u_L) * (rho_L * wave_speed_contact + p_L / (wave_speed_simple_L - u_L) ),
+            *primitives_L[self.s_volume_fraction], 
         ]
-        u_star_L[self.velocity_ids[axis]]      *= wave_speed_contact
+        u_star_L[self.ids_velocity[axis]]      *= wave_speed_contact
         u_star_L[self.velocity_minor[axis][0]] *= primitives_L[self.velocity_minor[axis][0]]
         u_star_L[self.velocity_minor[axis][1]] *= primitives_L[self.velocity_minor[axis][1]]
         u_star_L = pre_factor_L * jnp.stack(u_star_L)
 
         u_star_R = [
-            *primitives_R[self.mass_slices], 
+            *primitives_R[self.s_mass], 
             rho_R, 
             rho_R, 
             rho_R, 
-            conservatives_R[self.energy_ids] + (wave_speed_contact - u_R) * (rho_R * wave_speed_contact + p_R / (wave_speed_simple_R - u_R) ),
-            *primitives_R[self.vf_slices], 
+            conservatives_R[self.ids_energy] + (wave_speed_contact - u_R) * (rho_R * wave_speed_contact + p_R / (wave_speed_simple_R - u_R) ),
+            *primitives_R[self.s_volume_fraction], 
         ]
-        u_star_R[self.velocity_ids[axis]]      *= wave_speed_contact
+        u_star_R[self.ids_velocity[axis]]      *= wave_speed_contact
         u_star_R[self.velocity_minor[axis][0]] *= primitives_R[self.velocity_minor[axis][0]]
         u_star_R[self.velocity_minor[axis][1]] *= primitives_R[self.velocity_minor[axis][1]]
         u_star_R = pre_factor_R * jnp.stack(u_star_R)
@@ -126,8 +138,8 @@ class HLLC_SIMPLEALPHA(RiemannSolver):
         flux_star_L = fluxes_L + wave_speed_L * (u_star_L - conservatives_L)
         flux_star_R = fluxes_R + wave_speed_R * (u_star_R - conservatives_R)
 
-        flux_star_L = flux_star_L.at[self.vf_slices].set(wave_speed_contact * conservatives_L[self.vf_slices])
-        flux_star_R = flux_star_R.at[self.vf_slices].set(wave_speed_contact * conservatives_R[self.vf_slices])
+        flux_star_L = flux_star_L.at[self.s_volume_fraction].set(wave_speed_contact * conservatives_L[self.s_volume_fraction])
+        flux_star_R = flux_star_R.at[self.s_volume_fraction].set(wave_speed_contact * conservatives_R[self.s_volume_fraction])
 
         ''' Kind of Toro 10.71 '''
         fluxes_xi = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * flux_star_L \

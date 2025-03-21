@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from jaxfluids_nn import Trainer
+from jaxfluids_nn.trainer import Trainer
 
 class Callback:
     """
@@ -14,34 +14,20 @@ class Callback:
     def init_callback(self, trainer: Trainer):
         pass
 
-    def on_epoch_start(self, 
-        trainer: Trainer,
-        epoch: int,
-        params: Dict,
-        net: Dict):
+    def on_epoch_start(self, trainer: Trainer, epoch: int,
+                       params: Dict, net: Dict):
         pass
 
-    def on_epoch_end(self, 
-        trainer: Trainer,
-        epoch: int,
-        params: Dict,
-        net: Dict):
+    def on_epoch_end(self, trainer: Trainer, epoch: int,
+                     params: Dict, net: Dict):
         pass
 
-    def on_batch_start(self, 
-        trainer: Trainer,
-        epoch: int,
-        batch_no: int,
-        batch: Tuple,
-        params: Dict,
-        net: Dict):
+    def on_batch_start(self, trainer: Trainer, epoch: int,
+                       batch_no: int, batch: Tuple, 
+                       params: Dict, net: Dict):
         pass
 
-    def on_batch_end(self, 
-        trainer: Trainer, 
-        epoch: int,
-        batch_no: int,
-        batch: Tuple,
-        params: Dict,
-        net: Dict):
+    def on_batch_end(self, trainer: Trainer, epoch: int,
+                     batch_no: int, batch: Tuple,
+                     params: Dict, net: Dict):
         pass

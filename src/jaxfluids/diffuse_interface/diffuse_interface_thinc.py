@@ -3,16 +3,19 @@ from functools import partial
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.config import precision
 from jaxfluids.data_types.numerical_setup.diffuse_interface import DiffuseInterfaceSetup
+from jaxfluids.diffuse_interface.helper_functions import compute_interface_center
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_manager import EquationManager
 from jaxfluids.halos.halo_manager import HaloManager
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 from jaxfluids.math.power_functions import squared
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class DiffuseInterfaceTHINC(SpatialReconstruction):
     """The DiffuseInterfaceTHINC class implements functionality for THINC
@@ -42,14 +45,14 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
         
         equation_information = equation_manager.equation_information
         self.equation_type = equation_information.equation_type
-        self.mass_ids = equation_information.mass_ids
-        self.mass_slices = equation_information.mass_slices
-        self.vel_ids = equation_information.velocity_ids 
-        self.vel_slices = equation_information.velocity_slices
-        self.energy_ids = equation_information.energy_ids
-        self.energy_slices = equation_information.energy_slices
-        self.vf_ids = equation_information.vf_ids
-        self.vf_slices = equation_information.vf_slices
+        self.ids_mass = equation_information.ids_mass
+        self.s_mass = equation_information.s_mass
+        self.vel_ids = equation_information.ids_velocity 
+        self.vel_slices = equation_information.s_velocity
+        self.ids_energy = equation_information.ids_energy
+        self.s_energy = equation_information.s_energy
+        self.ids_volume_fraction = equation_information.ids_volume_fraction
+        self.s_volume_fraction = equation_information.s_volume_fraction
 
         self.diffuse_interface_model = diffuse_interface_setup.model
 
@@ -108,7 +111,7 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
         that's why we have implemented custom derivatives here.
         """
 
-        @partial(jax.custom_vjp)
+        @jax.custom_vjp
         def _compute_interface_location(
                 volume_fraction: Array,
                 sigma: Array,
@@ -149,6 +152,7 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
             normal: Array,
             curvature: Array,
             axis: int,
+            volume_fraction: Array = None
             ) -> Array:
         """Performs THINC reconstruction on the volume fraction field
         and adjusts other reconstructed fields (e.g., partial densites
@@ -194,9 +198,20 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
             curvature = curvature[slice_]
 
         if self.diffuse_interface_model == "5EQM":
-            volume_fraction = conservatives[self.vf_ids]
-            volume_fraction_L = conservatives_L[self.vf_ids]
-            volume_fraction_R = conservatives_R[self.vf_ids]
+            volume_fraction = conservatives[self.ids_volume_fraction]
+            volume_fraction_L = conservatives_L[self.ids_volume_fraction]
+            volume_fraction_R = conservatives_R[self.ids_volume_fraction]
+
+        elif self.diffuse_interface_model == "4EQM":
+            # TODO 4EQM 
+            temperature_L = self.material_manager.get_temperature(primitives_L)
+            volume_fraction_L = self.material_manager.diffuse_4eqm_mixture.get_volume_fractions_from_pressure_temperature(
+                primitives_L[self.s_mass], primitives_L[self.ids_energy], temperature_L)
+            volume_fraction_L = volume_fraction_L[0]
+            temperature_R = self.material_manager.get_temperature(primitives_R)
+            volume_fraction_R = self.material_manager.diffuse_4eqm_mixture.get_volume_fractions_from_pressure_temperature(
+                primitives_R[self.s_mass], primitives_R[self.ids_energy], temperature_R)
+            volume_fraction_R = volume_fraction_R[0]
 
         else:
             raise NotImplementedError
@@ -218,7 +233,8 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
             primitives_L, primitives_R,
             volume_fraction_L, volume_fraction_R,
             interface_cell_mask, curvature, 
-            sigma, beta_xi, axis)
+            sigma, beta_xi, axis,
+            volume_fraction=volume_fraction if self.diffuse_interface_model == "4EQM" else None)
 
         return conservatives_L, conservatives_R, primitives_L, primitives_R
 
@@ -279,13 +295,6 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
                 / (1.0 - jnp.exp(beta_xi * (1.0 - sigma - 2.0 * volume_fraction[s1]) / sigma)))
             volume_fraction_L_thinc = 0.5 * (1 + sigma * jnp.tanh(beta_xi * (1.0 - x_tilde)))
             volume_fraction_R_thinc = 0.5 * (1 + sigma * jnp.tanh(-beta_xi * x_tilde))
-        
-        elif self.thinc_type == "RHOTHINC":
-            # Garrick et al. - 2017 - An interface capturing scheme for 
-            # modeling atomization in compressible flows
-            x_tilde = self.compute_interface_location(volume_fraction[s1], sigma, beta_xi)
-            volume_fraction_L_thinc = 0.5 * (1.0 + jnp.tanh(beta_xi * (sigma + x_tilde)))
-            volume_fraction_R_thinc = 0.5 * (1.0 + jnp.tanh(beta_xi * x_tilde))
 
         elif self.thinc_type == "DENG":
             # Deng et al. - 2018 - High fidelity discontinuity-resolving 
@@ -301,15 +310,23 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
             volume_fraction_R_thinc = q_min \
                 + 0.5 * q_max * (1.0 + sigma * A)
 
+        elif self.thinc_type == "RHOTHINC":
+            # Garrick et al. - 2017 - An interface capturing scheme for 
+            # modeling atomization in compressible flows
+            x_tilde = self.compute_interface_location(volume_fraction[s1], sigma, beta_xi)
+            volume_fraction_L_thinc = 0.5 * (1.0 + jnp.tanh(beta_xi * (sigma + x_tilde)))
+            volume_fraction_R_thinc = 0.5 * (1.0 + jnp.tanh(beta_xi * x_tilde))
+
         elif self.thinc_type == "PRIMITIVE":
             # Symmetric THINC reconstruction assuming
             # phi(x) = 0.5 * ( 1 + tanh(beta_i * (X + c_i)) )
             # with X = (x - x_{i-1/2}) / Delta x if sigma_i >= 0
             # and X = (x_{i+1/2} - x) / Delta x if sigma_i < 0
-            tmp = 2.0 * beta_xi
-            A = jnp.exp(tmp)
-            B = jnp.exp(tmp * volume_fraction[s1])
-            xc = 1.0 / tmp * jnp.log((B - 1.0) / (A - B))
+            # tmp = 2.0 * beta_xi
+            # A = jnp.exp(tmp)
+            # B = jnp.exp(tmp * volume_fraction[s1])
+            # xc = 1.0 / tmp * jnp.log((B - 1.0) / (A - B))
+            xc = compute_interface_center(volume_fraction[s1], beta_xi)
             phi_1 = 0.5 * (1.0 + jnp.tanh(beta_xi * xc))
             phi_2 = 0.5 * (1.0 + jnp.tanh(beta_xi * (1.0 + xc)))
             mask = sigma >= 0
@@ -389,29 +406,36 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
         primitives = primitives[s1]
 
         if self.diffuse_interface_model == "5EQM":
-            volume_fraction = conservatives[self.vf_ids]
+            volume_fraction = conservatives[self.ids_volume_fraction]
+        elif self.diffuse_interface_model == "4EQM":
+            volume_fraction = volume_fraction[s1]
         else:
             raise NotImplementedError
 
         if self.interface_treatment in ("NONE", "DENG"):
-            conservatives_L = conservatives_L.at[self.vf_ids].set(volume_fraction_L)
-            conservatives_R = conservatives_R.at[self.vf_ids].set(volume_fraction_R)
-            primitives_L = primitives_L.at[self.vf_ids].set(volume_fraction_L)
-            primitives_R = primitives_R.at[self.vf_ids].set(volume_fraction_R)
+            conservatives_L = conservatives_L.at[self.ids_volume_fraction].set(volume_fraction_L)
+            conservatives_R = conservatives_R.at[self.ids_volume_fraction].set(volume_fraction_R)
+            primitives_L = primitives_L.at[self.ids_volume_fraction].set(volume_fraction_L)
+            primitives_R = primitives_R.at[self.ids_volume_fraction].set(volume_fraction_R)
 
         elif self.interface_treatment == "SHYUE":
-            rho_alpha = conservatives[self.mass_slices]
-            pressure = primitives[self.energy_ids]
+            rho_alpha = conservatives[self.s_mass]
+            pressure = primitives[self.ids_energy]
             rho_u = conservatives[self.vel_slices]
-            total_energy = conservatives[self.energy_ids]
+            total_energy = conservatives[self.ids_energy]
             velocity = primitives[self.vel_slices]
 
             rho = self.material_manager.get_density(conservatives)
-            phasic_internal_energy = self.material_manager.get_phasic_specific_energy(pressure)
+            if self.diffuse_interface_model == "5EQM":
+                phasic_internal_energy = self.material_manager.get_phasic_specific_energy(pressure)
+            elif self.diffuse_interface_model == "4EQM":
+                temperature = self.material_manager.get_temperature(primitives)
+                phasic_internal_energy = self.material_manager.get_phasic_specific_energy(
+                    pressure, temperature)
 
             volume_fraction_full = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
             phasic_densities = rho_alpha / volume_fraction_full
-            kinetic_energy = 0.5 * jnp.sum(velocity * velocity, axis=0)
+            kinetic_energy = 0.5 * sum3_consistent(*jnp.square(velocity))
 
             def _interface_treatment_shyue(volume_fraction_K, conservatives_K, slice_K) -> Array:
                 volume_fraction_K_full = jnp.stack([volume_fraction_K, 1.0 - volume_fraction_K], axis=0)
@@ -420,15 +444,15 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
                 rhou_K = rho_u[slice_K] + velocity[slice_K] * (rho_K - rho[slice_K])
                 E_K = total_energy[slice_K] + kinetic_energy[slice_K] * (rho_K - rho[slice_K]) \
                     + jnp.sum(phasic_internal_energy[slice_K] * (volume_fraction_K_full - volume_fraction_full[slice_K]), axis=0)
-                rho_alpha_K = jnp.where(interface_mask[slice_K], rho_alpha_K, conservatives_K[self.mass_slices])
+                rho_alpha_K = jnp.where(interface_mask[slice_K], rho_alpha_K, conservatives_K[self.s_mass])
                 rhou_K = jnp.where(interface_mask[slice_K], rhou_K, conservatives_K[self.vel_slices])
-                E_K = jnp.where(interface_mask[slice_K], E_K, conservatives_K[self.energy_ids])
+                E_K = jnp.where(interface_mask[slice_K], E_K, conservatives_K[self.ids_energy])
                 
-                conservatives_K = conservatives_K.at[self.mass_slices].set(rho_alpha_K)
+                conservatives_K = conservatives_K.at[self.s_mass].set(rho_alpha_K)
                 conservatives_K = conservatives_K.at[self.vel_slices].set(rhou_K)
-                conservatives_K = conservatives_K.at[self.energy_ids].set(E_K)
+                conservatives_K = conservatives_K.at[self.ids_energy].set(E_K)
                 if self.diffuse_interface_model == "5EQM":
-                    conservatives_K = conservatives_K.at[self.vf_ids].set(volume_fraction_K)
+                    conservatives_K = conservatives_K.at[self.ids_volume_fraction].set(volume_fraction_K)
                 return conservatives_K
 
             conservatives_L = _interface_treatment_shyue(volume_fraction_L, conservatives_L, slice_L)
@@ -437,17 +461,18 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
             primitives_R = self.equation_manager.get_primitives_from_conservatives(conservatives_R)
 
         elif self.interface_treatment == "RHOTHINC":
-            rho_alpha = conservatives[self.mass_slices]
+            rho_alpha = conservatives[self.s_mass]
             tmp = 2.0 * sigma * beta_xi
             A = jnp.exp(tmp)
             B = jnp.exp(tmp * volume_fraction)
-            xc = 1.0 / (2.0 * beta_xi) * jnp.log((B - 1.0) / (A - B))
+            # xc = 1.0 / (2.0 * beta_xi) * jnp.log((B - 1.0) / (A - B))
+            xc = self.compute_interface_location(volume_fraction, sigma, beta_xi)
             D = jnp.exp(2 * beta_xi * xc)
             E = jnp.log( squared(A * D + 1.0) / (A * squared(D + 1.0) + self.eps) )
             rho_1 = 2.0 * tmp * rho_alpha[0] / (E + tmp)
             rho_2 = -2.0 * tmp * rho_alpha[1] / (E - tmp)
 
-            def _interface_treatment_rhothinc(\
+            def _interface_treatment_rhothinc(
                     volume_fraction_K: Array, 
                     primitives_K: Array, 
                     slice_K: Array
@@ -455,10 +480,10 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
                 rho_alpha_1_K = rho_1[slice_K] * volume_fraction_K
                 rho_alpha_2_K = rho_2[slice_K] * (1.0 - volume_fraction_K)
                 rho_alpha_K_thinc = jnp.stack([rho_alpha_1_K, rho_alpha_2_K], axis=0)
-                rho_alpha_K = jnp.where(interface_mask[slice_K], rho_alpha_K_thinc, primitives_K[self.mass_slices])
-                primitives_K = primitives_K.at[self.mass_slices].set(rho_alpha_K)
+                rho_alpha_K = jnp.where(interface_mask[slice_K], rho_alpha_K_thinc, primitives_K[self.s_mass])
+                primitives_K = primitives_K.at[self.s_mass].set(rho_alpha_K)
                 if self.diffuse_interface_model == "5EQM":
-                    primitives_K = primitives_K.at[self.vf_ids].set(volume_fraction_K)
+                    primitives_K = primitives_K.at[self.ids_volume_fraction].set(volume_fraction_K)
                 return primitives_K
 
             primitives_L = _interface_treatment_rhothinc(volume_fraction_L, primitives_L, slice_L)
@@ -468,8 +493,8 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
 
         elif self.interface_treatment == "PRIMITIVE":
             # At cell center
-            rho_alpha = conservatives[self.mass_slices]
-            pressure = primitives[self.energy_ids]
+            rho_alpha = conservatives[self.s_mass]
+            pressure = primitives[self.ids_energy]
             volume_fraction_full = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
             phasic_densities = rho_alpha / volume_fraction_full
 
@@ -480,18 +505,23 @@ class DiffuseInterfaceTHINC(SpatialReconstruction):
                 ) -> Array:
                 volume_fraction_K_full = jnp.stack([volume_fraction_K, 1.0 - volume_fraction_K], axis=0)
                 rho_alpha_K_thinc = rho_alpha[slice_K] + phasic_densities[slice_K] * (volume_fraction_K_full - volume_fraction_full[slice_K])
-                rho_alpha_K = jnp.where(interface_mask[slice_K], rho_alpha_K_thinc, primitives_K[self.mass_slices])
+                rho_alpha_K = jnp.where(interface_mask[slice_K], rho_alpha_K_thinc, primitives_K[self.s_mass])
+                
                 if curvature is not None:
                     # Adjust pressure according to Laplace law
                     # based on volume fraction according to THINC
                     sigma_kappa_K = self.material_manager.get_sigma() * curvature[slice_K]
                     p_K_thinc = pressure[slice_K] + sigma_kappa_K * (volume_fraction_K - volume_fraction[slice_K])
-                    p_K = jnp.where(interface_mask[slice_K], p_K_thinc, primitives_K[self.energy_ids])
-                    primitives_K = primitives_K.at[self.energy_ids].set(p_K)
+                    p_K = jnp.where(interface_mask[slice_K], p_K_thinc, primitives_K[self.ids_energy])
+                    primitives_K = primitives_K.at[self.ids_energy].set(p_K)
+                else:
+                    pass
+                    # TODO reduces to first-order at interface or do not touch pressure
+                    # primitives_K = primitives_K.at[self.ids_energy].set(pressure[slice_K])
 
-                primitives_K = primitives_K.at[self.mass_slices].set(rho_alpha_K)
+                primitives_K = primitives_K.at[self.s_mass].set(rho_alpha_K)
                 if self.diffuse_interface_model == "5EQM":
-                    primitives_K = primitives_K.at[self.vf_ids].set(volume_fraction_K)
+                    primitives_K = primitives_K.at[self.ids_volume_fraction].set(volume_fraction_K)
                 return primitives_K
 
             primitives_L = _interface_treatment_primitive(volume_fraction_L, primitives_L, slice_L)

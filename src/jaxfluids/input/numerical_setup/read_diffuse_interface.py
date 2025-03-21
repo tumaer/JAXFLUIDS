@@ -1,7 +1,7 @@
 from typing import Dict, Any
 
 from jaxfluids.stencils import (DICT_DERIVATIVE_FACE, DICT_FIRST_DERIVATIVE_CENTER,
-    DICT_CENTRAL_RECONSTRUCTION)
+    CENTRAL_RECONSTRUCTION_DICT)
 from jaxfluids.time_integration import DICT_TIME_INTEGRATION
 from jaxfluids.data_types.numerical_setup.diffuse_interface import *
 from jaxfluids.data_types.numerical_setup import ConservativesSetup
@@ -129,8 +129,8 @@ def read_geometry(
     reconstruction_stencil_str = get_setup_value(
         geometry_dict, "reconstruction_stencil", path, str,
         is_optional=True, default_value="CENTRAL2",
-        possible_string_values=tuple(DICT_CENTRAL_RECONSTRUCTION.keys()))
-    reconstruction_stencil = DICT_CENTRAL_RECONSTRUCTION[reconstruction_stencil_str]
+        possible_string_values=tuple(CENTRAL_RECONSTRUCTION_DICT.keys()))
+    reconstruction_stencil = CENTRAL_RECONSTRUCTION_DICT[reconstruction_stencil_str]
     required_halos = reconstruction_stencil.required_halos
     assert_string = (
         f"Consistency error in numerical setup file. "
@@ -336,9 +336,10 @@ def read_diffusion_sharpening_setup(
     incompressible_density = get_setup_value(
         diffusion_sharpening_dict, "incompressible_density", path, list,
         is_optional=not density_model == "INCOMPRESSIBLE",
-        default_value=0.0)
-    incompressible_density = jnp.array(incompressible_density)
-    incompressible_density = unit_handler.non_dimensionalize(incompressible_density, "density")
+        default_value=tuple([0.0]))
+    
+    incompressible_density = tuple([unit_handler.non_dimensionalize(incompressible_density_i, "density") for
+                                    incompressible_density_i in incompressible_density])
 
     path = get_path_to_key(basepath, "interface_thickness_parameter")
     interface_thickness_parameter = get_setup_value(

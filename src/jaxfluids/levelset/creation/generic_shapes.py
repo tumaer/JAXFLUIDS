@@ -2,13 +2,14 @@ from typing import List, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 import math
 
 from jaxfluids.data_types.case_setup.initial_conditions import CircleParameters, \
     SphereParameters, RectangleParameters, SquareParameters, DiamondParameters, \
     EllipsoidParameters, EllipseParameters
+
+Array = jax.Array
 
 def get_circle(
         mesh_grid: Tuple[Array],
@@ -47,11 +48,11 @@ def get_square(
     position = [x_pos, y_pos, z_pos]
     position = [position[i] for i in active_axes_indices]
 
-    edge_tr = jnp.array([position[0] + length/2.0, position[1] + length/2.0])
-    edge_tl = jnp.array([position[0] - length/2.0, position[1] + length/2.0])
+    edge_tr = jnp.array([position[0] + length/2.0, position[1] + length/2.0])   # NOTE top right
+    edge_tl = jnp.array([position[0] - length/2.0, position[1] + length/2.0])   # NOTE top left
 
-    edge_bl = jnp.array([position[0] - length/2.0, position[1] - length/2.0])
-    edge_br = jnp.array([position[0] + length/2.0, position[1] - length/2.0])
+    edge_bl = jnp.array([position[0] - length/2.0, position[1] - length/2.0])   # NOTE bottom left
+    edge_br = jnp.array([position[0] + length/2.0, position[1] - length/2.0])   # NOTE bottom right
 
     line_1_slope    = (edge_tr[1] - edge_bl[1])/(edge_tr[0] - edge_bl[0])
     line_1_offset   = edge_tr[1] - line_1_slope * edge_tr[0]
@@ -100,6 +101,22 @@ def get_square(
         parameters = get_circle_parameters(edge_br + jnp.array([-1.0,  1.0]) * radius)
         levelset += get_circle(mesh_grid, parameters, active_axes_indices) * ((mesh_grid[0] > edge_br[0] - radius) & (mesh_grid[1] < edge_br[1] + radius))
 
+    else:
+        level_set_tr = jnp.sqrt((mesh_grid[0] - edge_tr[0])**2 + (mesh_grid[1] - edge_tr[1])**2)
+        level_set_tl = jnp.sqrt((mesh_grid[0] - edge_tl[0])**2 + (mesh_grid[1] - edge_tl[1])**2)
+        level_set_br = jnp.sqrt((mesh_grid[0] - edge_br[0])**2 + (mesh_grid[1] - edge_br[1])**2)
+        level_set_bl = jnp.sqrt((mesh_grid[0] - edge_bl[0])**2 + (mesh_grid[1] - edge_bl[1])**2)
+
+        mask_tr = (mesh_grid[0] > edge_tr[0]) & (mesh_grid[1] > edge_tr[1])
+        mask_tl = (mesh_grid[0] < edge_tl[0]) & (mesh_grid[1] > edge_tl[1])
+        mask_br = (mesh_grid[0] > edge_br[0]) & (mesh_grid[1] < edge_br[1])
+        mask_bl = (mesh_grid[0] < edge_bl[0]) & (mesh_grid[1] < edge_bl[1])
+
+        levelset = (1 - mask_tr) * levelset + level_set_tr * mask_tr
+        levelset = (1 - mask_tl) * levelset + level_set_tl * mask_tl
+        levelset = (1 - mask_br) * levelset + level_set_br * mask_br
+        levelset = (1 - mask_bl) * levelset + level_set_bl * mask_bl
+
     return levelset
 
 def get_rectangle(
@@ -137,16 +154,20 @@ def get_rectangle(
     if length > height:
         pos1 = jnp.array(position) + jnp.array([length/2. - height/2., 0.0])
         pos2 = jnp.array(position) + jnp.array([-length/2. + height/2., 0.0])
-        levelset = get_square(height, pos1, mesh_grid, radius) * (X1 > pos1[0])
-        levelset += get_square(height, pos2, mesh_grid, radius) * (X1 < pos2[0])
+        square1 = SquareParameters(height, pos1[0], pos1[1], 0.0)
+        square2 = SquareParameters(height, pos2[0], pos2[1], 0.0)
+        levelset = get_square(mesh_grid, square1, active_axes_indices) * (X1 > pos1[0])
+        levelset += get_square(mesh_grid, square2, active_axes_indices) * (X1 < pos2[0])
         levelset += (X2 - (position[1] + height/2.)) * ((X1 >= pos2[0]) & (X1 <= pos1[0])) * (X2 > position[1])
         levelset += - (X2 - (position[1] - height/2.)) * ((X1 >= pos2[0]) & (X1 <= pos1[0])) * (X2 <= position[1])
 
     else:
         pos1 = jnp.array(position) + jnp.array([0.0, -length/2. + height/2.])
         pos2 = jnp.array(position) + jnp.array([0.0, length/2. - height/2.])
-        levelset = get_square(length, pos1, mesh_grid, radius) * (X2 > pos1[1])
-        levelset += get_square(length, pos2, mesh_grid, radius) * (X2 < pos2[1])
+        square1 = SquareParameters(length, pos1[0], pos1[1], 0.0)
+        square2 = SquareParameters(length, pos2[0], pos2[1], 0.0)
+        levelset = get_square(mesh_grid, square1, active_axes_indices) * (X2 > pos1[1])
+        levelset += get_square(mesh_grid, square2, active_axes_indices) * (X2 < pos2[1])
         levelset += (X1 - (position[0] + length/2.)) * ((X2 >= pos2[1]) & (X2 <= pos1[1])) * (X1 > position[0])
         levelset += - (X1 - (position[0] - length/2.)) * ((X2 >= pos2[1]) & (X2 <= pos1[1])) * (X1 <= position[0])
 
@@ -282,7 +303,6 @@ def get_diamond(
 def get_ellipse(
         mesh_grid: Tuple[Array],
         parameters: EllipseParameters,
-        active_axes_indices: Tuple[int],
         *args,
         ) -> Array:
 
@@ -292,73 +312,53 @@ def get_ellipse(
     N_points = parameters.N_points
     x_position = parameters.x_position
     y_position = parameters.y_position
-    position = jnp.array([x_position, y_position])
 
     Rx = parameters.R_x
     Ry = parameters.R_y
     deg = parameters.deg
-    batch_size = 100000 # NOTE hardcoded
-
-    # POINTS
-    theta = np.random.uniform(0,2*np.pi,N_points)
-    x = Rx*np.cos(theta)
-    y = Ry*np.sin(theta)
-
-    points = np.stack([x,y],axis=0)
 
     deg = deg * np.pi/180
     rot_mat = np.array([
         [np.cos(deg), -np.sin(deg)],
         [np.sin(deg), np.cos(deg)],
         ])
-    points = np.matmul(rot_mat,points)
+    
+    theta = jnp.linspace(0,2*np.pi,N_points)
+    x = Rx*jnp.cos(theta) + x_position
+    y = Ry*jnp.sin(theta) + y_position
+    points = jnp.stack([x,y],axis=0)
+    points = jnp.matmul(rot_mat,points)
+    points = jnp.swapaxes(points, 0, 1)
 
-    points = np.swapaxes(points, 0, 1)
+    batch_size =  10000 # NOTE hardcoded batch size for jax for loop over number of cells
+    no_cells = R_vector_grid.shape[0]
+    no_batches = math.ceil(no_cells/batch_size)
+    indices = jnp.stack([jnp.arange(i*batch_size,(i+1)*batch_size, dtype=int)
+                         for i in range(no_batches)],axis=0)
+    distance = jnp.zeros(no_cells)
 
-    def compute_distance(R_vector_grid, points, distance_old):
+    def body_func(
+            index: int,
+            distance: Array
+            ) -> Array:
+        indices_i = indices[index]
+        R_vector_grid_batch = R_vector_grid[indices_i]
+        distance_vector_batch = R_vector_grid_batch.reshape(-1,1,2) - points # NOTE potential memory bottleneck, [batch_size, N_points, 2]
+        distance_batch = jnp.linalg.norm(distance_vector_batch, ord=2, axis=-1)
+        distance_batch = jnp.min(distance_batch, axis=-1)
+        distance = distance.at[indices_i].add(distance_batch)
+        return distance
 
-        points += position
-        distance_vector = R_vector_grid.reshape(-1,1,2) - points
-        distance = jnp.linalg.norm(distance_vector, ord=2, axis=-1)
-        indices = jnp.argmin(distance, axis=-1)
-        distance = jnp.min(distance, axis=-1)
+    distance: Array = jax.lax.fori_loop(0, no_batches, body_func, distance, unroll=1)
+    distance = distance.reshape(X.shape)
 
-        mask = distance < distance_old
-        distance = distance * mask + (1-mask) * distance_old
+    X_rot = (X - x_position) * jnp.cos(deg) + (Y - y_position) * jnp.sin(deg)
+    Y_rot = -(X - x_position) * jnp.sin(deg) + (Y - y_position) * jnp.cos(deg)
 
-        points = points[indices,:]
-        points -= position
-        R_points = jnp.linalg.norm(points, axis=-1, ord=2)
+    sign = jnp.where((X_rot**2 / Rx**2 + Y_rot**2 / Ry**2) < 1.0, -1, 1)
+    distance *= sign
 
-        return distance, R_points
-
-    def compute_sign(distance, R_vector_grid, R_points):
-        R_vector_grid -= position
-        R_grid = jnp.linalg.norm(R_vector_grid, axis=-1)
-        sign = jnp.where(R_grid < R_points, -1, 1)
-        signed_distance = distance * sign
-        return signed_distance
-
-    no_batches_grid = math.ceil(X.size/batch_size)
-    signed_distance_buffer = np.zeros(X.size)
-
-    no_batches_points = math.ceil(N_points/batch_size)
-    for b1 in range(no_batches_grid):
-        # print("BATCH %5d/%5d" % (b1, no_batches_grid))
-        R_vector_grid_in = R_vector_grid[b1*batch_size:(b1+1)*batch_size]
-
-        distance_start = np.ones(len(R_vector_grid_in))*1e10
-        distance = distance_start
-        for b2 in range(no_batches_points):
-            points_in = points[b2*batch_size:(b2+1)*batch_size]
-            distance, R_points = jax.jit(compute_distance)(R_vector_grid_in, points_in, distance)
-        signed_distance = jax.jit(compute_sign)(distance, R_vector_grid_in, R_points)
-        signed_distance_buffer[b1*batch_size:(b1+1)*batch_size] = signed_distance
-    signed_distance = signed_distance_buffer.reshape(X.shape)
-
-    return signed_distance
-
-
+    return distance
 
 
 def get_ellipsoid(
@@ -384,8 +384,8 @@ def get_ellipsoid(
     batch_size = 100000 # NOTE hardcoded
 
     # POINTS
-    theta = np.random.uniform(0,2*np.pi,N_points)
-    phi = np.random.uniform(0,np.pi,N_points)
+    theta = np.linspace(0,2*np.pi,N_points)
+    phi = np.linspace(0,np.pi,N_points)
 
     x = Rx*np.sin(theta)*np.cos(phi)
     y = Ry*np.sin(theta)*np.sin(phi)

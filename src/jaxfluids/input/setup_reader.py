@@ -1,13 +1,25 @@
 from typing import Any, Dict, Tuple, Union, Callable, NamedTuple, List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 from jaxfluids.unit_handler import UnitHandler
+
+Array = jax.Array
 
 class SetupReader:
 
     def __init__(self, unit_handler: UnitHandler):
         self.unit_handler = unit_handler
+
+def assert_setup(condition: bool, assert_string: str, file_name: str) -> None:
+    assert_string = f"Consistency error in {file_name:s} setup file. " + assert_string
+    assert condition, assert_string
+
+def assert_case(condition: bool, assert_string: str) -> None:
+    assert_setup(condition, assert_string, "case")
+
+def assert_numerical(condition: bool, assert_string: str) -> None:
+    assert_setup(condition, assert_string, "numerical")
 
 def get_path_to_key(*args):
     return "/".join(args)
@@ -63,18 +75,16 @@ def _get_setup_value(
         :raises NotImplementedError: _description_
         """
         flag = False
-        assert_string = (
-            f"Consistency error in {setup:s} setup file. "
+        assert_str = (
             f"Key {absolute_path} must be of types {possible_data_types}, "
             f"but is of type {type(setup_value)}.")
-        assert isinstance(setup_value, possible_data_types), assert_string
+        assert_setup(isinstance(setup_value, possible_data_types), assert_str, setup)
 
         if possible_string_values is not None and isinstance(setup_value, str):
-            assert_string = (
-                f"Consistency error in {setup:s} setup file. "
+            assert_str = (
                 f"Value of {absolute_path:s} must be in {possible_string_values} "
                 "if value is of type str.")
-            assert setup_value in possible_string_values, assert_string
+            assert_setup(setup_value in possible_string_values, assert_str, setup)
 
         if numerical_value_condition != None and isinstance(setup_value, (int, float)):
             condition = numerical_value_condition[0]
@@ -87,11 +97,9 @@ def _get_setup_value(
                 condition_str = f"{str(setup_value):s}" + condition + f"{value:f}"
             else:
                 raise NotImplementedError
-            assert_string = (
-                f"Consistency error in {setup:s} setup file. "
-                f"Value of {absolute_path} must be {condition:s} {str(value):s}.")
+            assert_str = f"Value of {absolute_path} must be {condition:s} {str(value):s}."
             flag = eval(condition_str)
-            assert flag, assert_string
+            assert_setup(flag, assert_str, setup)
 
     if key in setup_dict:
         setup_value = setup_dict[key]
@@ -107,15 +115,13 @@ def _get_setup_value(
         if is_optional:
             setup_value = default_value
         else:
-            assert_string = (
-                f"Consistency error in {setup:s} setup file. "
-                f"Key {key:s} is not optional, but missing {absolute_path:s}.")
-            assert False, assert_string
+            assert_str = f"Key {key:s} is not optional, but missing {absolute_path:s}."
+            assert_setup(False, assert_str, setup)
 
     return setup_value
 
 def create_wrapper_for_callable(
-        value_case_setup: Union[float,str],
+        value_case_setup: Union[float,str,Callable],
         input_units: Tuple[str],
         input_labels: Tuple[str],
         output_unit: str,
@@ -156,23 +162,26 @@ def create_wrapper_for_callable(
     :rtype: Callable
     """
 
+    if perform_nondim and unit_handler is None:
+        raise RuntimeError
+
     if isinstance(value_case_setup, float):
         is_callable = False
     elif isinstance(value_case_setup, str):
         value_case_setup: Callable = eval(value_case_setup)
         varnames = value_case_setup.__code__.co_varnames
-        assert_string_varnames = (
-            "Consistency error in case setup file. " 
+        assert_str_varnames = (
             "Input argument labels of lambda for "
             f"{absolute_path} must be {input_labels}.")
-        assert varnames == input_labels, assert_string_varnames
+        assert_case(varnames == input_labels, assert_str_varnames)
+        is_callable = True
+    elif isinstance(value_case_setup, Callable):
         is_callable = True
     else:
-        assert_string = (
-            "Consistency error in case setup file. "
+        assert_str = (
             f"Value of {absolute_path} must be float or string that " 
             "specifies a lambda function.")
-        assert False, assert_string
+        assert_case(False, assert_str)
     
     is_scalar = all((is_scalar, isinstance(value_case_setup, float)))
 
@@ -259,11 +268,9 @@ def _loop_fields(
                 condition_str = f"{str(setup_value):s}" + condition + f"{condition_value:f}"
             else:
                 raise NotImplementedError
-            assert_string = (
-                f"Consistency error in {setup:s} setup file. "
-                f"Value of {path} must be {condition:s} {str(condition_value):s}.")
+            assert_str = f"Value of {path} must be {condition:s} {str(condition_value):s}."
             flag = eval(condition_str)
-            assert flag, assert_string
+            assert_setup(flag, assert_str, setup)
 
         if unit_handler is not None and unit is not None:
             if field in unit_exceptions:
@@ -326,11 +333,9 @@ def _loop_fields_new(
                 condition_str = f"{str(setup_value):s}" + condition + f"{condition_value:f}"
             else:
                 raise NotImplementedError
-            assert_string = (
-                f"Consistency error in {setup:s} setup file. "
-                f"Value of {path} must be {condition:s} {str(condition_value):s}.")
+            assert_str = f"Value of {path} must be {condition:s} {str(condition_value):s}."
             flag = eval(condition_str)
-            assert flag, assert_string
+            assert_setup(flag, assert_str, setup)
 
         if unit_handler is not None and unit is not None:
             if isinstance(unit, (list, tuple)):

@@ -3,15 +3,17 @@ from typing import List, Tuple, Dict, Callable
 import numpy as np
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.helper_functions import flatten_subdomain_dimensions, \
-    split_cell_centers_xi, split_cell_sizes_xi, split_subdomain_dimensions
+    split_cell_centers_xi, split_cell_sizes_xi, split_subdomain_dimensions, \
+    reassemble_cell_centers
 from jaxfluids.domain.mesh_creation import *
 from jaxfluids.data_types.case_setup.domain import \
     DomainSetup, AxisSetup, MeshStretchingSetup
 from jaxfluids.domain import AXES, AXES_INDICES, FACE_LOCATIONS, \
     EDGE_LOCATIONS, VERTEX_LOCATIONS
+
+Array = jax.Array
 
 class DomainInformation:
     """The DomainInformation class holds information
@@ -42,6 +44,16 @@ class DomainInformation:
         "y": ("south", "north"),
         "z": ("bottom", "top")
     }
+    axis_to_minor_axes = {
+        "x": ("y", "z"),
+        "y": ("z", "x"),
+        "z": ("x", "y")
+    }
+    axis_to_minor_axes_id = {
+        "x": (1, 2),
+        "y": (2, 0),
+        "z": (0, 1)
+    }
     face_location_to_axis_side = {
         "west": 0, "east": -1,
         "south": 0, "north": -1,
@@ -71,6 +83,8 @@ class DomainInformation:
             np.array(domain_setup.y.range),
             np.array(domain_setup.z.range)
             )
+        self.domain_size = global_domain_size
+        self.domain_length = tuple(self.domain_size[i][1] - self.domain_size[i][0] for i in range(3))
 
         # GLOBAL MESH
         global_cell_centers = []
@@ -87,13 +101,14 @@ class DomainInformation:
             "PIECEWISE": piecewise
         } 
 
-        for axis in AXES:
-            axis_setup: AxisSetup = getattr(domain_setup, axis)
-
         for axis_index, axis in enumerate(AXES):
 
             axis_setup: AxisSetup = getattr(domain_setup, axis)
-            stretching_type = axis_setup.stretching.type
+            stretching_setup = axis_setup.stretching
+            if stretching_setup is None:
+                stretching_type = False
+            else:
+                stretching_type = axis_setup.stretching.type
             is_mesh_stretching.append(stretching_type is not False)
 
             if stretching_type == False:
@@ -120,9 +135,11 @@ class DomainInformation:
         global_cell_centers = tuple(global_cell_centers)
         global_cell_sizes = tuple(global_cell_sizes)
         global_cell_faces = tuple(global_cell_faces)
+        self.__global_cell_centers_unsplit = global_cell_centers
         self.is_mesh_stretching = tuple(is_mesh_stretching)
         self.global_number_of_cells = tuple(global_number_of_cells)
         self.global_number_of_cell_faces = tuple(global_number_of_cell_faces)
+        self.total_no_cells = int(np.prod(self.global_number_of_cells))
 
         # ACTIVE AXIS AND LOCATIONS
         self.active_axes = domain_setup.active_axes
@@ -130,18 +147,30 @@ class DomainInformation:
         self.active_axes_indices = domain_setup.active_axes_indices
         self.inactive_axes_indices = domain_setup.inactive_axes_indices
         
+        active_minor_axes = {}
+        for axis in self.active_axes:
+            minor_axes = self.axis_to_minor_axes[axis]
+            active_minor_axes[axis] = tuple(
+                [minor_axis for minor_axis in minor_axes if minor_axis in self.active_axes]
+            )
+        self.active_minor_axes: Dict[str, Tuple[str]] = active_minor_axes
+
         active_velocities = []
         for axis in self.active_axes:
             active_velocities.append(self.axis_to_velocity[axis])
         self.active_velocities = tuple(active_velocities)
 
+        # NOTE active_face_locations is a tuple of all
+        # active face locations
         active_face_locations = []
         for face_location in FACE_LOCATIONS:
             if self.face_location_to_axis_index[face_location] \
                 in self.active_axes_indices:
                 active_face_locations.append(face_location)
-        self.active_face_locations = tuple(active_face_locations)
+        self.active_face_locations: Tuple[str] = tuple(active_face_locations)
 
+        # NOTE active_edge_locations is a tuple of all
+        # active edge locations
         active_edge_locations = []
         for edge_location in EDGE_LOCATIONS:
             corner_location_list = edge_location.split("_")
@@ -150,11 +179,25 @@ class DomainInformation:
             if self.face_location_to_axis_index[loc_1] in self.active_axes_indices and \
                 self.face_location_to_axis_index[loc_2] in self.active_axes_indices:
                 active_edge_locations.append(edge_location)
-        self.active_edge_locations = tuple(active_edge_locations)
+        self.active_edge_locations: Tuple[str] = tuple(active_edge_locations)
 
-        self.smallest_cell_size = jnp.min(jnp.array([jnp.min(global_cell_sizes[i]) for i in self.active_axes_indices]))
-        self.largest_cell_size = jnp.max(jnp.array([jnp.max(global_cell_sizes[i]) for i in self.active_axes_indices]))
+        # NOTE active_face_locations_to_edge_locations is a dictionary
+        # which maps a face location to a tuple of all active adjacent
+        # edge locations
+        active_face_locations_to_edge_locations = {}
+        for face_location in self.active_face_locations:
+            adjacent_edge_locations = []
+            for edge_location in self.active_edge_locations:
+                if face_location in edge_location:
+                    adjacent_edge_locations.append(edge_location)
+            active_face_locations_to_edge_locations[face_location] = tuple(adjacent_edge_locations)
+        self.active_face_locations_to_edge_locations: Dict[str,Tuple[str]] = active_face_locations_to_edge_locations
         
+        self.smallest_cell_sizes, self.largest_cell_sizes, \
+        self.smallest_cell_size, self.largest_cell_size, \
+        self.edge_ratios, self.aspect_ratio \
+        = self.get_mesh_information(global_cell_sizes)
+
         # DOMAIN SLICES
         self.nh_conservatives = nh_conservatives     
         self.domain_slices_conservatives = tuple(
@@ -187,9 +230,15 @@ class DomainInformation:
             self.domain_slices_conservatives_to_geometry = (None, None, None)
 
         # DOMAIN DECOMPOSITION
-        self.split_factors = (domain_setup.decomposition.split_x,
-                              domain_setup.decomposition.split_y,
-                              domain_setup.decomposition.split_z,)
+        domain_decomposition_setup = domain_setup.decomposition
+        if domain_decomposition_setup is None:
+            split_x = split_y = split_z = 1
+        else:
+            split_x = domain_decomposition_setup.split_x
+            split_y = domain_decomposition_setup.split_y
+            split_z = domain_decomposition_setup.split_z
+
+        self.split_factors = (split_x, split_y, split_z)
         self.no_subdomains = np.prod(np.array(self.split_factors))
         self.is_parallel = self.no_subdomains > 1
 
@@ -240,7 +289,8 @@ class DomainInformation:
 
         self.__global_one_cell_sizes: Tuple[Array] = tuple([1.0/dxi for dxi in global_cell_sizes])
 
-        # NOTE these members are set in the InputManager constructor, since the HaloManager is required to compute the halos first
+        # NOTE these members are set in the InputManager constructor,
+        # since the HaloManager is required to compute the halos first
         self.__global_cell_centers_halos: Tuple[Array] = None
         self.__global_cell_centers_difference: Tuple[Array] = None
         self.__global_cell_sizes_halos: Tuple[Array] = None
@@ -249,7 +299,7 @@ class DomainInformation:
         self.__global_one_cell_sizes_halos_geometry: Tuple[Array] = None
 
 
-    # GET GLOBAL MESH
+    # NOTE GET GLOBAL MESH
     def get_global_cell_centers(self) -> Tuple[Array]:
         return self.__global_cell_centers
 
@@ -271,8 +321,11 @@ class DomainInformation:
     def get_global_cell_faces (self) -> Tuple[Array]:
         return self.__global_cell_faces
 
+    def get_global_cell_centers_unsplit(self) -> Tuple[Array]:
+        return self.__global_cell_centers_unsplit
 
-    # GET LOCAL MESH
+
+    # NOTE GET LOCAL MESH
     def get_local_quantity(self, global_quantity_tuple: Tuple[Array]) -> None:
         if self.is_parallel and self.is_multihost:
             s_ = jnp.s_[self.process_id*self.local_device_count:(self.process_id+1)*self.local_device_count]
@@ -306,9 +359,8 @@ class DomainInformation:
         return self.get_local_quantity(self.__global_domain_size)
 
 
-
-
-    def compute_device_mesh_grid(self) -> Tuple[Array]:
+    # NOTE GET DEVICE MESH
+    def compute_device_mesh_grid(self, only_active_axes: bool = True) -> Tuple[Array]:
         """Returns the mesh grid of the active axes for
         the present device.
 
@@ -318,6 +370,36 @@ class DomainInformation:
         device_cell_centers = self.get_device_cell_centers()
         device_cell_centers = [xi.flatten() for xi in device_cell_centers]
         mesh_grid = jnp.meshgrid(*device_cell_centers, indexing="ij")
+        if only_active_axes:
+            mesh_grid = tuple([mesh_grid[i] for i in self.active_axes_indices])
+        return mesh_grid
+    
+    def compute_device_cell_face_mesh_grid(self, axis_index: int) -> Tuple[Array]:
+        """Returns the cell face mesh grid of the active axes in
+        axis_index direction for the present device.
+
+        :return: _description_
+        :rtype: Tuple[Array]
+        """
+
+        device_cell_faces = self.get_device_cell_faces()
+        device_cell_centers = self.get_device_cell_centers()
+        fx,fy,fz = device_cell_faces
+        x,y,z = device_cell_centers
+        nx,ny,nz = self.device_number_of_cells
+        if axis_index == 0:
+            FX = jnp.repeat(jnp.repeat(fx,ny,-2),nz,-1)
+            FY = jnp.repeat(jnp.repeat(y,nx+1,-3),nz,-1)
+            FZ = jnp.repeat(jnp.repeat(z,nx+1,-3),ny,-2)
+        elif axis_index == 1:
+            FX = jnp.repeat(jnp.repeat(x,ny+1,-2),nz,-1)
+            FY = jnp.repeat(jnp.repeat(fy,nx,-3),nz,-1)
+            FZ = jnp.repeat(jnp.repeat(z,nx,-3),ny+1,-2)
+        else:
+            FX = jnp.repeat(jnp.repeat(x,ny,-2),nz+1,-1)
+            FY = jnp.repeat(jnp.repeat(y,nx,-3),nz+1,-1)
+            FZ = jnp.repeat(jnp.repeat(fz,nx,-3),ny,-2)
+        mesh_grid = (FX,FY,FZ)
         mesh_grid = tuple([mesh_grid[i] for i in self.active_axes_indices])
         return mesh_grid
     
@@ -406,10 +488,10 @@ class DomainInformation:
             device_cell_sizes_halos = self.__global_cell_sizes_halos
         return device_cell_sizes_halos
     
-    def get_device_domain_size(self) -> Dict[str, Array]:
+    def get_device_domain_size(self) -> Tuple[Array]:
         if self.is_parallel:
             device_id = jax.lax.axis_index(axis_name="i")
-            device_domain_size = [size_xi[device_id] for size_xi in self.__global_domain_size]
+            device_domain_size = tuple([size_xi[device_id] for size_xi in self.__global_domain_size])
         else:
             device_domain_size = self.__global_domain_size
         return device_domain_size
@@ -459,7 +541,7 @@ class DomainInformation:
         :return: _description_
         :rtype: Tuple[Array]
         """
-        dx,dy,dz = self.get_device_cell_sizes()
+        dx,dy,dz = self.get_device_cell_sizes() # TODO shouldnt these be returned with cell faces shapes ?
         if self.dim == 3:
             device_cell_face_areas = tuple([dy*dz, dx*dz, dy*dx])
         elif self.dim == 2:
@@ -481,6 +563,20 @@ class DomainInformation:
         return device_cell_volume
 
 
+    # NOTE
+
+    def compute_mesh_grid(self, only_active_axes: bool = True) -> Tuple[Array]:
+        local_cell_centers = self.get_local_cell_centers()
+        if self.is_parallel:
+            local_cell_centers = reassemble_cell_centers(
+                local_cell_centers, self.split_factors)
+        local_cell_centers = [xi.flatten() for xi in local_cell_centers]
+        mesh_grid = jnp.meshgrid(*local_cell_centers, indexing="ij")
+        if only_active_axes:
+            mesh_grid = tuple([mesh_grid[i] for i in self.active_axes_indices])
+        else:
+            mesh_grid = tuple(mesh_grid)
+        return mesh_grid
 
 
 
@@ -584,3 +680,66 @@ class DomainInformation:
         """
         self.__global_cell_centers_halos = global_cell_centers_halos
         self.__global_cell_centers_difference = global_cell_centers_difference
+
+
+    def get_mesh_information(self, global_cell_sizes: Tuple[Array]
+        ) -> Tuple[Tuple[Array], Tuple[Array], 
+                   Array, Array, Tuple[Array], Array]:
+        """Computes mesh information based on global cell sizes.
+
+        :param global_cell_sizes: _description_
+        :type global_cell_sizes: Tuple[Array]
+        :return: _description_
+        :rtype: Tuple[Tuple[Array], Tuple[Array], Array, Array, Tuple[Array], Array]
+        """
+        
+        active_axes_indices = self.active_axes_indices 
+        
+        smallest_cell_sizes = tuple([jnp.min(global_cell_sizes[i]) for i in self.active_axes_indices])
+        largest_cell_sizes = tuple([jnp.max(global_cell_sizes[i]) for i in self.active_axes_indices])
+
+        smallest_cell_size = jnp.min(jnp.array(smallest_cell_sizes))
+        largest_cell_size = jnp.max(jnp.array(largest_cell_sizes))
+
+        # EDGE LENGTH RATIO
+        edge_ratios = []
+        for axis_index, axis_name in enumerate(("x", "y", "z")):
+            if axis_index in active_axes_indices and \
+            self.is_mesh_stretching[axis_index]:
+                dx = jnp.squeeze(global_cell_sizes[axis_index])
+                dx_i, dx_im = dx[1:], dx[:-1]
+                edge_ratio = jnp.maximum(dx_i, dx_im) / jnp.minimum(dx_i, dx_im)
+                edge_ratio = jnp.max(edge_ratio)
+            else:
+                edge_ratio = jnp.array(1.0)
+            edge_ratios.append(edge_ratio)
+        edge_ratios = tuple(edge_ratios)
+
+        # ASPECT RATIO
+        aspect_ratio = largest_cell_size / smallest_cell_size
+
+        return smallest_cell_sizes, largest_cell_sizes, \
+            smallest_cell_size, largest_cell_size, \
+            edge_ratios, aspect_ratio
+
+
+    def info(self) -> Dict:
+        """Prepares a dictionary with some mesh information
+        for the logger.
+
+        :return: _description_
+        :rtype: Dict
+        """
+
+        info_dict = {
+            "TOTRAL RESOLUTION"         : " x ".join([str(x) for x in self.global_number_of_cells]),
+            "TOTAL NUMBER OF CELLS"     : f"{self.total_no_cells/1e6:4.3f} M",
+            "DEVICE RESOLUTION"         : " x ".join([str(x) for x in self.device_number_of_cells]),
+            "DEVICE NUMBER OF CELLS"    : f"{self.cells_per_device/1e6:4.3f} M",
+            "DX_MIN, DY_MIN, DZ_MIN"    : [float(dx) for dx in self.smallest_cell_sizes],
+            "MAX EDGE LENGTH RATIOS"    : [float(ratio) for ratio in self.edge_ratios],
+            "MAX ASPECT RATIO"          : f"{float(self.aspect_ratio):4.3f}"
+        }
+
+        return info_dict
+

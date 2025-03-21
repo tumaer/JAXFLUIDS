@@ -1,5 +1,7 @@
+import jax
 import jax.numpy as jnp
-from jax import Array
+
+Array = jax.Array
 
 def koren_fun(r: Array) -> Array:
     return jnp.maximum(0, jnp.minimum(2 * r, jnp.minimum((1 + 2 * r) / 3, 2)))

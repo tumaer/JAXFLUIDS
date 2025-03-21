@@ -8,6 +8,8 @@ from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.domain import AXES, TUPLE_MESH_STRETCHING_TYPES, TUPLE_PIECEWISE_STRETCHING_TYPES
 from jaxfluids.input.case_setup import get_setup_value, loop_fields, get_path_to_key
 from jaxfluids.unit_handler import UnitHandler
+from jaxfluids.input.setup_reader import assert_case
+
 
 def read_domain_setup(
         case_setup_dict: Dict,
@@ -38,7 +40,7 @@ def read_domain_setup(
 
         path_cells = get_path_to_key(path_axes, "cells")
         cells = get_setup_value(axis_case_setup, "cells", path_cells, int,
-                                is_optional=False)
+                                is_optional=False, numerical_value_condition=(">=",1))
 
         stretching_setup = read_mesh_stretching(
             axis_case_setup, unit_handler, axis)
@@ -112,6 +114,8 @@ def read_mesh_stretching(
     ratio_fine_region = None
     cells_fine = None
     if type_str == "PIECEWISE":
+        assert isinstance(parameters_case_setup, list)
+
         def read_piecewise_parameters(parameters_case_setup: Dict) -> PiecewiseStretchingParameters:
             """Wrapper reading the parameters for
             the piecewise stretching.
@@ -140,6 +144,7 @@ def read_mesh_stretching(
                 numerical_value_condition=(">", 0))
             piecewise_parameters = PiecewiseStretchingParameters(
                 type_str, cells, upper_bound, lower_bound)
+            
             return piecewise_parameters
 
         piecewise_parameters_list = []
@@ -153,6 +158,17 @@ def read_mesh_stretching(
         tanh_value = get_setup_value(
             parameters_case_setup, "tanh_value", path_stretching, float,
             is_optional=False, numerical_value_condition=(">=", 1.0))
+
+    elif type_str in ["BUBBLE_1", "BUBBLE_2"]:  # TODO we still need this ?
+        path = get_path_to_key(path_stretching, "ratio_fine_region")
+        ratio_fine_region = get_setup_value(
+            parameters_case_setup, "ratio_fine_region", path, float,
+            is_optional=False, numerical_value_condition=(">", 0.0))
+        
+        path = get_path_to_key(path_stretching, "cells_fine")
+        cells_fine = get_setup_value(
+            parameters_case_setup, "cells_fine", path, int,
+            is_optional=False, numerical_value_condition=(">", 0))
 
     stretching_setup = MeshStretchingSetup(
         type_str, tanh_value, ratio_fine_region,
@@ -197,21 +213,15 @@ def sanity_check(domain_setup: DomainSetup, numerical_setup: NumericalSetup) -> 
     inactive_axes = domain_setup.inactive_axes
     for axis, axis_index in zip(inactive_axes, inactive_axes_indices):
         split_xi = split_factors[axis_index]
-        assert_string = (
-            "Consistency error in case setup file. "
-            f"Split factor {axis:s} must be 1 since the "
-            "axis is INACTIVE.")
-        assert split_xi == 1, assert_string
+        assert_str = f"Split factor {axis:s} must be 1 since the axis is INACTIVE."
+        assert_case(split_xi == 1, assert_str)
     
-    # CHECK STRETCHING - ACTIVE AXES
+    # CHECK STRETCHING - INACTIVE AXES
     for axis, axis_index in zip(inactive_axes, inactive_axes_indices):
         axis_setup: AxisSetup = getattr(domain_setup, axis)
         stretching_type = axis_setup.stretching.type
-        assert_string = (
-            "Consistency error in case setup file. "
-            f"Stretching of {axis:s} must be null since the "
-            "axis is INACTIVE.")
-        assert stretching_type == False, assert_string
+        assert_str = f"Stretching of {axis:s} must be null since the axis is INACTIVE."
+        assert_case(stretching_type == False, assert_str)
 
     # CHECK EVEN SPLIT
     active_axes_indices = domain_setup.active_axes_indices
@@ -219,22 +229,20 @@ def sanity_check(domain_setup: DomainSetup, numerical_setup: NumericalSetup) -> 
     for axis, axis_index in zip(active_axes, active_axes_indices):
         split_xi = split_factors[axis_index]
         nxi = number_of_cells[axis_index]
-        assert_string = (
-            "Consistency error in case setup file. "
+        assert_str = (
             "Split factor and number of cells in "
             f"{axis:s} direction results in unequal "
             "division.")
-        assert nxi%split_xi == 0, assert_string
+        assert_case(nxi%split_xi == 0, assert_str)
 
     # CHECK DOMAIN BOUNDS
     for axis in AXES:
         axis_setup: AxisSetup = getattr(domain_setup, axis)
         bounds = axis_setup.range
-        assert_string = (
-            "Consistency error in case setup file. "
+        assert_str = (
             "Lower domain bound greater than upper "
             f"domain bound for {axis:s}.")
-        assert bounds[1] > bounds[0], assert_string
+        assert_case(bounds[1] > bounds[0], assert_str)
 
     # CHECK PIECEWISE STRETCHING, BOUNDS, TYPES AND CELLS
     for axis in AXES:
@@ -244,29 +252,26 @@ def sanity_check(domain_setup: DomainSetup, numerical_setup: NumericalSetup) -> 
         stretching_setup = axis_setup.stretching
         stretching_type = stretching_setup.type
 
-        assert_string_cells = (
-            "Consistency error in case setup file. "
+        assert_str_cells = (
             f"Total cells of piecewise stretched axis {axis:s} "
             "does not match cells in domain.")
         
-        assert_string_bounds = (
-            "Consistency error in case setup file. "
+        assert_str_bounds = (
             f"Upper and/or lower bounds of piecewise stretched axis {axis:s} "
             "do not match with domain bounds and/or are not consistent "
             "within the stretched axis.")
         
-        assert_string_increasing = (
-            "Consistency error in case setup file. "
+        assert_str_increasing = (
             f"Type of the piecewise INCREASING stretched axis {axis:s} requires "
             "CONSTANT region to its left.")
 
-        assert_string_decreasing = (
-            "Consistency error in case setup file. "
+        assert_str_decreasing = (
             f"Type of the piecewise DECREASING stretched axis {axis:s} requires "
             "CONSTANT region to its right.")
     
         if stretching_type == "PIECEWISE":
             parameters_tuple = stretching_setup.piecewise_parameters
+            no_piecewise_sections = len(parameters_tuple)
             cells_count = 0
             for i, parameters in enumerate(parameters_tuple):
                 cells_count += parameters.cells
@@ -274,47 +279,43 @@ def sanity_check(domain_setup: DomainSetup, numerical_setup: NumericalSetup) -> 
                 lower_bound = parameters.lower_bound
                 type_piecewise = parameters.type
                 if i == 0:
-                    assert lower_bound == domain_size[0], assert_string_bounds
-                    assert upper_bound == parameters_tuple[1].lower_bound, assert_string_bounds
+                    assert_case(lower_bound == domain_size[0], assert_str_bounds)
+                    if no_piecewise_sections == 1:
+                        assert_case(upper_bound == domain_size[1], assert_str_bounds)
+                    else:
+                        assert_case(upper_bound == parameters_tuple[1].lower_bound, assert_str_bounds)
                     if type_piecewise == "DECREASING":
-                        assert parameters_tuple[1].type == "CONSTANT", assert_string_decreasing
+                        assert_case(parameters_tuple[1].type == "CONSTANT", assert_str_decreasing)
                     if type_piecewise == "INCREASING":
-                        assert False, assert_string_increasing
+                        assert_case(False, assert_str_increasing)
                 elif i == len(parameters_tuple) - 1:
-                    assert lower_bound == parameters_tuple[i-1].upper_bound, assert_string_bounds
-                    assert upper_bound == domain_size[-1], assert_string_bounds
+                    assert_case(lower_bound == parameters_tuple[i-1].upper_bound, assert_str_bounds)
+                    assert_case(upper_bound == domain_size[-1], assert_str_bounds)
                     if type_piecewise == "INCREASING":
-                        assert parameters_tuple[i-1].type == "CONSTANT", assert_string_increasing
+                        assert_case(parameters_tuple[i-1].type == "CONSTANT", assert_str_increasing)
                     if type_piecewise == "DECREASING":
-                        assert False, assert_string_decreasing
+                        assert_case(False, assert_str_decreasing)
                 else:
-                    assert upper_bound == parameters_tuple[i+1].lower_bound, assert_string_bounds
-                    assert lower_bound == parameters_tuple[i-1].upper_bound, assert_string_bounds
+                    assert_case(upper_bound == parameters_tuple[i+1].lower_bound, assert_str_bounds)
+                    assert_case(lower_bound == parameters_tuple[i-1].upper_bound, assert_str_bounds)
                     if type_piecewise == "INCREASING":
-                        assert parameters_tuple[i-1].type == "CONSTANT", assert_string_increasing
+                        assert_case(parameters_tuple[i-1].type == "CONSTANT", assert_str_increasing)
                     if type_piecewise == "DECREASING":
-                        assert parameters_tuple[i+1].type == "CONSTANT", assert_string_decreasing
+                        assert_case(parameters_tuple[i+1].type == "CONSTANT", assert_str_decreasing)
 
-            assert cells_count == cells_axis, assert_string_cells
+            assert_case(cells_count == cells_axis, assert_str_cells)
 
     # PARALLEL
     no_subdomains = np.prod(np.array(split_factors))
     global_device_count = jax.device_count()
     local_device_count = jax.local_device_count()
-    host_count = global_device_count // local_device_count
-    assert_string = ("Consistency error in case setup file. "
-                     f"Mismatch between number of subdomains {no_subdomains:d} "
-                     f"and XLA device count {global_device_count:d}.")
-    assert no_subdomains <= global_device_count, assert_string
-    assert_string = ("Consistency error in case setup file. "
-                     f"Mismatch between number of subdomains {no_subdomains:d} "
-                     f"and host/process count {host_count:d}.")
-    assert no_subdomains >= host_count, assert_string
+    assert_str = (f"Mismatch between number of subdomains {no_subdomains:d} "
+                f"and XLA device count {global_device_count:d}.")
+    assert_case(no_subdomains <= global_device_count, assert_str)
 
     nh_conservatives = numerical_setup.conservatives.halo_cells
     for axis_index in active_axes_indices:
         axis = AXES[axis_index]
         nxi = device_number_of_cells[axis_index]
-        assert_string = ("Consistency error in case setup file. "
-                        f"There are more halo cells than cells in {axis:s} direction.")
-        assert nxi >= nh_conservatives, assert_string
+        assert_string = f"There are more halo cells than cells in {axis:s} direction."
+        assert_case(nxi >= nh_conservatives, assert_string)

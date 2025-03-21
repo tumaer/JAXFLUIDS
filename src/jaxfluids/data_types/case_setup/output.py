@@ -5,5 +5,6 @@ class OutputQuantitiesSetup(NamedTuple):
     conservatives: Tuple[str]
     real_fluid: Tuple[str]
     levelset: Tuple[str]
+    solids: Tuple[str]
     miscellaneous: Tuple[str]
     forcings: Tuple[str]

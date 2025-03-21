@@ -4,7 +4,11 @@ from typing import List
 
 import jax
 import jax.numpy as jnp
-from jax import Array
+
+from jaxfluids.data_types.buffers import IntegrationBuffers, EulerIntegrationBuffers
+from jaxfluids.equation_information import EquationInformation
+
+Array = jax.Array
 
 class TimeIntegrator(ABC):
     """Abstract base class for explicit time integration schemes.
@@ -99,3 +103,126 @@ class TimeIntegrator(ABC):
         :rtype: Array
         """
         pass
+
+
+    def perform_stage_integration(
+            self,
+            integration_buffers: IntegrationBuffers,
+            rhs_buffers: IntegrationBuffers,
+            initial_stage_buffers: IntegrationBuffers,
+            physical_timestep_size: float,
+            stage: int,
+            equation_information: EquationInformation
+        ) -> IntegrationBuffers:
+        """Performs a stage integration step.
+        1) Transform volume-averaged conservatives
+            to actual conservatives (only for levelset
+            simulations)
+        2) Compute stage buffer
+        3) Integrate
+
+        :param integration_buffers: _description_
+        :type integration_buffers: IntegrationBuffers
+        :param initial_stage_buffers: _description_
+        :type initial_stage_buffers: IntegrationBuffers
+        :param stage: _description_
+        :type stage: int
+        :return: _description_
+        :rtype: IntegrationBuffers
+        """
+
+        is_moving_levelset = equation_information.is_moving_levelset
+        solid_coupling = equation_information.solid_coupling
+
+        integration_euler_buffers = integration_buffers.euler_buffers
+
+        if stage > 0:
+            # NOTE EULER FIELDS
+            initial_stage_euler_buffers = initial_stage_buffers.euler_buffers
+            conservatives = self.prepare_buffer_for_integration(
+                integration_euler_buffers.conservatives,
+                initial_stage_euler_buffers.conservatives,
+                stage
+            )
+            if is_moving_levelset:
+                levelset = self.prepare_buffer_for_integration(
+                    integration_euler_buffers.levelset,
+                    initial_stage_euler_buffers.levelset,
+                    stage
+                )
+            else:
+                levelset = None
+
+            if solid_coupling.dynamic == "TWO-WAY":
+                solid_velocity = self.prepare_buffer_for_integration(
+                    integration_euler_buffers.solid_velocity,
+                    initial_stage_euler_buffers.solid_velocity,
+                    stage
+                )
+            else:
+                solid_velocity = None
+
+            if solid_coupling.thermal == "TWO-WAY":
+                raise NotImplementedError
+
+            else:
+                solid_energy = None
+            
+            integration_euler_buffers = EulerIntegrationBuffers(
+                conservatives,
+                levelset,
+                solid_velocity,
+                solid_energy
+            )
+                    
+
+        # PERFORM INTEGRATION
+        # NOTE EULER FIELDS
+        rhs_euler_buffers = rhs_buffers.euler_buffers
+
+        conservatives = self.integrate(
+            integration_euler_buffers.conservatives,
+            rhs_euler_buffers.conservatives,
+            physical_timestep_size,
+            stage
+        )
+
+        if is_moving_levelset:
+            levelset = self.integrate(
+                integration_euler_buffers.levelset,
+                rhs_euler_buffers.levelset,
+                physical_timestep_size,
+                stage
+            )
+        else:
+            levelset = None
+
+        if solid_coupling.dynamic == "TWO-WAY":
+            solid_velocity = self.integrate(
+                integration_euler_buffers.solid_velocity,
+                rhs_euler_buffers.solid_velocity,
+                physical_timestep_size,
+                stage
+            )
+        else:
+            solid_velocity = None
+
+        if solid_coupling.thermal == "TWO-WAY":
+            raise NotImplementedError
+
+        else:
+            solid_energy = None
+        
+        integration_euler_buffers = EulerIntegrationBuffers(
+            conservatives,
+            levelset,
+            solid_velocity,
+            solid_energy
+        )
+
+        # CREATE CONTAINER
+        integration_buffers = IntegrationBuffers(
+            integration_euler_buffers,
+        )
+
+        return integration_buffers

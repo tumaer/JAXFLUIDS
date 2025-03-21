@@ -1,4 +1,5 @@
 from typing import NamedTuple, Tuple, Callable
+from jaxfluids.input.setup_reader import assert_case
 
 class PositionCallable(NamedTuple):
     x: Callable = None
@@ -19,6 +20,22 @@ class SingleBubbleParameters(NamedTuple):
     driving_pressure: float
     is_one_r: int
     is_barotropic: int
+
+class InitialConditionCavitation(NamedTuple):
+    case: str
+    parameters: NamedTuple
+
+def GetCavitationParametersTuple(
+        case: str
+        ) -> NamedTuple:
+    case_dictionary = {
+        "SINGLE_BUBBLE_2D": SingleBubbleParameters,
+        "SINGLE_BUBBLE_3D": SingleBubbleParameters,
+        "BUBBLE_CLOUD": None
+    }
+    assert_str = f"Initial condition cavitation case {case:s} not implemented."
+    assert_case(case in case_dictionary.keys(), assert_str)
+    return case_dictionary[case]
 
 class InitialConditionTurbulent(NamedTuple):
     case: str = None
@@ -72,9 +89,8 @@ def GetTurbulentParametersTuple(
         "BOUNDARYLAYER": BoundaryLayerParameters,
         "TGV": TGVParameters
     }
-    assert_string = "Consistency error in case setup file. " \
-        "Initial condition turbulent case %s not implemented." % case
-    assert case in case_dictionary.keys(), assert_string
+    assert_str = f"Initial condition turbulent case {case:s} not implemented."
+    assert_case(case in case_dictionary.keys(), assert_str)
     return case_dictionary[case]
 
 class CircleParameters(NamedTuple):
@@ -145,9 +161,8 @@ def GetInitialLevelsetBlockParametersTuple(
         "ellipse": EllipseParameters,
         "ellipsoid": EllipsoidParameters,
     }
-    assert_string = "Consistency error in case setup file. " \
-        "Initial levelset block shape %s not implemented." % case
-    assert case in shape_dictionary.keys(), assert_string
+    assert_str = f"Initial levelset block shape {case:s} not implemented."
+    assert_case(case in shape_dictionary.keys(), assert_str)
     return shape_dictionary[case]
 
 class InitialLevelsetBlock(NamedTuple):
@@ -165,13 +180,20 @@ class InitialConditionLevelset(NamedTuple):
     is_NACA: bool
     is_h5_file: bool
 
+
 class InitialConditionPrimitivesLevelset(NamedTuple):
     positive: NamedTuple = None
     negative: NamedTuple = None
 
+class InitialConditionSolids(NamedTuple):
+    velocity: VelocityCallable
+    temperature: Callable
+
 class InitialConditionSetup(NamedTuple):
     primitives: NamedTuple
     levelset: InitialConditionLevelset
-    solid_velocity: VelocityCallable
+    solids: InitialConditionSolids
     turbulent: InitialConditionTurbulent
+    cavitation: InitialConditionCavitation
     is_turbulent: bool
+    is_cavitation: bool

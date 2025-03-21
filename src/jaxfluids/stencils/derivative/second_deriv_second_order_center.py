@@ -1,9 +1,11 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+
+Array = jax.Array
 
 class SecondDerivativeSecondOrderCenter(SpatialDerivative):
     ''' 
@@ -48,7 +50,13 @@ class SecondDerivativeSecondOrderCenter(SpatialDerivative):
 
         ]
 
-        self.index_pair_dict = {"01": 0, "02": 1, "12": 2}
+        # self.index_pair_dict = {"01": 0, "02": 1, "12": 2}
+
+        self.index_pair_dict = {
+            "01": 0, "02": 1, "12": 2,
+            "10": 0, "20": 1, "21": 2,
+        }
+
 
     def derivative_xi(
             self,
@@ -58,7 +66,7 @@ class SecondDerivativeSecondOrderCenter(SpatialDerivative):
             **kwargs
         ) -> Array:
         s1_ = self.s_[axis]
-        deriv_xi = (1.0 / dxi / dxi ) * (buffer[s1_[0]] - 2.0 * buffer[s1_[1]] + buffer[s1_[2]])
+        deriv_xi = 1.0 / (dxi * dxi) * (buffer[s1_[0]] - 2.0 * buffer[s1_[1]] + buffer[s1_[2]])
         return deriv_xi
 
     def derivative_xi_xj(
@@ -70,5 +78,5 @@ class SecondDerivativeSecondOrderCenter(SpatialDerivative):
             j: int
         ) -> Array:
         s1_ = self.s__[self.index_pair_dict[str(i) + (str(j))]]
-        deriv_xi_xj = 1.0 / 4.0 / dxi / dxj  * ( buffer[s1_[0]]  - buffer[s1_[1]]  - buffer[s1_[2]] + buffer[s1_[3]] )   
+        deriv_xi_xj = 1.0 / (4.0 * dxi * dxj) * (buffer[s1_[0]] - buffer[s1_[1]] - buffer[s1_[2]] + buffer[s1_[3]])   
         return deriv_xi_xj

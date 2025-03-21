@@ -5,6 +5,13 @@ from jaxfluids.input.setup_reader import _get_setup_value, get_path_to_key, _loo
 
 SETUP = "numerical"
 
+MANDATORY_NUMERICAL_SETUP_KEYS = ("active_physics", "conservatives",)
+OPTIONAL_NUMERICAL_SETUP_KEYS = ("active_forcings", "cavitation",
+                                 "diffuse_interface", "levelset",
+                                 "output", 
+                                 "precision")
+NUMERICAL_SETUP_KEYS = MANDATORY_NUMERICAL_SETUP_KEYS + OPTIONAL_NUMERICAL_SETUP_KEYS
+
 def get_setup_value(
         setup_dict: Dict,
         key: str,

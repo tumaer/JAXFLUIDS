@@ -10,20 +10,23 @@ initialization_manager = InitializationManager(input_manager)
 sim_manager = SimulationManager(input_manager)
 
 # RUN SIMULATION
-simulation_buffers, time_control_variables, \
-forcing_parameters = initialization_manager.initialization()
-sim_manager.simulate(simulation_buffers, time_control_variables)
+jxf_buffers = initialization_manager.initialization()
+sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
 quantities = ["density", "velocity", "pressure"]
-cell_centers, cell_sizes, times, data_dict = load_data(path, quantities)
+jxf_data = load_data(path, quantities)
+
+data = jxf_data.data
+cell_centers = jxf_data.cell_centers
+times = jxf_data.times
 
 # PLOT
 plot_dict = {
-    "density": data_dict["density"], 
-    "velocityX": data_dict["velocity"][:,0],
-    "pressure": data_dict["pressure"],
+    "density": data["density"], 
+    "velocityX": data["velocity"][:,0],
+    "pressure": data["pressure"],
 }
 nrows_ncols = (1,3)
 

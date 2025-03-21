@@ -7,15 +7,19 @@
         },
         "convective_fluxes": {
             "convective_solver": "GODUNOV",
-            "riemann_solver": "HLLC",
-            "signal_speed": "EINFELDT",
-            "reconstruction_stencil": "WENO5-JS",
-            "reconstruction_variable": "PRIMITIVE"
+            "godunov": {
+                "riemann_solver": "HLLC",
+                "signal_speed": "EINFELDT",
+                "reconstruction_stencil": "WENO5-Z",
+                "reconstruction_variable": "PRIMITIVE"
+            }
         },
         "dissipative_fluxes": {
             "reconstruction_stencil": "CENTRAL4",
             "derivative_stencil_center": "CENTRAL4",
-            "derivative_stencil_face": "CENTRAL4"
+            "derivative_stencil_face": "CENTRAL4",
+            "second_derivative_stencil_center": "CENTRAL4",
+            "is_laplacian": true
         }
     },
     "active_physics": {

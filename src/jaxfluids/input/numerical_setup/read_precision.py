@@ -1,10 +1,11 @@
 from typing import Dict
 
+import jax.numpy as jnp
 from jaxfluids.data_types.numerical_setup.precision import *
 from jaxfluids.input.numerical_setup import get_setup_value, get_path_to_key
 
 def read_precision_setup(
-        numerical_setup_dict: dict
+        numerical_setup_dict: Dict
         ) -> PrecisionSetup:
 
     basepath = "precision"
@@ -65,6 +66,11 @@ def read_precision_setup(
         is_optional=True, default_value={})
     thinc_limiter_epsilon = read_epsilon(thinc_limiter_epsilon_dict, path)
 
+    path = get_path_to_key(basepath, "is_consistent_summation")
+    is_consistent_summation = get_setup_value(
+        precision_dict, "is_consistent_summation", path, bool,
+        is_optional=True, default_value=False)
+
     precision_setup = PrecisionSetup(
         is_double_precision_compute,
         is_double_precision_output,
@@ -72,7 +78,8 @@ def read_precision_setup(
         fmax, spatial_stencil_epsilon,
         interpolation_limiter_epsilon,
         flux_limiter_epsilon,
-        thinc_limiter_epsilon)
+        thinc_limiter_epsilon,
+        is_consistent_summation)
 
     return precision_setup
 

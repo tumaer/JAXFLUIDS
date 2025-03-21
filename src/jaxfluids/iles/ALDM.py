@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import Tuple, Dict, Union, TYPE_CHECKING
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_manager import EquationManager
@@ -13,7 +13,10 @@ from jaxfluids.iles.ALDM_WENO3 import ALDM_WENO3
 from jaxfluids.iles.ALDM_WENO5 import ALDM_WENO5
 from jaxfluids.solvers.convective_fluxes.convective_flux_solver import ConvectiveFluxSolver
 if TYPE_CHECKING:
-    from jaxfluids.data_types.numerical_setup.conservatives import ConvectiveFluxesSetup
+    from jaxfluids.data_types.numerical_setup.conservatives import (
+        ConvectiveFluxesSetup, ALDMSetup)
+
+Array = jax.Array
 
 class ALDM(ConvectiveFluxSolver):
     """ Adaptive Local Deconvolution Method - ALDM - Hickel et al. 2014
@@ -52,11 +55,11 @@ class ALDM(ConvectiveFluxSolver):
         is_mesh_stretching = domain_information.is_mesh_stretching
         cell_sizes_halos = domain_information.get_global_cell_sizes_halos()
 
-        # ILES SETUP
-        iles_setup = convective_fluxes_setup.iles_setup
-        smoothness_measure = iles_setup.aldm_smoothness_measure
-        wall_damping = iles_setup.wall_damping
-        shock_sensor = iles_setup.shock_sensor
+        # ALDM SETUP
+        aldm_setup: ALDMSetup = convective_fluxes_setup.aldm
+        smoothness_measure = aldm_setup.smoothness_measure
+        wall_damping = aldm_setup.wall_damping
+        shock_sensor = aldm_setup.shock_sensor
 
         # STENCILS
         self.ALDM_WENO1 = ALDM_WENO1(
@@ -79,6 +82,7 @@ class ALDM(ConvectiveFluxSolver):
             smoothness_measure=smoothness_measure)
 
         # WALL DAMPING
+        # TODO
         self.wall_damping = wall_damping
         self.vd_constant_d = 3.0
         self.vd_constant_s = 1.0 / self.vd_constant_d
@@ -99,7 +103,7 @@ class ALDM(ConvectiveFluxSolver):
             conservatives: Array,
             axis: int,
             **kwargs
-            ) -> Tuple[Array, None, None, None]:
+        ) -> Tuple[Array, None, None, None]:
         """Computes the numerical flux in the axis direction.
 
         :param primitives: Buffer of primitive variables.
@@ -113,7 +117,8 @@ class ALDM(ConvectiveFluxSolver):
         """
         # SHOCK SENSOR
         if self.is_shock_sensor_active:
-            fs = self.shock_sensor.compute_sensor_function(primitives[1:4], axis)
+            s_velocity = self.equation_information.s_velocity
+            fs = self.shock_sensor.compute_sensor_function(primitives[s_velocity], axis)
         else:
             fs = 0.0
 
@@ -126,6 +131,8 @@ class ALDM(ConvectiveFluxSolver):
         phi = self.compute_phi(primitives, conservatives)
         phi_L, p3_L = self.reconstruct_xi(phi, alpha_1, alpha_2, alpha_3, fs, axis, 0)
         phi_R, p3_R = self.reconstruct_xi(phi, alpha_1, alpha_2, alpha_3, fs, axis, 1)
+
+        # TODO interpolation limiter
 
         # Speed of sound
         speed_of_sound = self.material_manager.get_speed_of_sound(primitives)
@@ -179,8 +186,9 @@ class ALDM(ConvectiveFluxSolver):
         :type axis: int
         :return: Numerical flux in axis drection.
         :rtype: Array
-        """
-        
+        """    
+        # TODO deniz: use equation information slices
+ 
         phi_delta = phi_R - phi_L
 
         # Interface pressure and transport velocity
@@ -196,12 +204,17 @@ class ALDM(ConvectiveFluxSolver):
         u_star = 0.5 * (phi_L[axis+1] + phi_R[axis+1]) - alpha_3 * (p3_R - p3_L) / (speed_of_sound * (phi_L[0] + phi_R[0])) 
 
         # Dissipation matrix
+        if self.is_shock_sensor_active:
+            R_diss_shock = fs * 0.5 * (jnp.abs(u_star) + jnp.abs(phi_delta[axis+1]))
+        else:
+            R_diss_shock = 0.0
+
         R_diss = jnp.stack([
-            self._sigma_rho  * jnp.abs(phi_delta[axis+1]) + fs * 0.5 * (jnp.abs(u_star) + jnp.abs(phi_delta[axis+1])),
-            self._sigma_rhou * jnp.abs(phi_delta[1])      + fs * 0.5 * (jnp.abs(u_star) + jnp.abs(phi_delta[axis+1])),
-            self._sigma_rhou * jnp.abs(phi_delta[2])      + fs * 0.5 * (jnp.abs(u_star) + jnp.abs(phi_delta[axis+1])),
-            self._sigma_rhou * jnp.abs(phi_delta[3])      + fs * 0.5 * (jnp.abs(u_star) + jnp.abs(phi_delta[axis+1])),
-            self._sigma_rhoe * jnp.abs(phi_delta[axis+1]) + fs * 0.5 * (jnp.abs(u_star) + jnp.abs(phi_delta[axis+1])),
+            self._sigma_rho  * jnp.abs(phi_delta[axis+1]) + R_diss_shock,
+            self._sigma_rhou * jnp.abs(phi_delta[1])      + R_diss_shock,
+            self._sigma_rhou * jnp.abs(phi_delta[2])      + R_diss_shock,
+            self._sigma_rhou * jnp.abs(phi_delta[3])      + R_diss_shock,
+            self._sigma_rhoe * jnp.abs(phi_delta[axis+1]) + R_diss_shock,
         ])
 
         # Flux computation
@@ -258,6 +271,8 @@ class ALDM(ConvectiveFluxSolver):
         :return: Numerical flux in axis drection.
         :rtype: Array
         """
+        # TODO deniz: use equation information slices
+
         phi_mean = 0.5 * (phi_L + phi_R)
         phi_delta = phi_R - phi_L
         u_mean = phi_mean[axis+1]
@@ -373,14 +388,13 @@ class ALDM(ConvectiveFluxSolver):
         :return: Buffer of the phi vector.
         :rtype: Array
         """
+        # TODO deniz: use equation information slices
+
         rho_e = conservatives[4] - 0.5 * primitives[0] * (primitives[1] * primitives[1] + primitives[2] * primitives[2] + primitives[3] * primitives[3])
         phi = jnp.stack([primitives[0], primitives[1], primitives[2], primitives[3], primitives[4], rho_e], axis=0)
         return phi
 
-    def compute_numerical_dissipation(
-        self,
-        primitives: Array,
-    ) -> Array:
+    def compute_numerical_dissipation(self, primitives: Array) -> Array:
         """Corrects the numerical dissipation coefficient for the momentum equation
         in wall vicinity. Three different models are available.
 
@@ -396,14 +410,14 @@ class ALDM(ConvectiveFluxSolver):
         if self.wall_damping is None:
             sigma_rhou = self._sigma_rhou
 
-        if self.wall_damping == "VANDRIEST":
+        elif self.wall_damping == "VANDRIEST":
             l_w = 0.0
             u_tau = 0.0
             nu = 0.0
             f_VD = (1.0 - jnp.exp(-(l_w * u_tau / (self.vd_constant_a_plus * nu))**self.vd_constant_d))**self.vd_constant_s
             sigma_rhou = self._sigma_rhou * f_VD
 
-        if self.wall_damping == "COHERENTSTRUCTURE":
+        elif self.wall_damping == "COHERENTSTRUCTURE":
             W_ij_mean = 0.0
             S_ij_mean = 0.0
             W_ij_W_ij_mean = W_ij_mean * W_ij_mean
@@ -414,5 +428,8 @@ class ALDM(ConvectiveFluxSolver):
             F_omega = 0.9 * (1.0 - F_CS)
             f_CS = jnp.pi * jnp.power(F_CS, 1.5) * F_omega
             sigma_rhou = self._sigma_rhou * f_CS
+        
+        else:
+            raise NotImplementedError
 
         return sigma_rhou

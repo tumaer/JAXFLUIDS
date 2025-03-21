@@ -7,9 +7,9 @@ from jaxfluids.data_types.case_setup.boundary_conditions import *
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.domain import FACE_LOCATIONS, AXES
 from jaxfluids.equation_information import EquationInformation
-from jaxfluids.input.setup_reader import get_path_to_key, create_wrapper_for_callable
-from jaxfluids.input.case_setup import get_setup_value
-from jaxfluids.halos.outer import PRIMITIVES_TYPES, LEVELSET_TYPES
+from jaxfluids.input.setup_reader import get_path_to_key, create_wrapper_for_callable, assert_case
+from jaxfluids.input.case_setup import get_setup_value, loop_fields
+from jaxfluids.halos.outer import PRIMITIVES_TYPES, LEVELSET_TYPES, SOLIDS_THERMAL_TYPES
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.domain.domain_information import DomainInformation
 
@@ -40,9 +40,14 @@ def read_boundary_condition_setup(
         case_setup_dict, "boundary_conditions", basepath, dict,
         is_optional=False)
 
+    levelset_model = equation_information.levelset_model
+    solid_coupling = equation_information.solid_coupling
+
     active_models = ["primitives"]
-    if equation_information.levelset_model:
+    if levelset_model:
         active_models.append("levelset")
+    if solid_coupling.thermal == "TWO-WAY":
+        raise NotImplementedError
 
     boundary_conditions_dict = {}
     for field in active_models:
@@ -79,10 +84,10 @@ def read_boundary_condition_setup(
 
                 if multiple_boundary_types_at_face:
                     boundary_type = boundary_conditions_face.boundary_type
-                    assert_string = ("Consistency error in case setup file. "
+                    assert_str = (
                         f"Periodic boundary condition at face location {face_location} "
                         "with multiple boundary types not allowed.")
-                    assert boundary_type != "PERIODIC", assert_string
+                    assert_case(boundary_type != "PERIODIC", assert_str)
 
             boundary_conditions_field_dict[face_location] = tuple(boundary_conditions_face_list)     
 
@@ -119,17 +124,20 @@ def read_boundary_condition_face(
     :rtype: BoundaryConditionsFace
     """
 
+    # TODO compartmentalize in functions
+
     path_type = get_path_to_key(basepath, "type")
     boundary_type = get_setup_value(
         boundary_conditions_face_case_setup, "type",
         path_type, str, is_optional=False)
 
-    assert_string = "Consistency error in case setup file. "\
-        f"Boundary type {boundary_type} not implemented for {field}"
+    assert_str = f"Boundary type {boundary_type} not implemented for {field}."
     if field == "primitives":
-        assert boundary_type in PRIMITIVES_TYPES, assert_string
+        assert_case(boundary_type in PRIMITIVES_TYPES, assert_str)
     if field == "levelset":
-        assert boundary_type in LEVELSET_TYPES, assert_string
+        assert_case(boundary_type in LEVELSET_TYPES, assert_str)
+    if field == "solids":
+        assert_case(boundary_type in SOLIDS_THERMAL_TYPES, assert_str)
 
     bounding_domain_callable = None
     primitives_callable = None
@@ -138,13 +146,19 @@ def read_boundary_condition_face(
     wall_temperature_callable = None
     wall_mass_transfer = None
     primitives_table = None
+    simple_inflow = None
+    simple_outflow = None
+    temperature_callable = None
 
     active_axes_at_face = get_active_axes_at_face(domain_setup, face_location)
     dim = domain_setup.dim
     input_argument_labels = active_axes_at_face + ("t",)
     input_argument_units = tuple(["length"] * (dim-1) + ["time"])
 
-    if boundary_type in ["ZEROGRADIENT", "SYMMETRY", "PERIODIC", "INACTIVE"]:
+    if boundary_type in [
+            "ZEROGRADIENT", "SYMMETRY", "PERIODIC", "LINEAREXTRAPOLATION",
+            "INACTIVE", "DIRICHLET_PARAMETERIZED"
+        ]:
         pass
 
     elif boundary_type in ["DIRICHLET", "NEUMANN"]:
@@ -160,9 +174,8 @@ def read_boundary_condition_face(
             primitives_case_setup = get_setup_value(
                 boundary_conditions_face_case_setup, "primitives_callable",
                 path_callable, dict, is_optional=True, default_value=None)
-            assert_string = ("Consistency error in case setup file. "
-                f"Either h5file_path or primitives_callable must be given for {basepath:s}.")
-            assert h5file_path_str != None or primitives_case_setup != None, assert_string
+            assert_str = f"Either h5file_path or primitives_callable must be given for {basepath:s}."
+            assert_case(h5file_path_str != None or primitives_case_setup != None, assert_str)
 
             if h5file_path_str != None:
                 with h5py.File(h5file_path_str, "r") as h5file:
@@ -173,21 +186,26 @@ def read_boundary_condition_face(
                             if axis not in active_axes_at_face:
                                 raise RuntimeError
                             break
-                mass_slices = equation_information.mass_slices
-                velocity_slices = equation_information.velocity_slices
-                energy_slices = equation_information.energy_slices
-                primitives = primitives.at[mass_slices].set(unit_handler.non_dimensionalize(primitives[mass_slices], "density"))
-                primitives = primitives.at[velocity_slices].set(unit_handler.non_dimensionalize(primitives[velocity_slices], "velocity"))
-                primitives = primitives.at[energy_slices].set(unit_handler.non_dimensionalize(primitives[energy_slices], "pressure"))
-                axis_values = unit_handler.non_dimensionalize(axis_values, "length")
-                primitives_table = PrimitivesTable(primitives, axis_values, axis)
-                no_primes = equation_information.no_primes
-                assert_string = ("Consistency error in case setup file. "
-                                 f"Primitives provided in h5file_path for {basepath:s} "
-                                 "do not have the proper shape.")
-                assert primitives.shape[0] == no_primes, assert_string
+                s_mass = equation_information.s_mass
+                s_velocity = equation_information.s_velocity
+                s_energy = equation_information.s_energy
+
+                # TODO Diffuse interface
+                if equation_information.equation_type in ("SINGLE-PHASE", "TWO-PHASE-LS"):
+                    primitives = primitives.at[s_mass].set(unit_handler.non_dimensionalize(primitives[s_mass], "density"))
+                    primitives = primitives.at[s_velocity].set(unit_handler.non_dimensionalize(primitives[s_velocity], "velocity"))
+                    primitives = primitives.at[s_energy].set(unit_handler.non_dimensionalize(primitives[s_energy], "pressure"))
+                    axis_values = unit_handler.non_dimensionalize(axis_values, "length")
+                    primitives_table = PrimitivesTable(primitives, axis_values, axis)
+                    no_primes = equation_information.no_primes
+                    assert_str = (f"Primitives provided in h5file_path for {basepath:s} "
+                                  "do not have the proper shape.")
+                    assert_case(primitives.shape[0] == no_primes, assert_str)
+                else:
+                    raise NotImplementedError
 
             if primitives_case_setup != None:
+                # TODO should this be more flexible??
                 primitives_callables_dict = {}
                 for prime_state in equation_information.primes_tuple:
                     path = get_path_to_key(path_callable, prime_state)
@@ -270,14 +288,66 @@ def read_boundary_condition_face(
                 path_callable, (float, str), is_optional=False)
             bounding_domain_callable = create_wrapper_for_callable(
                     bounding_domain_case_setup, tuple(["length"] * (dim-1)),
-                    active_axes_at_face, None, path_callable,
-                    perform_nondim=False, unit_handler=unit_handler)
+                    active_axes_at_face, "None", path_callable,
+                    perform_nondim=True, unit_handler=unit_handler)
 
             primitives_callable = GetPrimitivesCallable(
                 primitives_callables_dict)
             wall_mass_transfer = WallMassTransferSetup(
                 primitives_callable, bounding_domain_callable)
 
+    elif boundary_type == "SIMPLE_INFLOW":
+        path_callable = get_path_to_key(basepath, "primitives_callable")
+        primitives_case_setup = get_setup_value(
+            boundary_conditions_face_case_setup, "primitives_callable", 
+            path_callable, dict, is_optional=False)
+
+        primitives_callables_dict = {}
+        primes_tuple = [state for state in equation_information.primes_tuple if state != "p"]
+        for prime_state in primes_tuple:
+            path = get_path_to_key(path_callable, prime_state)
+            prime_state_case_setup = get_setup_value(
+                primitives_case_setup, prime_state, path, (float, str),
+                is_optional=False)
+            prime_wrapper = create_wrapper_for_callable(
+                prime_state_case_setup, input_argument_units,
+                input_argument_labels, prime_state, path, 
+                perform_nondim=True, unit_handler=unit_handler)
+            primitives_callables_dict[prime_state] = prime_wrapper
+
+        primitives_callable = GetPrimitivesCallable(primitives_callables_dict)
+        simple_inflow = SimpleInflowSetup(primitives_callable)
+
+    elif boundary_type == "SIMPLE_OUTFLOW":
+        path_callable = get_path_to_key(basepath, "primitives_callable")
+        primitives_case_setup = get_setup_value(
+            boundary_conditions_face_case_setup, "primitives_callable", 
+            path_callable, dict, is_optional=False)
+
+        primitives_callables_dict = {}
+        prime_state = "p"
+        path = get_path_to_key(path_callable, prime_state)
+        prime_state_case_setup = get_setup_value(
+            primitives_case_setup, prime_state, path, (float, str),
+            is_optional=False)
+        prime_wrapper = create_wrapper_for_callable(
+            prime_state_case_setup, input_argument_units,
+            input_argument_labels, prime_state, path, 
+            perform_nondim=True, unit_handler=unit_handler)
+        primitives_callables_dict[prime_state] = prime_wrapper
+
+        primitives_callable = GetPrimitivesCallable(primitives_callables_dict)
+        simple_outflow = SimpleOutflowSetup(primitives_callable)
+
+    elif boundary_type == "ISOTHERMAL":
+        path_callable = get_path_to_key(basepath, "temperature_callable")
+        temperature_case_setup = get_setup_value(
+            boundary_conditions_face_case_setup, "temperature_callable", 
+            path_callable, (str, float), is_optional=False)
+        temperature_callable = create_wrapper_for_callable(
+            temperature_case_setup, input_argument_units,
+            input_argument_labels, "temperature", path_callable,
+            perform_nondim=True, unit_handler=unit_handler)
     else:
         raise NotImplementedError
 
@@ -288,8 +358,8 @@ def read_boundary_condition_face(
             path_callable, (float, str), is_optional=False)
         bounding_domain_callable = create_wrapper_for_callable(
             bounding_domain_case_setup, tuple(["length"] * (dim-1)),
-            active_axes_at_face, None, path_callable,
-            perform_nondim=False, unit_handler=unit_handler)
+            active_axes_at_face, "None", path_callable,
+            perform_nondim=True, unit_handler=unit_handler)
     else:
         bounding_domain_callable = None
 
@@ -297,7 +367,8 @@ def read_boundary_condition_face(
         boundary_type, bounding_domain_callable, primitives_callable,
         levelset_callable, wall_velocity_callable,
         wall_temperature_callable, wall_mass_transfer,
-        primitives_table)
+        primitives_table, simple_inflow, simple_outflow,
+        temperature_callable)
 
     return boundary_conditions_face
 
@@ -309,6 +380,9 @@ def sanity_check(
         domain_setup: DomainSetup,
         numerical_setup: NumericalSetup
         ) -> None:
+
+    # TODO For multiple bcs, check that bounding domains do not overlap
+    # TODO For multiple bcs, check that entire face is covered
 
     active_axes = domain_setup.active_axes
     active_axes_indices = domain_setup.active_axes_indices
@@ -333,13 +407,9 @@ def sanity_check(
             face_locations = axis_to_face_location[axis]
             for face_location in face_locations:
                 boundary_condition_face: Tuple[BoundaryConditionsFace] = getattr(boundary_conditions_field, face_location)
-                assert_string = (
-                    "Consistency error in case setup file. "
-                    f"Boundary condition at {face_location:s} must be "
-                    f"INACTIVE."
-                    )
+                assert_str = f"Boundary condition at {face_location:s} must be set to INACTIVE."
                 boundary_type = boundary_condition_face[0].boundary_type
-                assert boundary_type == "INACTIVE", assert_string
+                assert_case(boundary_type == "INACTIVE", assert_str)
         
         # CHECK PERIODIC CONSISTENCY
         for face_location in FACE_LOCATIONS:
@@ -354,15 +424,12 @@ def sanity_check(
                     boundary_type = boundary_condition_face[0].boundary_type
                     if boundary_type != "PERIODIC":
                         flag = False
-                        assert_string = (
-                            "Consistency error in case setup file. "
-                            f"Boundary condition at {face_location:s} must be "
-                            "PERIODIC."
-                            )
+                        assert_str = f"Boundary condition at {face_location:s} must be set to PERIODIC."
+                        assert_case(flag, assert_str)
                         break
                     else:
                         pass
-                assert flag, assert_string
+
 
     
     

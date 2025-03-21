@@ -6,15 +6,13 @@ from functools import partial
 import h5py
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.buffers import ForcingParameters, SimulationBuffers, \
     MaterialFieldBuffers, LevelsetFieldBuffers, TimeControlVariables
-from jaxfluids.data_types.information import TurbulentStatisticsInformation, \
-    ChannelStatisticsCumulative, HITStatisticsCumulative
-from jaxfluids.data_types.numerical_setup.turbulence_statistics import TurbulenceStatisticsSetup
+from jaxfluids.data_types.case_setup.statistics import TurbulenceStatisticsSetup
+from jaxfluids.data_types.statistics import TurbulenceStatisticsInformation
 
 class StatisticsWriter:
     """Writes turbulent statistics to h5 file.
@@ -36,7 +34,7 @@ class StatisticsWriter:
         self.is_double = is_double
         self.save_path_statistics = None
 
-        self.turbulence_case = turbulence_statistics_setup.turbulence_case
+        self.turbulence_case = turbulence_statistics_setup.case
 
         self.num_digits_output = 10
 
@@ -45,19 +43,20 @@ class StatisticsWriter:
 
     def write_statistics(
             self,
-            turbulent_statistics: TurbulentStatisticsInformation,
+            turbulence_statistics: TurbulenceStatisticsInformation,
             time_control_variables: TimeControlVariables,
             ) -> None:
-        """Saves turbulent statistics to h5 file.
+        """Saves turbulence statistics to h5 file.
 
-        :param turbulent_statistics: _description_
-        :type turbulent_statistics: TurbulentStatisticsInformation
+        :param turbulence_statistics: _description_
+        :type turbulence_statistics: TurbulenceStatisticsInformation
         :param time_control_variables: _description_
         :type time_control_variables: TimeControlVariables
+        :raises NotImplementedError: _description_
         """
 
         physical_simulation_time = time_control_variables.physical_simulation_time
-        cumulative_turbulent_statistics = turbulent_statistics.cumulative
+        turbulence_statistics_cumulative = turbulence_statistics.cumulative
 
         dtype = "f8" if self.is_double else "f4"
 
@@ -115,86 +114,27 @@ class StatisticsWriter:
             # STATISTICS
             grp_meta.create_dataset(name="turbulence_case", data=self.turbulence_case)
             if self.turbulence_case == "CHANNEL":
-                self._write_channel_statistics(h5file,
-                                               cumulative_turbulent_statistics.channel_statistics,
-                                               dtype)
-        
-            if self.turbulence_case == "HIT":
-                self._write_hit_statistsics(h5file,
-                                            cumulative_turbulent_statistics.hit_statistics,
-                                            dtype)
+                case_statistics = turbulence_statistics_cumulative.channel
+            elif self.turbulence_case == "HIT":
+                case_statistics = turbulence_statistics_cumulative.hit                
+            elif self.turbulence_case == "BOUNDARY_LAYER":
+                raise NotImplementedError
+            else:
+                raise NotImplementedError
+            
+            self._write_turbulence_statistics(h5file, case_statistics, dtype)
 
-    def _write_hit_statistsics(
-            self,
-            h5file: h5py.File,
-            data: HITStatisticsCumulative,
-            dtype: str
-            ) -> None:
-        # SAMPLES
-        grp_s = h5file.create_group(name="samples")
-        grp_s.create_dataset(name="number_sample_steps", data=data.number_sample_steps, dtype=dtype)
-        grp_s.create_dataset(name="number_sample_points", data=data.number_sample_points, dtype=dtype)
-        
-        one_sp = 1.0 / data.number_sample_points
-        
-        # MEANS
-        grp_m = h5file.create_group(name="means")
-        grp_m.create_dataset(name="density", data=one_sp * data.density_T, dtype=dtype)
-        grp_m.create_dataset(name="pressure", data=one_sp * data.pressure_T, dtype=dtype)
-        grp_m.create_dataset(name="temperature", data=one_sp * data.temperature_T, dtype=dtype)
-        grp_m.create_dataset(name="speed_of_sound", data=one_sp * data.c_T, dtype=dtype)
-
-        # FLUCTUATIONS
-        grp_f = h5file.create_group(name="fluctuations")
-        grp_f.create_dataset(name="rhop_rhop", data=one_sp * data.rhop_rhop_S, dtype=dtype)
-        grp_f.create_dataset(name="pp_pp", data=one_sp * data.pp_pp_S, dtype=dtype)
-        grp_f.create_dataset(name="Tp_Tp", data=one_sp * data.Tp_Tp_S, dtype=dtype)
-        grp_f.create_dataset(name="up_up", data=one_sp * data.up_up_S, dtype=dtype)
-        grp_f.create_dataset(name="vp_vp", data=one_sp * data.vp_vp_S, dtype=dtype)
-        grp_f.create_dataset(name="wp_wp", data=one_sp * data.wp_wp_S, dtype=dtype)
-        grp_f.create_dataset(name="Mp_Mp", data=one_sp * data.machp_machp_S, dtype=dtype)
-
-    def _write_channel_statistics(
+    def _write_turbulence_statistics(
             self, 
             h5file: h5py.File,
-            data: ChannelStatisticsCumulative,
+            data: Dict,
             dtype: str
             ) -> None:
-        # SAMPLES
-        grp_s = h5file.create_group(name="samples")
-        grp_s.create_dataset(name="number_sample_steps", data=data.number_sample_steps, dtype=dtype)
-        grp_s.create_dataset(name="number_sample_points", data=data.number_sample_points, dtype=dtype)
         
-        one_sp = 1.0 / data.number_sample_points
+        for key1 in data:
+            grp = h5file.create_group(name=key1)
+            sub_data = data[key1]
+            for key2 in sub_data:
+                grp.create_dataset(name=key2, data=sub_data[key2], dtype=dtype)
 
-        # MEANS
-        grp_m = h5file.create_group(name="means")
-        grp_m.create_dataset(name="velocityX", data=one_sp * jnp.squeeze(data.U_T), dtype=dtype)
-        grp_m.create_dataset(name="velocityY", data=one_sp * jnp.squeeze(data.V_T), dtype=dtype)
-        grp_m.create_dataset(name="velocityZ", data=one_sp * jnp.squeeze(data.W_T), dtype=dtype)
-        grp_m.create_dataset(name="density", data=one_sp * jnp.squeeze(data.density_T), dtype=dtype)
-        grp_m.create_dataset(name="pressure", data=one_sp * jnp.squeeze(data.pressure_T), dtype=dtype)
-        grp_m.create_dataset(name="temperature", data=one_sp * jnp.squeeze(data.T_T), dtype=dtype)
-        grp_m.create_dataset(name="mach_number", data=one_sp * jnp.squeeze(data.mach_T), dtype=dtype)
-        grp_m.create_dataset(name="speed_of_sound", data=one_sp * jnp.squeeze(data.c_T), dtype=dtype)
-        
-        # FLUCTUATIONS
-        grp_f = h5file.create_group(name="fluctuations")
-        grp_f.create_dataset(name="Mp_Mp", data=one_sp * jnp.squeeze(data.machp_machp_S), dtype=dtype)
-        grp_f.create_dataset(name="pp_pp", data=one_sp * jnp.squeeze(data.pp_pp_S), dtype=dtype)
-        grp_f.create_dataset(name="rhop_rhop", data=one_sp * jnp.squeeze(data.rhop_rhop_S), dtype=dtype)
-        grp_f.create_dataset(name="up_up", data=one_sp * jnp.squeeze(data.up_up_S), dtype=dtype)
-        grp_f.create_dataset(name="vp_vp", data=one_sp * jnp.squeeze(data.vp_vp_S), dtype=dtype)
-        grp_f.create_dataset(name="wp_wp", data=one_sp * jnp.squeeze(data.wp_wp_S), dtype=dtype)
-        grp_f.create_dataset(name="up_vp", data=one_sp * jnp.squeeze(data.up_vp_S), dtype=dtype)
-        grp_f.create_dataset(name="up_wp", data=one_sp * jnp.squeeze(data.up_wp_S), dtype=dtype)
-        grp_f.create_dataset(name="vp_wp", data=one_sp * jnp.squeeze(data.vp_wp_S), dtype=dtype)
-        grp_f.create_dataset(name="Tp_Tp", data=one_sp * jnp.squeeze(data.Tp_Tp_S), dtype=dtype)
-        grp_f.create_dataset(name="vp_Tp", data=one_sp * jnp.squeeze(data.vp_Tp_S), dtype=dtype)
-    
-    def _write_duct_statistics(self):
-        raise NotImplementedError
-    
-    def _write_boundary_layer_statistics(self):
-        raise NotImplementedError
     

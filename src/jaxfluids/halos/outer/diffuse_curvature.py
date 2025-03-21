@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.halos.outer.boundary_condition import BoundaryCondition
@@ -10,6 +9,8 @@ from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace
 from jaxfluids.domain import EDGE_LOCATIONS
 from jaxfluids.domain import VERTEX_LOCATIONS
+
+Array = jax.Array
 
 class BoundaryConditionDiffuseCurvature(BoundaryCondition):
 

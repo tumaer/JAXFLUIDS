@@ -2,18 +2,19 @@ from typing import Union, Dict, List, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 import h5py
 import warnings
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.materials.material_manager import MaterialManager
-from jaxfluids.turb.statistics.utilities import energy_spectrum_physical, energy_spectrum_physical_parallel
+from jaxfluids.turbulence.statistics.utilities import energy_spectrum_physical, energy_spectrum_physical_parallel
 from jaxfluids.data_types.buffers import ForcingParameters, \
     MassFlowControllerParameters, MaterialFieldBuffers
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.data_types.case_setup import RestartSetup
+
+Array = jax.Array
 
 class ForcingsInitializer:
     """The ForcingsInitializer implements functionality
@@ -77,9 +78,9 @@ class ForcingsInitializer:
             
         # DEFAULT FORCINGS
         if "forcings" not in available_quantities:
-            warning_string = ("Restart file %s does not "
+            warning_string = (f"Restart file {self.restart_file_path} does not "
             "contain forcings, however, there are active forcings. "
-            "Using default values" % self.restart_file_path)
+            "Using default values")
             warnings.warn(warning_string, RuntimeWarning)
 
             if self.is_mass_flow_forcing:
@@ -96,11 +97,11 @@ class ForcingsInitializer:
             forcings_restart = h5file["forcings"]
             if self.is_mass_flow_forcing:
                 if "mass_flow" not in forcings_restart.keys():
-                    warning_string = ("Restart file %s does not "
-                    "contain mass flow forcing, however, "
-                    "mass flow forcing is active. "
-                    "Defaulting PID controller " 
-                    "parameters to 0.0" % self.restart_file_path)
+                    warning_string = (
+                        f"Restart file {self.restart_file_path} does not "
+                        "contain mass flow forcing, however, "
+                        "mass flow forcing is active. "
+                        "Defaulting PID controller parameters to 0.0.")
                     warnings.warn(warning_string, RuntimeWarning)
                     mass_flow_params_default = True 
                 else:
@@ -111,10 +112,11 @@ class ForcingsInitializer:
 
             if self.is_turb_hit_forcing:
                 if "turb_hit" not in forcings_restart.keys():
-                    warning_string = ("Restart file %s does not "
-                    "contain hit forcing, however, hit forcing is active. "
-                    "Computing reference energy spectrum from restart velocity "
-                    "field." % self.restart_file_path)
+                    warning_string = (
+                        f"Restart file {self.restart_file_path} does not "
+                        "contain hit forcing, however, hit forcing is active. "
+                        "Computing reference energy spectrum from restart velocity "
+                        "field.")
                     warnings.warn(warning_string, RuntimeWarning)
                     hit_ek_ref_default = True
                 else:
@@ -128,9 +130,16 @@ class ForcingsInitializer:
         if hit_ek_ref_default:
             def compute_energy_spectrum_wrapper(primitives: Array):
                 nhx,nhy,nhz = self.domain_information.domain_slices_conservatives
+                is_parallel = self.domain_information.is_parallel
+                split_factors = self.domain_information.split_factors
                 velocity = primitives[1:4,...,nhx,nhy,nhz]
-                energy_spec = energy_spectrum_physical(velocity, multiplicative_factor=0.5)
+                if is_parallel:
+                    energy_spec = energy_spectrum_physical_parallel(
+                        velocity, split_factors, multiplicative_factor=0.5)
+                else:
+                    energy_spec = energy_spectrum_physical(velocity, multiplicative_factor=0.5)
                 return energy_spec
+            
             if self.domain_information.is_parallel:
                 # TODO multi-host
                 if self.domain_information.is_multihost:
@@ -185,9 +194,9 @@ class ForcingsInitializer:
                 :return: _description_
                 :rtype: _type_
                 """
-                velocity_slices = self.equation_information.velocity_slices
+                s_velocity = self.equation_information.s_velocity
                 domain_slices = self.domain_information.domain_slices_conservatives
-                slice_object = tuple([velocity_slices,]) + domain_slices
+                slice_object = tuple([s_velocity,]) + domain_slices
                 velocity = primitives[slice_object]
                 if is_parallel:
                     energy_spec = energy_spectrum_physical_parallel(

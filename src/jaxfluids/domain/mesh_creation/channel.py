@@ -17,6 +17,9 @@ def channel(
     cell_face_ids = np.arange(nxi + 1) / nxi
     
     cell_faces_xi = delta * np.tanh(C * (2 * cell_face_ids - 1)) / np.tanh(C) + center_line
+    cell_faces_xi[0] = domain_size_xi[0]
+    cell_faces_xi[-1] = domain_size_xi[-1]
+
     cell_centers_xi = 0.5 * (cell_faces_xi[1:] + cell_faces_xi[:-1])
     cell_sizes_xi = cell_faces_xi[1:] - cell_faces_xi[:-1]
     

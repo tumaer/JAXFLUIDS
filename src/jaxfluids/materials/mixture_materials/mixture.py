@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.config import precision
+
+Array = jax.Array
 
 class Mixture(ABC):
     """The Mixture class is the fundamental abstract class
@@ -54,7 +56,7 @@ class Mixture(ABC):
     @abstractmethod
     def get_temperature(self) -> Array:
         pass
-
+    
     @abstractmethod
     def get_specific_energy(self) -> Array:
         pass

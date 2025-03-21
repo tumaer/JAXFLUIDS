@@ -6,9 +6,10 @@ from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.data_types.case_setup.material_properties import *
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.equation_information import EquationInformation
-from jaxfluids.materials import DICT_MATERIAL, DYNAMIC_VISCOSITY_MODELS, HEAT_CAPACITY_MODELS, \
-    THERMAL_CONDUCTIVITY_MODELS, MASS_DIFFUSIVITY_MODELS
-from jaxfluids.input.setup_reader import get_path_to_key, create_wrapper_for_callable
+from jaxfluids.materials import DICT_MATERIAL, DYNAMIC_VISCOSITY_MODELS, \
+    THERMAL_CONDUCTIVITY_MODELS, CAVITATION_MIXTURE_PHASE_MODELS, \
+    CAVITATION_LIQUID_PHASE_MODEL
+from jaxfluids.input.setup_reader import get_path_to_key, create_wrapper_for_callable, assert_case
 from jaxfluids.input.case_setup import get_setup_value, loop_fields
 
 def read_material_manager_setup(
@@ -23,6 +24,7 @@ def read_material_manager_setup(
     1) Single-phase
     2) Level-set mixture
     3) Diffuse-interface mixture
+    4) Homogenous multi-component mixture
 
     :return: _description_
     :rtype: MaterialManagerSetup
@@ -95,7 +97,8 @@ def read_material_manager_setup(
     material_manager_setup = MaterialManagerSetup(
         single_material=single_material,
         levelset_mixture=levelset_mixture,
-        diffuse_mixture=diffuse_mixture)
+        diffuse_mixture=diffuse_mixture,
+    )
     return material_manager_setup
 
 def read_material(
@@ -161,12 +164,12 @@ def read_equation_of_state(
         possible_string_values=tuple(DICT_MATERIAL.keys()))
 
     assert_str = (
-        "Consistency error in case setup file. "
         f"Chosen EOS model '{eos_model}' is not implemented. "
         f"Please choose from the following models: {list(DICT_MATERIAL.keys())}")
-    assert eos_model in DICT_MATERIAL, assert_str
+    assert_case(eos_model in DICT_MATERIAL, assert_str)
 
-    ideal_gas_setup, stiffened_gas_setup, tait_setup = None, None, None
+    ideal_gas_setup, stiffened_gas_setup, tait_setup, barotropic_cavitation_fluid_setup \
+        = None, None, None, None
 
     if eos_model == "IdealGas":
         ideal_gas_setup = read_ideal_gas(
@@ -179,6 +182,10 @@ def read_equation_of_state(
     elif eos_model == "Tait":
         tait_setup = read_tait(eos_setup, eos_path, unit_handler)
 
+    elif eos_model == "BarotropicCavitationFluid":
+        barotropic_cavitation_fluid_setup, tait_setup = read_barotropic_cavitation_fluid(
+            eos_setup, eos_path, unit_handler)
+
     else:
         raise NotImplementedError
         
@@ -186,7 +193,8 @@ def read_equation_of_state(
         model=eos_model,
         ideal_gas_setup=ideal_gas_setup,
         stiffened_gas_setup=stiffened_gas_setup,
-        tait_setup=tait_setup)
+        tait_setup=tait_setup,
+        barotropic_cavitation_fluid_setup=barotropic_cavitation_fluid_setup)
     
     return eos_setup
 
@@ -199,12 +207,15 @@ def read_transport_properties(
         ) -> TransportPropertiesSetup:
     is_viscous_flux = numerical_setup.active_physics.is_viscous_flux
     is_heat_flux = numerical_setup.active_physics.is_heat_flux
+    is_species_diffusion_flux = numerical_setup.active_physics.is_species_diffusion_flux
 
     is_viscosity_optional = not (is_viscous_flux or is_heat_flux)
     is_thermal_conductivity_optional = not is_heat_flux
+    is_mass_diffusivity_optional = not is_species_diffusion_flux
     is_transport_properties_optional = all(
         (is_viscosity_optional,
-        is_thermal_conductivity_optional))
+        is_thermal_conductivity_optional,
+        is_mass_diffusivity_optional))
 
     transport_properties_path = get_path_to_key(basepath, "transport")
     transport_properties_setup = get_setup_value(
@@ -226,6 +237,7 @@ def read_transport_properties(
 
     dynamic_viscosity_value = None
     sutherland_parameters = None
+    dynamic_viscosity_polynomial = None
     if dynamic_viscosity_model == "CUSTOM":
         input_argument_labels = tuple(["T"])
         input_argument_units = tuple(["temperature"])
@@ -263,7 +275,8 @@ def read_transport_properties(
     dynamic_viscosity_setup = DynamicViscositySetup(
         dynamic_viscosity_model,
         dynamic_viscosity_value,
-        sutherland_parameters)
+        sutherland_parameters,
+    )
 
     # BULK VISCOSITY
     path = get_path_to_key(transport_properties_path, "bulk_viscosity")
@@ -290,6 +303,7 @@ def read_transport_properties(
     thermal_conductivity_value = None
     prandtl_number = None
     sutherland_parameters = None
+    thermal_conductivity_polynomial = None
     if thermal_conductivity_model == "CUSTOM":
         path = get_path_to_key(path_thermal_conductivity, "value")
         thermal_conductivity_value_case_setup = get_setup_value(
@@ -327,9 +341,6 @@ def read_transport_properties(
         sutherland_parameters = SutherlandParameters(
             thermal_conductivity_ref, T_ref, constant)
 
-    elif thermal_conductivity_model == "CHAPMAN-ENSKOG":
-        is_chapman_enskog_optional = False
-
     else:
         raise NotImplementedError
 
@@ -337,12 +348,14 @@ def read_transport_properties(
         thermal_conductivity_model,
         thermal_conductivity_value,
         prandtl_number,
-        sutherland_parameters)
+        sutherland_parameters,
+    )
 
     transport_properties_setup = TransportPropertiesSetup(
         dynamic_viscosity=dynamic_viscosity_setup,
         bulk_viscosity=bulk_viscosity,
-        thermal_conductivity=thermal_conductivity_setup)
+        thermal_conductivity=thermal_conductivity_setup,
+    )
 
     return transport_properties_setup
 
@@ -365,7 +378,8 @@ def read_ideal_gas(
 
     ideal_gas_setup = IdealGasSetup(
         specific_heat_ratio=specific_heat_ratio,
-        specific_gas_constant=specific_gas_constant)
+        specific_gas_constant=specific_gas_constant,
+    )
     
     return ideal_gas_setup
 
@@ -452,6 +466,122 @@ def read_tait(
     tait_setup = TaitSetup(B_param, N_param, rho_ref, p_ref)
     
     return tait_setup
+
+def read_barotropic_cavitation_fluid(
+        eos_setup: Dict,
+        eos_path: str,
+        unit_handler: UnitHandler
+        ) -> Tuple[BarotropicCavitationFluidSetup, TaitSetup]:
+
+    path = get_path_to_key(eos_path, "mixture_phase_model")
+    mixture_phase_model = get_setup_value(
+        eos_setup, "mixture_phase_model", path, str,
+        is_optional=False, possible_string_values=CAVITATION_MIXTURE_PHASE_MODELS)
+
+    path = get_path_to_key(eos_path, "liquid_phase_model")
+    liquid_phase_model = get_setup_value(
+        eos_setup, "liquid_phase_model", path, str,
+        is_optional=False, possible_string_values=CAVITATION_LIQUID_PHASE_MODEL)
+    
+    if liquid_phase_model == "TAIT":
+        tait_setup = read_tait(eos_setup, eos_path, unit_handler)
+    else:
+        tait_setup = None
+
+    temperature_ref = get_setup_value(
+        eos_setup, "temperature_ref", path, float,
+        is_optional=True, default_value=293.15,
+        numerical_value_condition=(">", 0.0))
+    temperature_ref = unit_handler.non_dimensionalize(
+        temperature_ref, "temperature")
+
+    path = get_path_to_key(eos_path, "density_liquid_ref")
+    density_liquid_ref = get_setup_value(
+        eos_setup, "density_liquid_ref", path, float,
+        is_optional=True, default_value=998.1618,
+        numerical_value_condition=(">", 0.0))
+    density_liquid_ref = unit_handler.non_dimensionalize(
+        density_liquid_ref, "density")
+
+    path = get_path_to_key(eos_path, "density_vapor_ref")
+    density_vapor_ref = get_setup_value(
+        eos_setup, "density_vapor_ref", path, float,
+        is_optional=True, default_value=17.214e-3,
+        numerical_value_condition=(">", 0.0))
+    density_vapor_ref = unit_handler.non_dimensionalize(
+        density_vapor_ref, "density")
+
+    path = get_path_to_key(eos_path, "pressure_ref")
+    pressure_ref = get_setup_value(
+        eos_setup, "pressure_ref", path, float,
+        is_optional=True, default_value=2339.30,
+        numerical_value_condition=(">", 0.0))
+    pressure_ref = unit_handler.non_dimensionalize(
+        pressure_ref, "pressure")
+    
+    path = get_path_to_key(eos_path, "speed_of_sound_liquid_ref")
+    speed_of_sound_liquid_ref = get_setup_value(
+        eos_setup, "speed_of_sound_liquid_ref", path, float,
+        is_optional=True, default_value=1482.20,
+        numerical_value_condition=(">", 0.0))
+    speed_of_sound_liquid_ref = unit_handler.non_dimensionalize(
+        speed_of_sound_liquid_ref, "velocity")
+    
+    path = get_path_to_key(eos_path, "speed_of_sound_vapor_ref")
+    speed_of_sound_vapor_ref = get_setup_value(
+        eos_setup, "speed_of_sound_vapor_ref", path, float,
+        is_optional=True, default_value=423.18,
+        numerical_value_condition=(">", 0.0))
+    speed_of_sound_vapor_ref = unit_handler.non_dimensionalize(
+        speed_of_sound_vapor_ref, "velocity")
+
+    path = get_path_to_key(eos_path, "speed_of_sound_mixture")
+    speed_of_sound_mixture = get_setup_value(
+        eos_setup, "speed_of_sound_mixture", path, float,
+        is_optional=True, default_value=0.1,
+        numerical_value_condition=(">", 0.0))
+    speed_of_sound_mixture = unit_handler.non_dimensionalize(
+        speed_of_sound_mixture, "velocity")
+    
+    path = get_path_to_key(eos_path, "enthalpy_of_evaporation_ref")
+    enthalpy_of_evaporation_ref = get_setup_value(
+        eos_setup, "enthalpy_of_evaporation_ref", path, float,
+        is_optional=True, default_value=2453.5e+03,
+        numerical_value_condition=(">", 0.0))
+    enthalpy_of_evaporation_ref = unit_handler.non_dimensionalize(
+        enthalpy_of_evaporation_ref, "enthalpy_mass")
+
+    path = get_path_to_key(eos_path, "cp_liquid_ref")
+    cp_liquid_ref = get_setup_value(
+        eos_setup, "cp_liquid_ref", path, float,
+        is_optional=True, default_value=4184.4,
+        numerical_value_condition=(">", 0.0))
+    cp_liquid_ref = unit_handler.non_dimensionalize(
+        cp_liquid_ref, "specific_heat_capacity")
+    
+    path = get_path_to_key(eos_path, "cp_vapor_ref")
+    cp_vapor_ref = get_setup_value(
+        eos_setup, "cp_vapor_ref", path, float,
+        is_optional=True, default_value=1905.9,
+        numerical_value_condition=(">", 0.0))
+    cp_vapor_ref = unit_handler.non_dimensionalize(
+        cp_vapor_ref, "specific_heat_capacity")
+
+    barotropic_cavitation_fluid_setup = BarotropicCavitationFluidSetup(
+        mixture_phase_model=mixture_phase_model,
+        liquid_phase_model=liquid_phase_model,
+        temperature_ref=temperature_ref,
+        density_liquid_ref=density_liquid_ref,
+        density_vapor_ref=density_vapor_ref,
+        pressure_ref=pressure_ref,
+        speed_of_sound_liquid_ref=speed_of_sound_liquid_ref,
+        speed_of_sound_vapor_ref=speed_of_sound_vapor_ref,
+        speed_of_sound_mixture=speed_of_sound_mixture,
+        enthalpy_of_evaporation_ref=enthalpy_of_evaporation_ref,
+        cp_liquid_ref=cp_liquid_ref,
+        cp_vapor_ref=cp_vapor_ref)
+
+    return barotropic_cavitation_fluid_setup, tait_setup
 
 def read_pairing_properties(
         material_properties_case_setup: Dict,

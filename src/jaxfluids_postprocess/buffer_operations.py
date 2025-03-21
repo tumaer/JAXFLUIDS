@@ -2,7 +2,10 @@ from typing import List, Tuple
 from functools import partial
 
 import jax
-import numpy as np, jax.numpy as jnp
+import jax.numpy as jnp
+import numpy as np
+
+Array = jax.Array
 
 def reassemble_buffer(
         buffer: np.ndarray,

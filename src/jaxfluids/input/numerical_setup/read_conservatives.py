@@ -1,9 +1,10 @@
-from typing import Dict, Any
+from typing import Any, Dict, Tuple
 
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.stencils import DICT_SPATIAL_RECONSTRUCTION, \
-    DICT_DERIVATIVE_FACE, DICT_FIRST_DERIVATIVE_CENTER, DICT_CENTRAL_RECONSTRUCTION
-from jaxfluids.solvers.convective_fluxes import DICT_CONVECTIVE_SOLVER 
+    DICT_DERIVATIVE_FACE, DICT_FIRST_DERIVATIVE_CENTER, CENTRAL_RECONSTRUCTION_DICT, \
+    DICT_SECOND_DERIVATIVE_CENTER
+from jaxfluids.solvers.convective_fluxes import DICT_CONVECTIVE_SOLVER, TUPLE_CONVECTIVE_SOLVER
 from jaxfluids.solvers.riemann_solvers import DICT_RIEMANN_SOLVER, DICT_SIGNAL_SPEEDS, \
     TUPLE_CATUM_TRANSPORT_VELOCITIES
 from jaxfluids.time_integration import DICT_TIME_INTEGRATION
@@ -33,8 +34,12 @@ def read_conservatives_setup(
         numerical_value_condition=(">=", 0))        
     
     time_integration_setup = read_time_integration(conservatives_dict, unit_handler)
-    convective_fluxes_setup = read_convective_fluxes(conservatives_dict, active_physics_setup, halo_cells, unit_handler)
-    dissipative_fluxes_setup = read_dissipative_fluxes(conservatives_dict, active_physics_setup, halo_cells)
+    convective_fluxes_setup = read_convective_fluxes(
+        conservatives_dict, active_physics_setup, 
+        halo_cells, unit_handler)
+    dissipative_fluxes_setup = read_dissipative_fluxes(
+        conservatives_dict, active_physics_setup, 
+        halo_cells)
     positivity_setup = read_positivity_setup(conservatives_dict)
 
     conservatives_setup = ConservativesSetup(
@@ -84,65 +89,20 @@ def read_time_integration(
     return time_integration_setup
 
 
-def read_convective_fluxes(
-        conservatives_dict: Dict,
-        active_physics_setup: ActivePhysicsSetup,
-        halo_cells: int,
-        unit_handler: UnitHandler
-        ) -> ConvectiveFluxesSetup:
+def read_spatial_reconstruction(
+        base_path: str, input_dict: Dict
+        ) -> Tuple[SpatialReconstruction, SplitReconstructionSetup, int]:
 
-    basepath = "conservatives"
-
-    # CONVECTIVE FLUXES
-    is_convective_flux = active_physics_setup.is_convective_flux
-    is_optional = not is_convective_flux
-    path_convective_fluxes = get_path_to_key(basepath, "convective_fluxes")
-    convective_fluxes_dict = get_setup_value(
-        conservatives_dict, "convective_fluxes", path_convective_fluxes, dict,
-        is_optional=is_optional, default_value={})
-
-    path = get_path_to_key(path_convective_fluxes, "convective_solver")
-    convective_solver_str = get_setup_value(
-        convective_fluxes_dict, "convective_solver", path, str,
-        is_optional=is_optional, default_value="GODUNOV",
-        possible_string_values=tuple(DICT_CONVECTIVE_SOLVER.keys()))
-    convective_solver = DICT_CONVECTIVE_SOLVER[convective_solver_str]
-    
-    # GODUNOV
-    is_optional = False if convective_solver_str == "GODUNOV" and is_convective_flux else True
-    path = get_path_to_key(path_convective_fluxes, "riemann_solver")
-    riemann_solver_str = get_setup_value(
-        convective_fluxes_dict, "riemann_solver", path, str,
-        is_optional=is_optional, default_value="HLLC",
-        possible_string_values=tuple(DICT_RIEMANN_SOLVER.keys()))
-    riemann_solver = DICT_RIEMANN_SOLVER[riemann_solver_str]
-    
-    is_optional = False if convective_solver_str == "GODUNOV" and is_convective_flux else True
-    path = get_path_to_key(path_convective_fluxes, "signal_speed")
-    signal_speed_str = get_setup_value(
-        convective_fluxes_dict, "signal_speed", path, str,
-        is_optional=is_optional, default_value="EINFELDT",
-        possible_string_values=tuple(DICT_SIGNAL_SPEEDS.keys()))
-    signal_speed = DICT_SIGNAL_SPEEDS[signal_speed_str]
-
-    is_optional = False if convective_solver_str == "GODUNOV" and is_convective_flux else True
-    path = get_path_to_key(path_convective_fluxes, "reconstruction_variable")
-    reconstruction_variable = get_setup_value(
-        convective_fluxes_dict, "reconstruction_variable", path, str,
-        is_optional=is_optional, default_value="PRIMITIVE",
-        possible_string_values=TUPLE_RECONSTRUCTION_VARIABLES)
-    
-    is_optional = False if convective_solver_str != "ALDM" and is_convective_flux else True
-    path = get_path_to_key(path_convective_fluxes, "reconstruction_stencil")
+    path = get_path_to_key(base_path, "reconstruction_stencil")
     reconstruction_stencil_str = get_setup_value(
-        convective_fluxes_dict, "reconstruction_stencil", path, str,
-        is_optional=is_optional, default_value="WENO5-Z",
+        input_dict, "reconstruction_stencil", path, str,
+        is_optional=False, default_value="WENO5-Z",
         possible_string_values=tuple(DICT_SPATIAL_RECONSTRUCTION.keys())+("SPLIT-RECONSTRUCTION",))
-    
+
     if reconstruction_stencil_str == "SPLIT-RECONSTRUCTION":
-        path_split = get_path_to_key(path_convective_fluxes, "split_reconstruction")
+        path_split = get_path_to_key(base_path, "split_reconstruction")
         split_reconstruction_dict: Dict = get_setup_value(
-            convective_fluxes_dict, "split_reconstruction", path, dict,
+            input_dict, "split_reconstruction", path, dict,
             is_optional=False)
         required_halos = 0
         split_reconstruction_setup = {}
@@ -160,60 +120,56 @@ def read_convective_fluxes(
         spatial_reconstruction: SpatialReconstruction = DICT_SPATIAL_RECONSTRUCTION[reconstruction_stencil_str]
         required_halos = spatial_reconstruction.required_halos
         split_reconstruction_setup = None
-    assert_string = (
-        f"Consistency error in numerical setup file. "
-        f"Number of conservative halos is {halo_cells:d} but spatial reconstruction"
-        f"stencil for the convective fluxes requires at least {required_halos:d}.")
-    assert halo_cells >= required_halos, assert_string
 
-    # FLUX SPLITTING
-    is_optional = False if convective_solver_str == "FLUX-SPLITTING" else True
-    path = get_path_to_key(path_convective_fluxes, "flux_splitting")
-    flux_splitting = get_setup_value(
-        convective_fluxes_dict, "flux_splitting", path, str,
-        is_optional=is_optional, default_value="ROE",
-        possible_string_values=TUPLE_FLUX_SPLITTING)
+    return spatial_reconstruction, split_reconstruction_setup, required_halos
 
-    # EIGENDECOMPOSITION
-    path = get_path_to_key(path_convective_fluxes, "frozen_state")
+def read_high_order_godunov(
+        convective_fluxes_dict: Dict,
+        unit_handler: UnitHandler
+        ) -> Tuple[HighOrderGodunovSetup, int]:
+
+    base_path = get_path_to_key("conservatives", "convective_fluxes")
+
+    path_godunov = get_path_to_key(base_path, "godunov")
+    godunov_dict = get_setup_value(
+        convective_fluxes_dict, "godunov", base_path, 
+        dict, is_optional=False, default_value={})
+
+    path = get_path_to_key(path_godunov, "riemann_solver")
+    riemann_solver_str = get_setup_value(
+        godunov_dict, "riemann_solver", path, str,
+        is_optional=False, default_value="HLLC",
+        possible_string_values=tuple(DICT_RIEMANN_SOLVER.keys()))
+    riemann_solver = DICT_RIEMANN_SOLVER[riemann_solver_str]
+    
+    path = get_path_to_key(path_godunov, "signal_speed")
+    is_optional = riemann_solver in [DICT_RIEMANN_SOLVER["CATUM"],]
+    signal_speed_str = get_setup_value(
+        godunov_dict, "signal_speed", path, str,
+        is_optional=is_optional, default_value="EINFELDT",
+        possible_string_values=tuple(DICT_SIGNAL_SPEEDS.keys()))
+    signal_speed = DICT_SIGNAL_SPEEDS[signal_speed_str]
+
+    path = get_path_to_key(path_godunov, "reconstruction_variable")
+    reconstruction_variable = get_setup_value(
+        godunov_dict, "reconstruction_variable", path, str,
+        is_optional=False, default_value="PRIMITIVE",
+        possible_string_values=TUPLE_RECONSTRUCTION_VARIABLES)
+    
+    reconstruction_stencil, split_reconstruction_setup, required_halos =\
+    read_spatial_reconstruction(path_godunov, godunov_dict)
+
+    path = get_path_to_key(path_godunov, "frozen_state")
     frozen_state = get_setup_value(
-        convective_fluxes_dict, "frozen_state", path, str,
+        godunov_dict, "frozen_state", path, str,
         is_optional=True, default_value="ARITHMETIC",
         possible_string_values=TUPLE_FROZEN_STATE)
 
-    # ILES SETUP
-    path_iles = get_path_to_key(path_convective_fluxes, "iles_setup")
-    iles_setup_dict = get_setup_value(
-        convective_fluxes_dict, "iles_setup", path_iles, dict,
-        is_optional=True, default_value={})
-
-    path = get_path_to_key(path_iles, "aldm_smoothness_measure")
-    aldm_smoothness_measure = get_setup_value(
-        iles_setup_dict, "aldm_smoothness_measure", path, str,
-        is_optional=True, default_value="TV",
-        possible_string_values=TUPLE_SMOOTHNESS_MEASURE)
-
-    path = get_path_to_key(path_iles, "wall_damping")
-    wall_damping = get_setup_value(
-        iles_setup_dict, "wall_damping", path, str,
-        is_optional=True, default_value="VANDRIEST",
-        possible_string_values=TUPLE_WALL_DAMPING)
-    
-    path = get_path_to_key(path_iles, "shock_sensor")
-    shock_sensor = get_setup_value(
-        iles_setup_dict, "shock_sensor", path, str,
-        is_optional=True, default_value="DUCROS",
-        possible_string_values=TUPLE_SHOCK_SENSOR)
-    
-    iles_setup = ILESSetup(
-        aldm_smoothness_measure,
-        wall_damping, shock_sensor)
-    
     # CATUM SETUP
-    is_optional = not (convective_solver_str == "GODUNOV" and riemann_solver_str == "CATUM")
-    path_catum = get_path_to_key(path_convective_fluxes, "catum_setup")
+    is_optional = riemann_solver_str != "CATUM"
+    path_catum = get_path_to_key(path_godunov, "catum_setup")
     catum_setup_dict = get_setup_value(
-        convective_fluxes_dict, "catum_setup", path_catum, dict,
+        godunov_dict, "catum_setup", path_catum, dict,
         is_optional=is_optional, default_value={})
 
     path = get_path_to_key(path_catum, "transport_velocity")
@@ -234,17 +190,184 @@ def read_convective_fluxes(
         transport_velocity=transport_velocity,
         minimum_speed_of_sound=minimum_speed_of_sound)
 
-    convective_fluxes_setup = ConvectiveFluxesSetup(
-        convective_solver,
+    godunov_setup = HighOrderGodunovSetup(
         riemann_solver,
         signal_speed,
-        spatial_reconstruction,
+        reconstruction_stencil,
         split_reconstruction_setup,
-        flux_splitting,
         reconstruction_variable,
         frozen_state,
-        iles_setup,
-        catum_setup)
+        catum_setup
+    )
+
+    return godunov_setup, required_halos
+
+def read_flux_splitting(convective_fluxes_dict: Dict) -> FluxSplittingSetup:
+
+    base_path = get_path_to_key("conservatives", "convective_fluxes")
+
+    path_flux_splitting = get_path_to_key(
+        base_path, "flux_splitting")
+    flux_splitting_dict = get_setup_value(
+        convective_fluxes_dict, "flux_splitting", base_path, 
+        dict, is_optional=False, default_value={})
+
+    path = get_path_to_key(path_flux_splitting, "flux_splitting")
+    flux_splitting = get_setup_value(
+        flux_splitting_dict, "flux_splitting", path, str,
+        is_optional=False, default_value="ROE",
+        possible_string_values=TUPLE_FLUX_SPLITTING)
+
+    # TODO: what is this???
+    path = get_path_to_key(path_flux_splitting, "reconstruction_stencil")
+    reconstruction_stencil_str = get_setup_value(
+        flux_splitting_dict, "reconstruction_stencil", path, str,
+        is_optional=False, default_value="WENO5-Z",
+        possible_string_values=tuple(DICT_SPATIAL_RECONSTRUCTION.keys())+("SPLIT-RECONSTRUCTION",))
+
+    spatial_reconstruction, split_reconstruction_setup, required_halos =\
+    read_spatial_reconstruction(path_flux_splitting, flux_splitting_dict)
+
+    path = get_path_to_key(path_flux_splitting, "frozen_state")
+    frozen_state = get_setup_value(
+        flux_splitting_dict, "frozen_state", path, str,
+        is_optional=True, default_value="ARITHMETIC",
+        possible_string_values=TUPLE_FROZEN_STATE)
+
+    flux_splitting_setup = FluxSplittingSetup(
+        flux_splitting,
+        spatial_reconstruction,
+        split_reconstruction_setup,
+        frozen_state
+    )
+
+    return flux_splitting_setup, required_halos
+
+def read_aldm(convective_fluxes_dict: Dict) -> ALDMSetup:
+
+    base_path = get_path_to_key("conservatives", "convective_fluxes")
+
+    path_aldm = get_path_to_key(base_path, "aldm")
+    aldm_dict = get_setup_value(
+        convective_fluxes_dict, "aldm", base_path, 
+        dict, is_optional=False, default_value={})
+
+    path = get_path_to_key(path_aldm, "smoothness_measure")
+    smoothness_measure = get_setup_value(
+        aldm_dict, "smoothness_measure", path, str,
+        is_optional=True, default_value="TV",
+        possible_string_values=TUPLE_SMOOTHNESS_MEASURE)
+
+    path = get_path_to_key(path_aldm, "wall_damping")
+    wall_damping = get_setup_value(
+        aldm_dict, "wall_damping", path, str,
+        is_optional=True, default_value="VANDRIEST",
+        possible_string_values=TUPLE_WALL_DAMPING)
+    
+    path = get_path_to_key(path_aldm, "shock_sensor")
+    shock_sensor = get_setup_value(
+        aldm_dict, "shock_sensor", path, str,
+        is_optional=True, default_value="DUCROS",
+        possible_string_values=TUPLE_SHOCK_SENSOR)
+    
+    aldm_setup = ALDMSetup(
+        smoothness_measure,
+        wall_damping,
+        shock_sensor)
+    
+    required_halos = 3 
+
+    return aldm_setup, required_halos
+
+
+def read_catum():
+    pass
+
+
+def read_central(convective_fluxes_dict: Dict):
+    base_path = get_path_to_key("conservatives", "convective_fluxes")
+
+    path_central = get_path_to_key(base_path, "central")
+    central_dict = get_setup_value(
+        convective_fluxes_dict, "central", path_central, 
+        dict, is_optional=False)
+
+    path = get_path_to_key(path_central, "split_form")
+    split_form = get_setup_value(
+        central_dict, "split_form", path, 
+        str, is_optional=True, default_value=None)
+    
+    path = get_path_to_key(path_central, "reconstruction_variable")
+    reconstruction_variable = get_setup_value(
+        central_dict, "reconstruction_variable", path, 
+        str, is_optional=True, default_value="FLUX")
+    
+    path = get_path_to_key(path_central, "reconstruction_stencil")
+    reconstruction_stencil_str = get_setup_value(
+        central_dict, "reconstruction_stencil", path, 
+        str, is_optional=False, possible_string_values=CENTRAL_RECONSTRUCTION_DICT.keys())
+    
+    reconstruction_stencil = CENTRAL_RECONSTRUCTION_DICT[reconstruction_stencil_str]
+
+    central_scheme_setup = CentralSchemeSetup(
+        split_form, reconstruction_variable,
+        reconstruction_stencil)
+
+    return central_scheme_setup, reconstruction_stencil.required_halos
+
+
+def read_convective_fluxes(
+        conservatives_dict: Dict,
+        active_physics_setup: ActivePhysicsSetup,
+        halo_cells: int,
+        unit_handler: UnitHandler
+        ) -> ConvectiveFluxesSetup:
+
+    basepath = "conservatives"
+
+    is_convective_flux = active_physics_setup.is_convective_flux
+    is_optional = not is_convective_flux
+
+    path_convective_fluxes = get_path_to_key(basepath, "convective_fluxes")
+    convective_fluxes_dict = get_setup_value(
+        conservatives_dict, "convective_fluxes", path_convective_fluxes, dict,
+        is_optional=is_optional, default_value={})
+
+    path = get_path_to_key(path_convective_fluxes, "convective_solver")
+    convective_solver_str = get_setup_value(
+        convective_fluxes_dict, "convective_solver", path, str,
+        is_optional=is_optional, default_value="GODUNOV",
+        possible_string_values=TUPLE_CONVECTIVE_SOLVER)
+    convective_solver = DICT_CONVECTIVE_SOLVER[convective_solver_str]
+
+    godunov_setup = flux_splitting_setup = aldm_setup = None
+    central_scheme_setup = None
+    if convective_solver_str == "GODUNOV":
+        godunov_setup, required_halos = read_high_order_godunov(
+            convective_fluxes_dict, unit_handler)
+    
+    elif convective_solver_str == "FLUX-SPLITTING":
+        flux_splitting_setup, required_halos = read_flux_splitting(convective_fluxes_dict)
+    
+    elif convective_solver_str == "ALDM":
+        aldm_setup, required_halos = read_aldm(convective_fluxes_dict)
+
+    elif convective_solver_str == "CENTRAL":
+        central_scheme_setup, required_halos = read_central(convective_fluxes_dict)
+
+    else:
+        raise NotImplementedError
+
+    assert_string = (
+        f"Consistency error in numerical setup file. "
+        f"Number of conservative halos is {halo_cells:d} but spatial reconstruction"
+        f"stencil for the convective fluxes requires at least {required_halos:d}.")
+    assert halo_cells >= required_halos, assert_string
+
+    convective_fluxes_setup = ConvectiveFluxesSetup(
+        convective_solver, godunov_setup,
+        flux_splitting_setup, aldm_setup,
+        central_scheme_setup)
     
     return convective_fluxes_setup
 
@@ -278,7 +401,7 @@ def read_dissipative_fluxes(
     reconstruction_stencil_str = get_setup_value(
         dissipative_fluxes_dict, "reconstruction_stencil", path, str,
         is_optional=is_optional, default_value="CENTRAL4",
-        possible_string_values=tuple(DICT_CENTRAL_RECONSTRUCTION.keys()))
+        possible_string_values=tuple(CENTRAL_RECONSTRUCTION_DICT.keys()))
     
     is_optional = False if is_viscous_flux else True
     path = get_path_to_key(path_dissipative_fluxes, "derivative_stencil_center")
@@ -286,10 +409,23 @@ def read_dissipative_fluxes(
         dissipative_fluxes_dict, "derivative_stencil_center", path, str,
         is_optional=is_optional, default_value="CENTRAL4",
         possible_string_values=tuple(DICT_FIRST_DERIVATIVE_CENTER.keys()))
+    
+    path = get_path_to_key(path_dissipative_fluxes, "is_laplacian")
+    is_laplacian = get_setup_value(
+        dissipative_fluxes_dict, "is_laplacian", path, bool,
+        is_optional=True, default_value=False)
+    
+    is_optional = False if is_laplacian else True
+    path = get_path_to_key(path_dissipative_fluxes, "second_derivative_stencil_center")
+    second_derivative_stencil_center_str = get_setup_value(
+        dissipative_fluxes_dict, "second_derivative_stencil_center", path, str,
+        is_optional=is_optional, default_value="CENTRAL4",
+        possible_string_values=tuple(DICT_SECOND_DERIVATIVE_CENTER.keys()))
 
-    reconstruction_stencil = DICT_CENTRAL_RECONSTRUCTION[reconstruction_stencil_str]
+    reconstruction_stencil = CENTRAL_RECONSTRUCTION_DICT[reconstruction_stencil_str]
     derivative_stencil_center = DICT_FIRST_DERIVATIVE_CENTER[derivative_stencil_center_str]
     derivative_stencil_face = DICT_DERIVATIVE_FACE[derivative_stencil_face_str]
+    second_derivative_stencil_center = DICT_SECOND_DERIVATIVE_CENTER[second_derivative_stencil_center_str]
 
     required_halos = reconstruction_stencil.required_halos
     required_halos = max(required_halos, derivative_stencil_center.required_halos)
@@ -303,6 +439,7 @@ def read_dissipative_fluxes(
 
     dissipative_fluxes_setup = DissipativeFluxesSetup(
         reconstruction_stencil, derivative_stencil_center,
-        derivative_stencil_face)
-    
+        derivative_stencil_face, is_laplacian,
+        second_derivative_stencil_center)
+
     return dissipative_fluxes_setup

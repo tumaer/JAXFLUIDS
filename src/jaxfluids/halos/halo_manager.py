@@ -3,24 +3,30 @@ from __future__ import annotations
 from typing import Tuple, Dict, TYPE_CHECKING
 
 import jax
-import jax.numpy as jnp
-from jax import Array
-import numpy as np
+import jax.numpy as jnp, numpy as np
 
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 from jaxfluids.equation_manager import EquationManager
-from jaxfluids.halos.halo_communication import HaloCommunication
-from jaxfluids.materials.material_manager import MaterialManager
+from jaxfluids.halos.inner.material import HaloCommunicationMaterial
+from jaxfluids.halos.inner.levelset import HaloCommunicationLevelset
+from jaxfluids.halos.inner.mesh import HaloCommunicationMesh
+from jaxfluids.halos.inner.solids import HaloCommunicationSolids
 from jaxfluids.halos.outer.levelset import BoundaryConditionLevelset
 from jaxfluids.halos.outer.material import BoundaryConditionMaterial
 from jaxfluids.halos.outer.conservative_mixing import BoundaryConditionConservativeMixing
 from jaxfluids.halos.outer.diffuse_curvature import BoundaryConditionDiffuseCurvature
+from jaxfluids.halos.outer.solids_mixing import BoundaryConditionSolidsMixing
 from jaxfluids.halos.outer.fluxes import BoundaryConditionFlux
 from jaxfluids.halos.outer.mesh import BoundaryConditionMesh
 from jaxfluids.domain.domain_information import DomainInformation
-from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup import BoundaryConditionSetup
+from jaxfluids.halos.outer.solids import BoundaryConditionSolids
 if TYPE_CHECKING:
     from jaxfluids.data_types.numerical_setup import NumericalSetup
+    from jaxfluids.levelset.fluid_solid.solid_properties_manager import SolidPropertiesManager
+
+
+Array = jax.Array
 
 class HaloManager:
     """ The HaloManager handles the halo cells,
@@ -32,30 +38,31 @@ class HaloManager:
             self,
             numerical_setup: NumericalSetup,
             domain_information: DomainInformation,
-            material_manager: MaterialManager,
             equation_manager: EquationManager,
-            boundary_conditions_setup: BoundaryConditionSetup
+            boundary_conditions_setup: BoundaryConditionSetup,
+            solid_properties_manager: SolidPropertiesManager
             ) -> None:
 
         self.domain_information = domain_information
         self.is_parallel = domain_information.is_parallel
         self.dim = self.domain_information.dim
-        self.mixing_targets = numerical_setup.levelset.mixing.mixing_targets
+        self.mixing_targets_conservatives = numerical_setup.levelset.mixing.conservatives.mixing_targets
+        self.mixing_targets_solids = numerical_setup.levelset.mixing.solids.mixing_targets
         
-        self.levelset_model = numerical_setup.levelset.model
-        self.diffuse_interface_model = numerical_setup.diffuse_interface.model
+        levelset_model = numerical_setup.levelset.model
+        diffuse_interface_model = numerical_setup.diffuse_interface.model
 
         boundary_conditions_material = boundary_conditions_setup.primitives
         boundary_conditions_levelset = boundary_conditions_setup.levelset
+        boundary_conditions_solids = boundary_conditions_setup.solids
 
         # OUTER BOUNDARY CONDITIONS
         self.boundary_condition_material = BoundaryConditionMaterial(    
-            domain_information = domain_information,
-            material_manager = material_manager,
-            equation_manager = equation_manager,
-            boundary_conditions = boundary_conditions_material)
+            domain_information=domain_information,
+            equation_manager=equation_manager,
+            boundary_conditions=boundary_conditions_material)
         if self.is_parallel:
-            self.halo_communication_material = HaloCommunication(
+            self.halo_communication_material = HaloCommunicationMaterial(
                 domain_information = domain_information,
                 equation_manager = equation_manager,
                 boundary_conditions = boundary_conditions_material)
@@ -63,8 +70,12 @@ class HaloManager:
         self.boundary_condition_mesh = BoundaryConditionMesh(
             domain_information = domain_information,
             boundary_conditions = boundary_conditions_material)
+        if self.is_parallel:
+            self.halo_communication_mesh = HaloCommunicationMesh(
+                domain_information = domain_information,
+                boundary_conditions = boundary_conditions_material)
 
-        if self.levelset_model:
+        if levelset_model:
             self.boundary_condition_levelset = BoundaryConditionLevelset(
                 domain_information = domain_information,
                 boundary_conditions = boundary_conditions_levelset)
@@ -73,12 +84,28 @@ class HaloManager:
                 boundary_conditions = boundary_conditions_material,
                 equation_information = equation_manager.equation_information)
             if self.is_parallel:
-                self.halo_communication_levelset = HaloCommunication(
+                self.halo_communication_levelset = HaloCommunicationLevelset(
                     domain_information = domain_information,
-                    equation_manager = equation_manager,
                     boundary_conditions = boundary_conditions_levelset)
 
-        if self.diffuse_interface_model:
+        solid_coupling = numerical_setup.levelset.solid_coupling
+        if solid_coupling.thermal == "TWO-WAY":
+            self.boundary_condition_solids = BoundaryConditionSolids(
+                domain_information = domain_information,
+                boundary_conditions = boundary_conditions_solids,
+                solid_properties_manager = solid_properties_manager)
+            self.boundary_condition_solids_mixing = BoundaryConditionSolidsMixing(
+                domain_information = domain_information,
+                boundary_conditions = boundary_conditions_solids
+                )
+            if self.is_parallel:
+                self.halo_communication_solids = HaloCommunicationSolids(
+                    domain_information = domain_information,
+                    solid_properties_manager = solid_properties_manager,  
+                    boundary_conditions = boundary_conditions_levelset
+                    )
+
+        if diffuse_interface_model:
             self.boundary_condition_curvature = BoundaryConditionDiffuseCurvature(
                 domain_information = domain_information,
                 boundary_conditions = boundary_conditions_material)
@@ -87,6 +114,36 @@ class HaloManager:
                 domain_information=domain_information,
                 boundary_conditions=boundary_conditions_material)
 
+        equation_information = equation_manager.equation_information
+        is_solid_levelset = equation_information.is_solid_levelset
+        active_physics = equation_information.active_physics
+        equation_type = equation_information.equation_type
+
+        is_viscous_flux = active_physics.is_viscous_flux
+        is_heat_flux = active_physics.is_heat_flux
+        is_species_diffusion_flux = active_physics.is_species_diffusion_flux
+
+        # NOTE dissipative cell face fluxes require edge halos
+        self.fill_edge_halos_material = any((
+            is_viscous_flux,
+            is_heat_flux,
+            is_species_diffusion_flux
+            ))
+
+        if equation_information.is_solid_levelset:
+            # NOTE dissipative fluid-solid interface fluxes require vertex halos
+            self.fill_vertex_halos_material = any((is_viscous_flux,is_heat_flux))
+        elif equation_type == "TWO-PHASE-LS":
+            # NOTE dissipative fluid-fluid interface fluxes require vertex halos,
+            # if interpolation based method is used
+            interface_flux_method = numerical_setup.levelset.interface_flux.method
+            if interface_flux_method == "INTERPOLATION" and any((is_viscous_flux,is_heat_flux)):
+                self.fill_vertex_halos_material = True
+            else:
+                self.fill_vertex_halos_material = False
+        else:
+            self.fill_vertex_halos_material = False
+    
 
     def perform_halo_update_material(
             self,
@@ -95,8 +152,9 @@ class HaloManager:
             fill_edge_halos: bool,
             fill_vertex_halos: bool,
             conservatives: Array = None,
-            fill_face_halos: bool = True
-            ) -> Tuple[Array, Array]:
+            fill_face_halos: bool = True,
+            ml_setup: MachineLearningSetup = MachineLearningSetup()
+        ) -> Tuple[Array, Array]:
         """Performs a halo update for the material
         field buffers.
 
@@ -110,7 +168,7 @@ class HaloManager:
         :rtype: Tuple[Array, Array]
         """
 
-        if conservatives != None:
+        if conservatives is not None:
             compute_conservatives = True
         else:
             compute_conservatives = False
@@ -121,7 +179,7 @@ class HaloManager:
                     primitives, conservatives = self.halo_communication_material.face_halo_update(
                         primitives, conservatives)
                     primitives, conservatives = self.boundary_condition_material.face_halo_update(
-                        primitives, physical_simulation_time, conservatives)
+                        primitives, physical_simulation_time, conservatives, ml_setup)
                 if self.dim > 1 and fill_edge_halos:
                     primitives, conservatives = self.halo_communication_material.edge_halo_update(
                         primitives, conservatives)
@@ -135,7 +193,7 @@ class HaloManager:
             else:
                 if fill_face_halos:
                     primitives, conservatives = self.boundary_condition_material.face_halo_update(
-                        primitives, physical_simulation_time, conservatives)
+                        primitives, physical_simulation_time, conservatives, ml_setup)
                 if self.dim > 1 and fill_edge_halos:
                     primitives, conservatives = self.boundary_condition_material.edge_halo_update(
                         primitives, conservatives)
@@ -149,7 +207,7 @@ class HaloManager:
                     primitives = self.halo_communication_material.face_halo_update(
                         primitives)
                     primitives = self.boundary_condition_material.face_halo_update(
-                        primitives, physical_simulation_time)
+                        primitives, physical_simulation_time, ml_setup=ml_setup)
                 if self.dim > 1 and fill_edge_halos:
                     primitives = self.halo_communication_material.edge_halo_update(
                         primitives)
@@ -164,7 +222,7 @@ class HaloManager:
             else:
                 if fill_face_halos:
                     primitives = self.boundary_condition_material.face_halo_update(
-                        primitives, physical_simulation_time)
+                        primitives, physical_simulation_time, ml_setup=ml_setup)
                 if self.dim > 1 and fill_edge_halos:
                     primitives = self.boundary_condition_material.edge_halo_update(
                         primitives)
@@ -176,28 +234,6 @@ class HaloManager:
             return primitives, conservatives
         else:
             return primitives
-        
-    def perform_inner_halo_update_material(
-            self,
-            buffer: Array,
-            fill_edge_halos: bool = False,
-            fill_vertex_halos: bool = False
-            ) -> Array:
-        """Updates the inner face halos of 
-        the field buffer. Optionally updates
-        the inner edge/vertex halos.
-
-        :param buffer: _description_
-        :type buffer: Array
-        :return: _description_
-        :rtype: Array
-        """
-        buffer = self.halo_communication_material.face_halo_update(buffer)
-        if self.dim > 1 and fill_edge_halos:
-            buffer = self.halo_communication_material.edge_halo_update(buffer)
-        if self.dim == 3 and fill_vertex_halos:
-            buffer = self.halo_communication_material.vertex_halo_update(buffer)
-        return buffer
 
     def perform_outer_halo_update_temperature(
             self,
@@ -282,17 +318,17 @@ class HaloManager:
         if self.is_parallel:
             conservatives = self.halo_communication_material.face_halo_update(conservatives)
             conservatives = self.boundary_condition_conservative_mixing.face_halo_update(conservatives)
-            if self.dim > 1 and self.mixing_targets > 1:
+            if self.dim > 1 and self.mixing_targets_conservatives > 1:
                 conservatives = self.halo_communication_material.edge_halo_update(conservatives)
                 conservatives = self.boundary_condition_conservative_mixing.edge_halo_update(conservatives)
-            if self.dim == 3 and self.mixing_targets == 3:
+            if self.dim == 3 and self.mixing_targets_conservatives == 3:
                 conservatives = self.halo_communication_material.vertex_halo_update(conservatives)
                 conservatives = self.boundary_condition_conservative_mixing.vertex_halo_update(conservatives)
         else:
             conservatives = self.boundary_condition_conservative_mixing.face_halo_update(conservatives)
-            if self.dim > 1 and self.mixing_targets > 1:
+            if self.dim > 1 and self.mixing_targets_conservatives > 1:
                 conservatives = self.boundary_condition_conservative_mixing.edge_halo_update(conservatives)
-            if self.dim == 3 and self.mixing_targets == 3:
+            if self.dim == 3 and self.mixing_targets_conservatives == 3:
                 conservatives = self.boundary_condition_conservative_mixing.vertex_halo_update(conservatives)
         return conservatives
  
@@ -332,6 +368,109 @@ class HaloManager:
 
         return curvature
 
+
+
+    def perform_halo_update_solids(
+            self,
+            solid_temperature: Array,
+            physical_simulation_time: float,
+            fill_edge_halos: bool,
+            fill_vertex_halos: bool, 
+            solid_energy: Array = None,
+            fill_face_halos: bool = True
+            ) -> Array:
+        """Halo update for solid temperature.
+
+        :param solid_temperature: _description_
+        :type solid_temperature: Array
+        :return: _description_
+        :rtype: Array
+        """
+
+        if solid_energy is not None:
+            if self.is_parallel:
+                if fill_face_halos:
+                    solid_temperature, solid_energy = self.halo_communication_solids.face_halo_update(
+                        solid_temperature, solid_energy)
+                    solid_temperature, solid_energy = self.boundary_condition_solids.face_halo_update(
+                        solid_temperature, physical_simulation_time, solid_energy)
+                if self.dim > 1 and fill_edge_halos:
+                    solid_temperature, solid_energy = self.halo_communication_solids.edge_halo_update(
+                        solid_temperature, solid_energy)
+                    solid_temperature, solid_energy = self.boundary_condition_solids.edge_halo_update(
+                        solid_temperature, solid_energy)
+                if self.dim == 3 and fill_vertex_halos:
+                    solid_temperature, solid_energy = self.halo_communication_solids.vertex_halo_update(
+                        solid_temperature, solid_energy)
+                    solid_temperature, solid_energy = self.boundary_condition_solids.vertex_halo_update(
+                        solid_temperature, solid_energy)
+            else:
+                if fill_face_halos:
+                    solid_temperature, solid_energy = self.boundary_condition_solids.face_halo_update(
+                        solid_temperature, physical_simulation_time, solid_energy)
+                if self.dim > 1 and fill_edge_halos:
+                    solid_temperature, solid_energy = self.boundary_condition_solids.edge_halo_update(
+                        solid_temperature, solid_energy)
+                if self.dim == 3 and fill_vertex_halos:
+                    solid_temperature, solid_energy = self.boundary_condition_solids.vertex_halo_update(
+                        solid_temperature, solid_energy)
+        else:
+            if self.is_parallel:
+                if fill_face_halos:
+                    solid_temperature = self.halo_communication_solids.face_halo_update(
+                        solid_temperature)
+                    solid_temperature = self.boundary_condition_solids.face_halo_update(
+                        solid_temperature, physical_simulation_time)
+                if self.dim > 1 and fill_edge_halos:
+                    solid_temperature = self.halo_communication_solids.edge_halo_update(
+                        solid_temperature)
+                    solid_temperature = self.boundary_condition_solids.edge_halo_update(
+                        solid_temperature)
+                if self.dim == 3 and fill_vertex_halos:
+                    solid_temperature = self.halo_communication_solids.vertex_halo_update(
+                        solid_temperature)
+                    solid_temperature = self.boundary_condition_solids.vertex_halo_update(
+                        solid_temperature)
+            else:
+                if fill_face_halos:
+                    solid_temperature = self.boundary_condition_solids.face_halo_update(
+                        solid_temperature, physical_simulation_time)
+                if self.dim > 1 and fill_edge_halos:
+                    solid_temperature = self.boundary_condition_solids.edge_halo_update(
+                        solid_temperature)
+                if self.dim == 3 and fill_vertex_halos:
+                    solid_temperature = self.boundary_condition_solids.vertex_halo_update(
+                        solid_temperature)
+
+
+        if solid_energy is not None:
+            return solid_temperature, solid_energy
+        else:
+            return solid_temperature
+    
+
+    def perform_halo_update_solids_mixing(
+            self,
+            solid_energy: Array,
+            ) -> Array:
+        if self.is_parallel:
+            solid_energy = self.halo_communication_solids.face_halo_update(solid_energy)
+            solid_energy = self.boundary_condition_solids_mixing.face_halo_update(solid_energy)
+            if self.dim > 1 and self.mixing_targets_solids > 1:
+                solid_energy = self.halo_communication_solids.edge_halo_update(solid_energy)
+                solid_energy = self.boundary_condition_solids_mixing.edge_halo_update(solid_energy)
+            if self.dim == 3 and self.mixing_targets_solids == 3:
+                solid_energy = self.halo_communication_solids.vertex_halo_update(solid_energy)
+                solid_energy = self.boundary_condition_solids_mixing.vertex_halo_update(solid_energy)
+        else:
+            solid_energy = self.boundary_condition_solids_mixing.face_halo_update(solid_energy)
+            if self.dim > 1 and self.mixing_targets_solids > 1:
+                solid_energy = self.boundary_condition_solids_mixing.edge_halo_update(solid_energy)
+            if self.dim == 3 and self.mixing_targets_solids == 3:
+                solid_energy = self.boundary_condition_solids_mixing.vertex_halo_update(solid_energy)
+        return solid_energy
+    
+
     def get_cell_sizes_with_halos(self) -> Tuple[Array]:
         """Generates cell sizes with
         halos.
@@ -357,7 +496,7 @@ class HaloManager:
             dxi_with_halos = jnp.zeros(nxi + 2*nh)
             dxi_with_halos = dxi_with_halos.at[nh:-nh].set(cell_sizes_xi)
             if is_parallel:
-                dxi_with_halos = self.halo_communication_material.face_halo_update_mesh(dxi_with_halos, axis_index)
+                dxi_with_halos = self.halo_communication_mesh.face_halo_update(dxi_with_halos, axis_index)
             dxi_with_halos = self.boundary_condition_mesh.face_halo_update(dxi_with_halos, axis_index)
             shape = np.roll(np.array([-1,1,1]), axis_index)
             dxi_with_halos = dxi_with_halos.reshape(shape)
@@ -397,7 +536,7 @@ class HaloManager:
         def update_cell_centers(
                 cell_centers_xi: Array,
                 axis_index: int
-                ) -> Array:
+                ) -> Tuple[Array, Array]:
             nxi = number_of_cells[axis_index]
             cell_centers_xi = cell_centers_xi.flatten()
             xi_with_halos = jnp.zeros(nxi + 2*nh)

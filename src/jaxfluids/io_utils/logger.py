@@ -7,15 +7,20 @@ from typing import Dict, List
 
 import git
 
+import jax
 from jax import version as jax_version
 from jaxlib import version as jaxlib_version
-import jax
+import jax.numpy as jnp
 
 import jaxfluids
 from jaxfluids.data_types.buffers import TimeControlVariables
-from jaxfluids.data_types.information import StepInformation, WallClockTimes, \
-    TurbulentStatisticsInformation, ChannelStatisticsLogging, HITStatisticsLogging
+from jaxfluids.data_types.information import StepInformation, WallClockTimes
+from jaxfluids.data_types.case_setup import CaseSetup
 from jaxfluids.data_types.numerical_setup import NumericalSetup
+from jaxfluids.io_utils.helper_functions import prepate_turbulent_statistics_for_logging
+
+Array = jax.Array
+
 
 class Logger:
     """Logger for the JAX-FLUIDS solver.
@@ -23,6 +28,7 @@ class Logger:
 
     def __init__(
             self,
+            case_setup: CaseSetup,
             numerical_setup: NumericalSetup,
             logger_name: str = "",
             jax_backend: str = None,
@@ -30,6 +36,10 @@ class Logger:
             ) -> None:
 
         self.logger_name = logger_name
+        # TODO do we need to pass numerical setup or maybe 
+        # passing logging_setup is sufficient and pass 
+        # numerical setup to the methods separately
+        self.case_setup = case_setup
         self.numerical_setup = numerical_setup
         self.is_multihost = is_multihost
 
@@ -208,7 +218,8 @@ class Logger:
     def log_numerical_setup_and_case_setup(
             self,
             numerical_setup_dict: Dict,
-            case_setup_dict: Dict
+            case_setup_dict: Dict,
+            mesh_info_dict: Dict
         ) -> None:
         """Logs numerical setup and input file.
 
@@ -234,7 +245,7 @@ class Logger:
                     log_dict(item, level+1, width)
                     if level == 0:
                         self.logger.info(f"*{'':<{width - 2}}*")
-                elif isinstance(item, list):
+                elif isinstance(item, list) and item != []:
                     if isinstance(item[0], dict):
                         self.logger.info(f"*{'':<{left_space}}{key.upper():<{available_space}}*")
                         for list_item in item:
@@ -274,23 +285,14 @@ class Logger:
         self.nline()
         log_dict(case_setup_dict, width=80)        
         self.nline()
-        
-    def log_turbulent_stats_at_start(self, turb_stats_dict: Dict) -> None:
-        """Logs the turbulent statistics of the initial turbulent flow field.
-
-        :param turb_stats_dict: Dictionary which information on turbulent statistics.
-        :type turb_stats_dict: Dict
-        """
-        self.nline()
-        self.logger.info(f"*{'TURBULENT STATISTICS':^78}*")
-        self.nline()
-        for key, item in turb_stats_dict.items():
-            self.logger.info(f"*    {key:<74}*")
-            for subkey, subitem in item.items():
-                self.logger.info(f"*        {subkey:<20} = {subitem:<47.3e}*")       
-            self.nline()
-        self.nline()
         self.hline()
+
+        # LOG MESH INFORMATION
+        self.nline()
+        self.logger.info(f"*{'MESH INFORMATION':^78}*")
+        self.nline()
+        log_dict(mesh_info_dict, width=80)        
+        self.nline()
 
     def log_list(self, input_list: List) -> None:
         """Logs every line in input_list.
@@ -303,6 +305,7 @@ class Logger:
         for line in input_list:
             self.logger.info(f"*    {line:<74}*")
         self.nline()
+
 
     def log_dict(self, input_dict: Dict, dict_name: str = None) -> None:
         """Logs every key-value pair in input_dict:
@@ -318,13 +321,114 @@ class Logger:
             self.logger.info(f"*    {out_str:<74}*")
         self.nline()
 
+    def log_initial_time_step(
+        self,
+        time_control_variables: TimeControlVariables,
+        step_information: StepInformation,
+        time_reference: float,
+        ) -> None:
+
+        # TIME CONTROL
+        physical_simulation_time_dimensional = time_control_variables.physical_simulation_time * time_reference
+        physical_timestep_size_dimensional = time_control_variables.physical_timestep_size * time_reference
+        print_list = [
+            "TIME CONTROL",
+            f"CURRENT TIME                       = {physical_simulation_time_dimensional:4.5e}",
+            f"CURRENT DT                         = {physical_timestep_size_dimensional:4.5e}",
+            f"CURRENT STEP                       = {time_control_variables.simulation_step:6d}"
+        ]
+        self.log_list(print_list)
+
+        # POSITVITY STATE
+        diffuse_interface_model = self.numerical_setup.diffuse_interface.model
+        logging_setup = self.numerical_setup.output.logging
+        is_positivity = logging_setup.is_positivity
+        is_levelset_residuals = logging_setup.is_levelset_residuals
+
+        levelset_residuals = step_information.levelset[0]
+        positivity_state = step_information.positivity[0]
+        statistics = step_information.statistics
+
+        if is_positivity:
+            print_list = [f"POSITIVITY STATE"]
+            if diffuse_interface_model:
+                print_list += [ f"MIN ALPHARHO                       = {positivity_state.min_alpharho:8.7e}" ]
+                if diffuse_interface_model == "5EQM":
+                    print_list += [ f"MIN ALPHA                          = {positivity_state.min_alpha:8.7e}" ]
+                    print_list += [ f"MAX ALPHA                          = {positivity_state.max_alpha:8.7e}" ]
+            print_list += [ f"MIN DENSITY                        = {positivity_state.min_density:4.4e}" ]
+            print_list += [ f"MIN PRESSURE                       = {positivity_state.min_pressure:4.4e}" ]
+            self.log_list(print_list)
+            
+        # LEVELSET STATE
+        levelset_setup = self.numerical_setup.levelset
+        levelset_model = levelset_setup.model
+        solid_coupling = levelset_setup.solid_coupling
+        is_interpolate_invalid_cells_extension_primitives = levelset_setup.extension.primitives.iterative.is_interpolate_invalid_cells
+        is_interpolate_invalid_cells_extension_solids = levelset_setup.extension.solids.iterative.is_interpolate_invalid_cells
+        is_use_iterative_procedure_extension_primitives = levelset_setup.extension.primitives.method == "ITERATIVE"
+        is_use_iterative_procedure_extension_solids = levelset_setup.extension.solids.method == "ITERATIVE"
+        is_log = levelset_model and (is_levelset_residuals or is_positivity)
+        
+        if is_log:
+            primitives_extension_info = levelset_residuals.primitive_extension
+            if primitives_extension_info is not None:
+                prime_extension_mean = primitives_extension_info.mean_residual
+
+            extension_invalid_cell_count_fluid = positivity_state.levelset_fluid.extension_invalid_cell_count
+
+            if solid_coupling.thermal == "TWO-WAY":
+                raise NotImplementedError
+
+            interface_extension_info = levelset_residuals.interface_extension
+            if interface_extension_info is not None:
+                interface_extension_mean = interface_extension_info.mean_residual
+
+            reinitialization_info = levelset_residuals.reinitialization
+            if reinitialization_info is not None:
+                reinitialzation_max = reinitialization_info.max_residual
+
+            solid_temperature_extension_info = levelset_residuals.solids_extension
+            if solid_temperature_extension_info is not None:
+                solid_temperature_extension_residual_mean = solid_temperature_extension_info.mean_residual
+
+            print_list = [f"LEVELSET STATE"]
+            print_list += ["MATERIAL"]
+            if levelset_model == "FLUID-FLUID":
+                if is_interpolate_invalid_cells_extension_primitives:
+                    print_list += [ f"  EXTENSION INVALID CELLS          =  {extension_invalid_cell_count_fluid[0]:10d} / {extension_invalid_cell_count_fluid[1]:10d}" ]
+            else:
+                if is_interpolate_invalid_cells_extension_primitives and is_use_iterative_procedure_extension_primitives:
+                    print_list += [ f"  EXTENSION INVALID CELLS          =  {extension_invalid_cell_count_fluid:10d}" ]
+            if is_use_iterative_procedure_extension_primitives:
+                print_list += [ f"  PRIMITIVE EXTENSION RESIDUAL     = {prime_extension_mean:4.5e}" ]
+            if interface_extension_info is not None:
+                print_list += [ f"  INTERFACE EXTENSION RESIDUAL     = {interface_extension_mean:4.5e}" ]
+
+            if solid_coupling.thermal == "TWO-WAY":
+                raise NotImplementedError
+
+            if reinitialization_info is not None:
+                print_list += ["LEVELSET"]
+                print_list += [ f"  REINITIALIZATION RESIDUAL        = {reinitialzation_max:4.5e}" ]
+            
+            self.log_list(print_list)
+
+        # TURBULENCE STATISTICS
+        if self.case_setup.statistics_setup.turbulence.is_logging:
+            self.log_list(
+                prepate_turbulent_statistics_for_logging(statistics.turbulence.logging)
+            )
+
+        self.hline()
+
+
     def log_end_time_step(
             self,
             time_control_variables: TimeControlVariables,
             step_information: StepInformation,
             wall_clock_times: WallClockTimes,
             time_reference: float,
-            turbulent_statistics: TurbulentStatisticsInformation = None
             ) -> None:
         """Logs information at the end of an integration step.
 
@@ -335,9 +439,25 @@ class Logger:
 
         if time_control_variables.simulation_step % self.logging_frequency == 0:
 
+            active_forcings = self.numerical_setup.active_forcings
             forcing_infos = step_information.forcing_info
-            levelset_residuals_info_list = step_information.levelset_residuals_info_list
-            positivity_state_info_list = step_information.positivity_state_info_list
+            levelset_residuals_info_list = step_information.levelset
+            positivity_state_info_list = step_information.positivity
+            statistics = step_information.statistics
+            
+            # TIME CONTROL
+            physical_simulation_time_dimensional = time_control_variables.physical_simulation_time * time_reference
+            physical_timestep_size_dimensional = time_control_variables.physical_timestep_size * time_reference
+            print_list = [
+                "TIME CONTROL",
+                f"CURRENT TIME                       = {physical_simulation_time_dimensional:4.5e}",
+                f"CURRENT DT                         = {physical_timestep_size_dimensional:4.5e}",
+                f"CURRENT STEP                       = {time_control_variables.simulation_step:6d}",
+                f"WALL CLOCK TIMESTEP                = {wall_clock_times.step:4.5e}",
+                f"WALL CLOCK TIMESTEP CELL           = {wall_clock_times.step_per_cell:4.5e}",
+                f"MEAN WALL CLOCK TIMESTEP CELL      = {wall_clock_times.mean_step_per_cell:4.5e}",
+            ]
+            self.log_list(print_list)
             
             # FORCINGS
             if forcing_infos is not None:
@@ -352,81 +472,19 @@ class Logger:
                         f"FORCE SCALAR   = {mass_flow_forcing_scalar:4.5e}"
                     ])
 
-                if forcing_infos.temperature is not None:
-                    temperature_error = forcing_infos.temperature.current_error
-                    self.log_list([
-                        "TEMPERATURE CONTROL",
-                        f"ERROR  = {temperature_error:4.5e}",
-                    ])
+                if active_forcings.is_temperature_forcing or active_forcings.is_solid_temperature_forcing:
+                    temperature_error_fluid = forcing_infos.temperature.current_error_fluid
+                    temperature_error_solid = forcing_infos.temperature.current_error_solid
+                    print_list = ["TEMPERATURE CONTROL"]
+                    if temperature_error_fluid is not None:
+                        print_list += [f"ERROR FLUID  = {temperature_error_fluid:4.5e}"]
+                    if temperature_error_solid is not None:
+                        print_list += [f"ERROR SOLID  = {temperature_error_solid:4.5e}"]
+                    self.log_list(print_list)
 
-            # TURBULENT STATS
-            if turbulent_statistics is not None:
-                statistics_logging = turbulent_statistics.logging
-
-                if statistics_logging.hit_statistics is not None:
-                    hit_statistics: HITStatisticsLogging = statistics_logging.hit_statistics
-                    density_mean = hit_statistics.rho_bulk
-                    pressure_mean = hit_statistics.pressure_bulk
-                    temperature_mean = hit_statistics.temperature_bulk
-                    density_rms = hit_statistics.rho_rms
-                    pressure_rms = hit_statistics.pressure_rms
-                    temperature_rms = hit_statistics.temperature_rms
-                    mach_turbulent = hit_statistics.mach_rms
-                    velocity_rms = hit_statistics.u_rms
-                    self.log_list([
-                        "TURBULENT STATISTICS - HIT",
-                        f"MEAN DENSITY               = {density_mean:4.4e}",
-                        f"MEAN PRESSURE              = {pressure_mean:4.4e}",
-                        f"MEAN TEMPERATURE           = {temperature_mean:4.4e}",                        
-                        f"TURBULENT MACH RMS         = {mach_turbulent:4.4e}",
-                        f"VELOCITY RMS               = {velocity_rms:4.4e}",
-                        f"DENSITY RMS                = {density_rms:4.4e}",
-                        f"PRESSURE RMS               = {pressure_rms:4.4e}",
-                        f"TEMPERATURE RMS            = {temperature_rms:4.4e}",
-                    ])
-                
-                elif statistics_logging.channel_statistics is not None:
-                    channel_statistics: ChannelStatisticsLogging = statistics_logging.channel_statistics
-                    rho_bulk = channel_statistics.rho_bulk
-                    temperature_bulk = channel_statistics.temperature_bulk
-                    u_bulk = channel_statistics.u_bulk
-                    mach_bulk = channel_statistics.mach_bulk
-                    reynolds_tau = channel_statistics.reynolds_tau
-                    reynolds_bulk = channel_statistics.reynolds_bulk
-                    delta_x_plus = channel_statistics.delta_x_plus
-                    delta_y_plus_min = channel_statistics.delta_y_plus_min
-                    delta_y_plus_max = channel_statistics.delta_y_plus_max
-                    delta_z_plus = channel_statistics.delta_z_plus
-                    self.log_list([
-                        "TURBULENT STATISTICS - CHANNEL",
-                        f"DENSITY BULK               = {rho_bulk:4.4e}",
-                        f"TEMPERATURE BULK           = {temperature_bulk:4.4e}",
-                        f"VELOCITY BULK              = {u_bulk:4.4e}",
-                        f"MACH NUBMER BULK           = {mach_bulk:4.4e}",
-                        f"REYNOLDS NUMBER TAU        = {reynolds_tau:4.4e}",
-                        f"REYNOLDS NUMBER BULK       = {reynolds_bulk:4.4e}",
-                        f"DELTA X+                   = {delta_x_plus:4.4e}",
-                        f"DELTA Y+ MIN               = {delta_y_plus_min:4.4e}",
-                        f"DELTA Y+ MAX               = {delta_y_plus_max:4.4e}",
-                        f"DELTA Z+                   = {delta_z_plus:4.4e}",
-                    ])
-
-            # REACTION KINETICS
-            # TODO combustion
-
-            # TIME CONTROL
-            physical_simulation_time_dimensional = time_control_variables.physical_simulation_time * time_reference
-            physical_timestep_size_dimensional = time_control_variables.physical_timestep_size * time_reference
-            print_list = [
-                "TIME CONTROL",
-                f"CURRENT TIME                       = {physical_simulation_time_dimensional:4.5e}",
-                f"CURRENT DT                         = {physical_timestep_size_dimensional:4.5e}",
-                f"CURRENT STEP                       = {time_control_variables.simulation_step:6d}",
-                f"WALL CLOCK TIMESTEP                = {wall_clock_times.step:4.5e}",
-                f"WALL CLOCK TIMESTEP CELL           = {wall_clock_times.step_per_cell:4.5e}",
-                f"MEAN WALL CLOCK TIMESTEP CELL      = {wall_clock_times.mean_step_per_cell:4.5e}",
-            ]
-            self.log_list(print_list)
+            # TURBULENCE STATISTICS
+            if self.case_setup.statistics_setup.turbulence.is_logging:
+                self.log_list(prepate_turbulent_statistics_for_logging(statistics.turbulence.logging))
 
             # POSITVITY STATE
             diffuse_interface_model = self.numerical_setup.diffuse_interface.model
@@ -441,18 +499,19 @@ class Logger:
                         print_list = [f"POSITIVITY STATE"]
                     else:
                         print_list = [f"POSITIVITY STATE STAGE {stage:d}"]
+                    positivity_counter = positivity_state.positivity_counter
                     if positivity_setup.is_interpolation_limiter:
-                        print_list += [ f"COUNT INTERPOLATION LIMITER        = {positivity_state.positivity_count_interpolation:d}" ]
+                        print_list += [ f"COUNT INTERPOLATION LIMITER        = {positivity_counter.interpolation_limiter:d}" ]
                     if positivity_setup.is_thinc_interpolation_limiter:
-                        print_list += [ f"COUNT INTERPOLATION LIMITER THINC  = {positivity_state.positivity_count_thinc:d}" ]
+                        print_list += [ f"COUNT INTERPOLATION LIMITER THINC  = {positivity_counter.thinc_limiter:d}" ]
                     if positivity_setup.flux_limiter:
-                        print_list += [ f"COUNT FLUX LIMITER                 = {positivity_state.positivity_count_flux:d}" ]
+                        print_list += [ f"COUNT FLUX LIMITER                 = {positivity_counter.flux_limiter:d}" ]
                     if diffuse_interface_model:
                         if positivity_setup.is_volume_fraction_limiter:
-                            print_list += [ f"COUNT VOLUME FRACTION LIMITER      = {positivity_state.vf_correction_count:d}" ]
+                            print_list += [ f"COUNT VOLUME FRACTION LIMITER      = {positivity_counter.volume_fraction_limiter:d}" ]
                         if positivity_setup.is_acdi_flux_limiter:
-                            print_list += [ f"COUNT CDI/ACDI FLUX                = {positivity_state.count_acdi:d}"]
-                            print_list += [ f"COUNT CDI/ACDI FLUX LIMITER        = {positivity_state.positivity_count_acdi:d}"]
+                            print_list += [ f"COUNT CDI/ACDI FLUX                = {positivity_state.discretization_counter.acdi:d}"]
+                            print_list += [ f"COUNT CDI/ACDI FLUX LIMITER        = {positivity_counter.acdi_limiter:d}"]
                     if diffuse_interface_model:
                         print_list += [ f"MIN ALPHARHO                       = {positivity_state.min_alpharho:8.7e}" ]
                         if diffuse_interface_model == "5EQM":
@@ -461,53 +520,81 @@ class Logger:
                     print_list += [ f"MIN DENSITY                        = {positivity_state.min_density:4.4e}" ]
                     print_list += [ f"MIN PRESSURE                       = {positivity_state.min_pressure:4.4e}" ]
                     self.log_list(print_list)
-                
+
             # LEVELSET STATE
             levelset_setup = self.numerical_setup.levelset
             levelset_model = levelset_setup.model
-
             is_levelset_residuals = logging_setup.is_levelset_residuals
+            is_log = levelset_model and (is_levelset_residuals or is_positivity)
+            solid_coupling = levelset_setup.solid_coupling
+            is_interpolate_invalid_cells_extension_primitives = levelset_setup.extension.primitives.iterative.is_interpolate_invalid_cells
+            is_interpolate_invalid_cells_extension_solids = levelset_setup.extension.solids.iterative.is_interpolate_invalid_cells
+            is_use_iterative_procedure_extension_primitives = levelset_setup.extension.primitives.method == "ITERATIVE" 
+            is_use_iterative_procedure_extension_solids = levelset_setup.extension.solids.method == "ITERATIVE"
 
-            log_any = any((is_levelset_residuals, is_positivity))
-            
-            if log_any:
+            if is_log:
                 for stage, (levelset_residuals, positivity_state) in \
                 enumerate(zip(levelset_residuals_info_list, positivity_state_info_list)):
-                    prime_extension_mean = levelset_residuals.prime_extension_residual_mean
-                    prime_extension_max = levelset_residuals.prime_extension_residual_max
-                    prime_extension_steps = levelset_residuals.prime_extension_steps
-                    interface_extension_mean = levelset_residuals.interface_quantity_extension_residual_mean
-                    interface_extension_max = levelset_residuals.interface_quantity_extension_residual_max
-                    interface_quantity_extension_steps = levelset_residuals.interface_quantity_extension_steps
-                    reinitialzation_mean = levelset_residuals.reinitialization_residual_mean
-                    reinitialzation_max = levelset_residuals.reinitialization_residual_max
-                    reinitialization_steps = levelset_residuals.reinitialization_steps
+                    
+                    levelset_fluid = positivity_state.levelset_fluid
+                    mixing_invalid_cells_count_fluid = levelset_fluid.mixing_invalid_cell_count
+                    extension_invalid_cell_count_fluid = levelset_fluid.extension_invalid_cell_count
 
-                    mixing_invalid_cells_count = positivity_state.levelset.mixing_invalid_cell_count
-                    extension_invalid_cell_count = positivity_state.levelset.extension_invalid_cell_count
+                    primitives_extension_info = levelset_residuals.primitive_extension
+                    if primitives_extension_info is not None:
+                        prime_extension_mean = primitives_extension_info.mean_residual
+                        prime_extension_steps = primitives_extension_info.steps
+
+                    levelset_solid = positivity_state.levelset_solid
+                    if levelset_solid is not None:
+                        mixing_invalid_cells_count_solid = levelset_solid.mixing_invalid_cell_count
+                        extension_invalid_cell_count_solid = levelset_solid.extension_invalid_cell_count
+
+                    interface_extension_info = levelset_residuals.interface_extension
+                    if interface_extension_info is not None:
+                        interface_extension_mean = interface_extension_info.mean_residual
+                        interface_quantity_extension_steps = interface_extension_info.steps
+
+                    reinitialization_info = levelset_residuals.reinitialization
+                    if reinitialization_info is not None:
+                        reinitialzation_max = reinitialization_info.max_residual
+                        reinitialization_steps = reinitialization_info.steps
+
+                    solid_temperature_extension_info = levelset_residuals.solids_extension
+                    if solid_temperature_extension_info is not None:
+                        solid_temperature_extension_residual_mean = solid_temperature_extension_info.mean_residual
+                        solid_temperature_extension_steps = solid_temperature_extension_info.steps
 
                     if is_only_last_stage:
                         print_list = [f"LEVELSET STATE"]
                     else:
                         print_list = [f"LEVELSET STATE STAGE {stage:d}"]
-                    if is_positivity:
-                        if levelset_model == "FLUID-FLUID":
-                            print_list += [ f"MIXING INVALID CELLS               =  {mixing_invalid_cells_count[0]:10d} / {mixing_invalid_cells_count[1]:11d}" ]
-                            print_list += [ f"EXTENSION INVALID CELLS            =  {extension_invalid_cell_count[0]:10d} / {extension_invalid_cell_count[1]:11d}" ]
-                        else:
-                            print_list += [ f"MIXING INVALID CELLS               =  {mixing_invalid_cells_count:11d}" ]
-                            print_list += [ f"EXTENSION INVALID CELLS            =  {extension_invalid_cell_count:11d}" ]
-                    if is_levelset_residuals:
-                        if not isinstance(prime_extension_steps, type(None)):
-                            print_list += [ f"STEPS EXTENSION PRIMES             = {prime_extension_steps:25d}" ]
-                        if not isinstance(interface_quantity_extension_steps, type(None)) and levelset_model == "FLUID-FLUID":
-                            print_list += [ f"STEPS EXTENSION INTERFACE          = {interface_quantity_extension_steps:25d}" ]
-                        if not isinstance(reinitialization_steps, type(None)):
-                            print_list += [ f"STEPS REINITIALIZATION             = {reinitialization_steps:25d}" ]
-                        print_list += [ f"RESIDUAL EXTENSION PRIMES          = {prime_extension_mean:4.5e} / {prime_extension_max:4.5e}" ]
-                        if levelset_model == "FLUID-FLUID":
-                            print_list += [ f"RESIDUAL EXTENSION INTERFACE       = {interface_extension_mean:4.5e} / {interface_extension_max:4.5e}" ]
-                        print_list += [ f"RESIDUAL REINITIALIZATION          = {reinitialzation_mean:4.5e} / {reinitialzation_max:4.5e}" ]
+                    
+                    print_list += ["MATERIAL"]
+                    if levelset_model == "FLUID-FLUID":
+                        print_list += [ f"  MIXING INVALID CELLS             =  {mixing_invalid_cells_count_fluid[0]:10d} / {mixing_invalid_cells_count_fluid[1]:10d}" ]
+                        if is_interpolate_invalid_cells_extension_primitives and is_use_iterative_procedure_extension_primitives:
+                            print_list += [ f"  EXTENSION INVALID CELLS          =  {extension_invalid_cell_count_fluid[0]:10d} / {extension_invalid_cell_count_fluid[1]:10d}" ]
+                    else:
+                        print_list += [ f"  MIXING INVALID CELLS             =  {mixing_invalid_cells_count_fluid:10d}" ]
+                        if is_interpolate_invalid_cells_extension_primitives and is_use_iterative_procedure_extension_primitives:
+                            print_list += [ f"  EXTENSION INVALID CELLS          =  {extension_invalid_cell_count_fluid:10d}" ]
+
+                    if is_use_iterative_procedure_extension_primitives:
+                        print_list += [ f"  PRIMITIVE EXTENSION STEPS        = {prime_extension_steps:11d}" ]
+                        print_list += [ f"  PRIMITIVE EXTENSION RESIDUAL     = {prime_extension_mean:4.5e}" ]
+
+                    if interface_extension_info is not None:
+                        print_list += [ f"  INTERFACE EXTENSION STEPS        = {interface_quantity_extension_steps:11d}" ]
+                        print_list += [ f"  INTERFACE EXTENSION RESIDUAL     = {interface_extension_mean:4.5e}" ]
+
+                    if solid_coupling.thermal == "TWO-WAY":
+                        raise NotImplementedError
+
+                    if reinitialization_info is not None:
+                        print_list += ["LEVELSET"]
+                        print_list += [ f"  REINITIALIZATION STEPS           = {reinitialization_steps:11d}" ]
+                        print_list += [ f"  REINITIALIZATION RESIDUAL        = {reinitialzation_max:4.5e}" ]
 
                     self.log_list(print_list)
 

@@ -1,12 +1,15 @@
 from typing import List, Union
 import types
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.material_properties import MaterialPropertiesSetup
+from jaxfluids.math.sum_consistent import sum3_consistent
+
+Array = jax.Array
 
 class SafeIdealGas(Material):
     """Implements the safe ideal gas law, i.e., prevents
@@ -45,20 +48,23 @@ class SafeIdealGas(Material):
     def get_temperature(self, p: Array, rho: Array) -> Array:
         """See base class. """
         return p / ( rho * self.R + self.eps )
-        
+
+    def get_density_from_pressure_and_temperature(self, p: Array, T: Array) -> Array:
+        raise NotImplementedError
+    
     def get_specific_energy(self, p: Array, rho: Array) -> Array:
         """See base class. """
         return jnp.maximum( p, self.eps) / jnp.maximum( rho, self.eps ) / (self.gamma - 1)
 
-    def get_total_energy(self, p: Array, rho: Array, u: Array, v: Array, w: Array) -> Array:
+    def get_total_energy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         """See base class. """
         # Total energy per unit volume
-        return jnp.maximum( p, self.eps) / (self.gamma - 1) + 0.5 * jnp.maximum( rho, self.eps) * ( (u * u + v * v + w * w) )
+        return jnp.maximum( p, self.eps) / (self.gamma - 1) + 0.5 * jnp.maximum( rho, self.eps) * sum3_consistent(*jnp.square(velocity_vec))
 
-    def get_total_enthalpy(self, p: Array, rho: Array, u: Array, v: Array, w: Array) -> Array:
+    def get_total_enthalpy(self, p: Array, rho: Array, velocity_vec: Array) -> Array:
         """See base class. """
         # Total specific enthalpy
-        return (self.get_total_energy(p, rho, u, v, w) + jnp.maximum( p, self.eps)) / jnp.maximum( rho, self.eps)
+        return (self.get_total_energy(p, rho, velocity_vec) + jnp.maximum( p, self.eps)) / jnp.maximum( rho, self.eps)
 
     def get_specific_heat_capacity(self, T: Array) -> Union[float, Array]:
         """Calculates the specific heat coefficient per unit mass.

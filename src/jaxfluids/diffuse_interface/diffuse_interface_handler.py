@@ -1,7 +1,7 @@
 from typing import Tuple, Union
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.diffuse_interface.diffuse_interface_compression_computer import DiffuseInterfaceCompressionComputer
@@ -14,6 +14,8 @@ from jaxfluids.halos.halo_manager import HaloManager
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.config import precision
+
+Array = jax.Array
 
 class DiffuseInterfaceHandler():
     """ The DiffuseInterfaceHandler class manages computations to perform diffuse-interface
@@ -90,27 +92,27 @@ class DiffuseInterfaceHandler():
 
         self.dim = domain_information.dim
         self.active_axes_indices = domain_information.active_axes_indices
-        self.nx, self.ny, self.nz = domain_information.global_number_of_cells
-        self.nhx, self.nhy, self.nhz = domain_information.domain_slices_conservatives
-        self.nhx_, self.nhy_, self.nhz_ = domain_information.domain_slices_geometry
-        self.nhx__, self.nhy__, self.nhz__ = domain_information.domain_slices_conservatives_to_geometry
+        self.nx,self.ny,self.nz = domain_information.global_number_of_cells
+        self.nhx,self.nhy,self.nhz = domain_information.domain_slices_conservatives
+        self.nhx_,self.nhy_,self.nhz_ = domain_information.domain_slices_geometry
+        self.nhx__,self.nhy__,self.nhz__ = domain_information.domain_slices_conservatives_to_geometry
         self.is_parallel = domain_information.is_parallel
         self.split_factors = domain_information.split_factors
         self.is_mesh_stretching = domain_information.is_mesh_stretching
 
-        self.mass_ids = equation_information.mass_ids
-        self.mass_slices = equation_information.mass_slices
-        self.vel_ids = equation_information.velocity_ids
-        self.vel_slices = equation_information.velocity_slices
-        self.energy_ids = equation_information.energy_ids
-        self.energy_slices = equation_information.energy_slices
-        self.vf_ids = equation_information.vf_ids
-        self.vf_slices = equation_information.vf_slices
+        self.ids_mass = equation_information.ids_mass
+        self.s_mass = equation_information.s_mass
+        self.vel_ids = equation_information.ids_velocity
+        self.vel_slices = equation_information.s_velocity
+        self.ids_energy = equation_information.ids_energy
+        self.s_energy = equation_information.s_energy
+        self.ids_volume_fraction = equation_information.ids_volume_fraction
+        self.s_volume_fraction = equation_information.s_volume_fraction
         
         self.flux_slices = [ 
-            [jnp.s_[...,1:,:,:], jnp.s_[...,:-1,:,:]],
-            [jnp.s_[...,:,1:,:], jnp.s_[...,:,:-1,:]],
-            [jnp.s_[...,:,:,1:], jnp.s_[...,:,:,:-1]],
+            [jnp.s_[...,:-1,:,:], jnp.s_[...,1:,:,:],],
+            [jnp.s_[...,:,:-1,:], jnp.s_[...,:,1:,:],],
+            [jnp.s_[...,:,:,:-1], jnp.s_[...,:,:,1:],],
         ]
                     
     def compute_curvature(self, volume_fraction: Array) -> Array:
@@ -166,11 +168,10 @@ class DiffuseInterfaceHandler():
         :return: Source term for volume fraction transport equation
         :rtype: Array
         """
-
+        slice_L, slice_R = self.flux_slices[axis_index_xi]
         rhs_volume_fraction_contribution = one_cell_size_xi \
             * volume_fraction[...,self.nhx,self.nhy,self.nhz] \
-            * (u_hat_xi[self.flux_slices[axis_index_xi][1]] \
-                - u_hat_xi[self.flux_slices[axis_index_xi][0]])
+            * (u_hat_xi[slice_L] - u_hat_xi[slice_R])
         return rhs_volume_fraction_contribution
     
     def compute_surface_tension_source_term_xi(
@@ -202,7 +203,7 @@ class DiffuseInterfaceHandler():
         :return: Source terms for momentum equation and energy equation, respectively
         :rtype: Tuple[Array, Array]
         """
-        
+        slice_L, slice_R = self.flux_slices[axis_index_xi]
         curvature = curvature[...,self.nhx_,self.nhy_,self.nhz_]
         sigma = self.material_manager.get_sigma()
         sigma_curvature_over_cell_size_xi = sigma * curvature * one_cell_size_xi
@@ -216,19 +217,15 @@ class DiffuseInterfaceHandler():
             # alpha_hat_xi *= kernel
             alpha_hat_xi = 6.0 * alpha_hat_xi * alpha_hat_xi * (0.5 - alpha_hat_xi / 3.0)
         
-        delta_alpha_hat = alpha_hat_xi[self.flux_slices[axis_index_xi][1]] \
-            - alpha_hat_xi[self.flux_slices[axis_index_xi][0]]
-        delta_u_hat = u_hat_xi[self.flux_slices[axis_index_xi][1]] \
-            - u_hat_xi[self.flux_slices[axis_index_xi][0]]
-        
-        delta_alpha_hat_u_hat = alpha_hat_xi * u_hat_xi
-        delta_alpha_hat_u_hat = delta_alpha_hat_u_hat[self.flux_slices[axis_index_xi][1]] \
-            - delta_alpha_hat_u_hat[self.flux_slices[axis_index_xi][0]]
+
+        delta_alpha_hat = alpha_hat_xi[slice_L] - alpha_hat_xi[slice_R]
+        delta_u_hat = u_hat_xi[slice_L] - u_hat_xi[slice_R]
+        delta_alpha_u_hat = alpha_hat_xi * u_hat_xi
+        delta_alpha_u_hat = delta_alpha_u_hat[slice_L] - delta_alpha_u_hat[slice_R]
         
         rhs_momentum_contribution = sigma_curvature_over_cell_size_xi * delta_alpha_hat
-
-        rhs_energy_contribution = sigma_curvature_over_cell_size_xi * (delta_alpha_hat_u_hat \
-            - alpha[...,self.nhx,self.nhy,self.nhz] * delta_u_hat)
+        rhs_energy_contribution = sigma_curvature_over_cell_size_xi * (
+            delta_alpha_u_hat - alpha[...,self.nhx,self.nhy,self.nhz] * delta_u_hat)
 
         return rhs_momentum_contribution, rhs_energy_contribution
 
@@ -294,6 +291,7 @@ class DiffuseInterfaceHandler():
             primitives: Array,
             curvature: Array,
             axis: int,
+            volume_fraction: Array = None
             ) -> Tuple[Array, Array, Array, Array]:
         """Applies THINC reconstruction to the volume fraction 
         and (if active) corrects other quantities.
@@ -319,9 +317,20 @@ class DiffuseInterfaceHandler():
         """
 
         if self.diffuse_interface_model == "5EQM":
-            volume_fraction = conservatives[self.vf_ids]
+            volume_fraction = conservatives[self.ids_volume_fraction]
         
+        # volume_fraction = jnp.ones_like(volume_fraction) * (1.0 - 1e-8)
         normal = self.compute_normal(volume_fraction)
+        # normal = jnp.ones_like(normal)
+        # print("DIFF HANDLER, NORMAL SHAPE = ", normal.shape)
+
+        # import matplotlib.pyplot as plt 
+        # fig, ax = plt.subplots(ncols=2)
+        # ax[0].imshow(jnp.squeeze(normal[0]).T, origin="lower")
+        # ax[1].imshow(jnp.squeeze(normal[1]).T, origin="lower")
+        # plt.savefig("test.png", dpi=200)
+        # plt.show()
+        # exit()
 
         # SLICE NORMAL AND CURVATURE FROM NH_GEOMETRY 
         # TO DOMAIN + 1 HALO CELL EACH SIDE
@@ -334,7 +343,8 @@ class DiffuseInterfaceHandler():
             conservatives_L, conservatives_R,
             primitives_L, primitives_R,
             conservatives, primitives,
-            normal, curvature, axis)
+            normal, curvature, axis,
+            volume_fraction)
         return conservatives_L, conservatives_R, primitives_L, primitives_R
     
     def compute_diffusion_sharpening_flux_xi(
@@ -342,6 +352,7 @@ class DiffuseInterfaceHandler():
             conservatives: Array,
             primitives: Array,
             axis: int,
+            volume_fraction: Array = None,
             numerical_dissipation: Array = None
             ) -> Tuple[Array, int]:
         """Computes ACDI-type interface diffusion and sharpening fluxes
@@ -353,20 +364,21 @@ class DiffuseInterfaceHandler():
         :type primitives: Array
         :param axis: Spatial direction
         :type axis: int
+        :param volume_fraction: For the 4EQM, the volume fraction field 
+            is passed as a separate field since its not in primitive/conservatives,
+            defaults to None
+        :type volume_fraction: Array, optional
         :return: _description_
         :rtype: Array
         """
         regularization_flux_xi, count_acdi_xi \
             = self.pde_regularization.compute_diffusion_sharpening_flux_xi(
-                conservatives, primitives, axis, numerical_dissipation)
+                conservatives, primitives, axis, volume_fraction, numerical_dissipation)
         
         regularization_flux_xi = self.halo_manager.boundary_condition_flux.face_flux_update(
             regularization_flux_xi, axis)
 
         return regularization_flux_xi, count_acdi_xi
         
-    def compute_diffusion_sharpening_timestep(
-            self,
-            primitives: Array
-            ) -> float:
+    def compute_diffusion_sharpening_timestep(self, primitives: Array) -> float:
         return self.pde_regularization.compute_timestep(primitives)

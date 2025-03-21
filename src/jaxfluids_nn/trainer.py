@@ -4,12 +4,11 @@ from functools import partial
 import json
 import pickle
 import time
-from typing import Callable, List, Dict, Tuple
+from typing import Callable, List, Dict, Tuple, TYPE_CHECKING
 
 import GPUtil
 import jax 
 import jax.numpy as jnp
-from jax import Array
 import matplotlib.pyplot as plt
 import numpy as np
 import optax
@@ -19,9 +18,14 @@ from jaxfluids.io_utils.logger import Logger
 from jaxfluids_nn.helper_functions import initialize_optimizer, get_number_samples, \
     plot_loss_history
 
+from jaxfluids_nn.data_types.optimizer import OptimizerSetup
+
+if TYPE_CHECKING:
+    from jaxfluids_nn import Callback
+
 class Trainer:
-    """ Trainer class which is used to train data-driven models 
-    in combination with the JAX-Fluids solver.
+    """ Implements functionality for training data-driven models 
+    in combination with the JAX-Fluids CFD solver.
     """
 
     def __init__(
@@ -30,10 +34,7 @@ class Trainer:
             checkpoint_dir: str, 
             checkpoint_freq: int = 10, 
             log_freq: int = 1, 
-            callbacks: List = None,
-            train_params: Dict = None, 
-            opt_params: Dict = None, 
-            network_params: Dict = None
+            callbacks: List["Callback"] = None,
         ) -> None:
 
         self._checkpoint_dir = checkpoint_dir
@@ -43,21 +44,15 @@ class Trainer:
         self._eval_freq = 1
 
         self.logger: Logger = Logger(sim_manager.numerical_setup)
-        self.callbacks = callbacks
-
-        self.train_params = train_params
-        self.opt_params = opt_params
-        self.network_params = network_params        
+        self.callbacks = callbacks     
 
     def _initialize(
             self, 
             model_name: str, 
-            optimizer_name: str, 
-            scheduler_name: str, 
-            scheduler_params, 
+            optimizer_setup: OptimizerSetup,
             params, 
-            opt_state
-        ):
+            opt_state: optax.OptState
+        ) -> Tuple[optax.GradientTransformation, optax.OptState, optax.Schedule]:
         """Initializes the trainer and the optax optimizer.
 
         :param model_name: _description_
@@ -78,11 +73,7 @@ class Trainer:
 
         self._initialize_trainer(model_name)
         opt, opt_state, schedule_fn = initialize_optimizer(
-            optimizer_name, 
-            scheduler_name, 
-            scheduler_params, 
-            params, 
-            opt_state)
+            optimizer_setup, params, opt_state)
         
         return opt, opt_state, schedule_fn
 
@@ -117,31 +108,12 @@ class Trainer:
         self.savepath_chkps = os.path.join(self.savepath_model, "checkpoints")
         os.mkdir(self.savepath_chkps)
 
-        # SAVE HYPERPARAMETERS
-        with open(os.path.join(self.savepath_model, "train_params.json"), "w") as f:
-            json.dump(self.train_params, f, indent=4)
-        with open(os.path.join(self.savepath_model, "opt_params.json"), "w") as f:
-            json.dump(self.opt_params, f, indent=4)
-        with open(os.path.join(self.savepath_model, "network_params.json"), "w") as f:
-            json.dump(self.network_params, f, indent=4)
-
-        resolution = self.train_params["training_resolution"]
-        cg_factor = self.train_params["cg_factor"]
-        traj_length = self.train_params["traj_length"]
-        min_timestep_size = np.min(self.train_params["timestep_size"])
-        max_timestep_size = np.max(self.train_params["timestep_size"])
-
         self.logger.configure_logger(log_path=self.savepath_model)
         self.logger.hline()
         self.logger.log("JAX-FLUIDS NN-TRAINER")
         self.logger.log(f"MODEL PATH: {self.savepath_model}")
         self.logger.log(datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
         self.logger.log("\n")
-        self.logger.log("TRAINING RESOLUTION = ({})".format(",".join(str(nx) for nx in resolution)))
-        self.logger.log(f"COARSE GRAINING   = {cg_factor}")
-        self.logger.log(f"TRAJECTORY LENGTH = {traj_length}")
-        self.logger.log("TIME STEP SIZE: MIN = {:4.3e}, MAX = {:4.3e}".format(
-            min_timestep_size, max_timestep_size))
 
         # SET STEP AND HISTORY
         self.step = 0
@@ -171,13 +143,11 @@ class Trainer:
             loss_fn: Callable, 
             params_dict: Dict, 
             net_dict: Dict, 
-            optimizer_name: str, 
-            scheduler_name: str, 
-            scheduler_params, 
-            opt_state = None
+            optimizer_setup: OptimizerSetup,
+            opt_state: optax.OptState = None
         ):
         """ Main training loop
-
+        # TODO data loader
         1) Initialize optimizer and scheduler
         2) Loop over epochs
             2.1) Loop over training batches
@@ -217,9 +187,7 @@ class Trainer:
 
         opt, opt_state, schedule_fn = self._initialize(
             model_name, 
-            optimizer_name, 
-            scheduler_name, 
-            scheduler_params, 
+            optimizer_setup,
             params_dict, 
             opt_state
         )
@@ -229,16 +197,11 @@ class Trainer:
         number_total_batches = len(dl_train)
         number_total_steps = len(dl_train) * epochs
 
-        self.logger.log("TRAIN SAMPLES: {}, VALIDATION SAMPLES: {}".format(total_train_samples, total_val_samples))
-        self.logger.log("TRAIN BATCHES: {}, VALIDATION BATCHES: {}".format(len(dl_train), len(dl_val)))
-        self.logger.log("TRAIN BATCH SIZE: {}, VALIDATION BATCH SIZE: {}".format(train_batch_size, val_batch_size))
-        self.logger.log("NUMBER OF TOTAL STEPS: {}, STEPS PER EPOCH: {}".format(number_total_steps, len(dl_train)))
+        self.logger.log(f"TRAIN SAMPLES: {total_train_samples}, VALIDATION SAMPLES: {total_val_samples}")
+        self.logger.log(f"TRAIN BATCHES: {len(dl_train)}, VALIDATION BATCHES: {len(dl_val)}")
+        self.logger.log(f"TRAIN BATCH SIZE: {train_batch_size}, VALIDATION BATCH SIZE: {val_batch_size}")
+        self.logger.log(f"NUMBER OF EPOCHS: {epochs}, NUMBER OF TOTAL STEPS: {number_total_steps}, STEPS PER EPOCH: {len(dl_train)}")
         self.logger.log("\n")
-
-        # print(loss_fn)
-        # print(params_dict)
-        # print(net_dict)
-        # exit()
 
         # LOOP ON EPOCHS
         self.save_checkpoint(0, params_dict, opt_state, force_save=False)
@@ -255,9 +218,9 @@ class Trainer:
                     cb.on_epoch_start(self, epoch, params_dict, net_dict)
 
             # LOOP ON BATCHES
-            for ii, ((x, y, dt), sim_idx) in enumerate(dl_train):
+            for ii, ((x, y, t0, dt), sim_idx) in enumerate(dl_train):
                 self.step += 1
-                batch = (x.numpy(), y.numpy(), dt.numpy())
+                batch = (x.numpy(), y.numpy(), t0.numpy(), dt.numpy())
 
                 # FOR DEBUGGING
                 # loss_fn(params_dict, batch)
@@ -309,8 +272,8 @@ class Trainer:
                 nan_batches, nan_batches/number_total_batches * 100))
 
             # EVALUATE MODEL FOR VALIDATION LOSS
-            for ii, ((x, y, dt), sim_idx) in enumerate(dl_val):
-                batch_valid = (x.numpy(), y.numpy(), dt.numpy())
+            for ii, ((x, y, t0, dt), sim_idx) in enumerate(dl_val):
+                batch_valid = (x.numpy(), y.numpy(), t0.numpy(), dt.numpy())
                 batch_samples = batch_valid[0].shape[0]
                 batch_valid_loss, loss_info = self.evaluate(params_dict, batch_valid, loss_fn)
                 valid_loss += batch_valid_loss * batch_samples / total_val_samples
@@ -343,15 +306,14 @@ class Trainer:
 
             if epoch == 1:
                 GPUS = GPUtil.getGPUs()
-                gpu_mem = GPUS[self.train_params["gpu_id"]].memoryUsed
+                gpu_mem = None #GPUS[self.train_params["gpu_id"]].memoryUsed
             else:
                 gpu_mem = None
 
-            self.printout(
-                epoch, epochs, epoch_loss, valid_loss,
-                epoch_time, number_total_batches, gpu_mem,
-                loss_components_train=epoch_loss_components_train,
-                loss_components_valid=epoch_loss_components_valid)
+            self.printout(epoch, epochs, epoch_loss, valid_loss,
+                          epoch_time, number_total_batches, gpu_mem,
+                          loss_components_train=epoch_loss_components_train,
+                          loss_components_valid=epoch_loss_components_valid)
             self.save_checkpoint(epoch, params_dict, opt_state, force_save=False)
             plot_loss_history(self.history, self.savepath_model)
 
@@ -368,11 +330,11 @@ class Trainer:
     def train_step(
             self, 
             params_dict: Dict, 
-            opt_state, 
-            optimizer, 
-            batch, 
+            opt_state: optax.OptState, 
+            optimizer: optax.GradientTransformation, 
+            batch: Tuple[np.ndarray, np.ndarray, np.ndarray], 
             loss_fn: Callable
-        ):
+        ) -> Tuple[Dict, optax.OptState, float, Dict]:
         """Training step
         """
         (loss, loss_info), grads = jax.value_and_grad(loss_fn, has_aux=True)(
@@ -385,7 +347,7 @@ class Trainer:
             self, 
             epoch: int, 
             params_dict: Dict,
-            opt_state,
+            opt_state: optax.OptState,
             force_save: bool = False
         ) -> None:
         if epoch % self._checkpoint_freq == 0 or force_save:
@@ -432,7 +394,7 @@ class Trainer:
                 for key in loss_components_train.keys():
                     log_str = f"  {key}"
                     for subkey, value in loss_components_train[key].items():
-                        log_str += f" - {subkey}={value:4.3e}"
+                        log_str += f"\n    {subkey} = {value:4.3e}"
                     self.logger.log(log_str)
 
             if loss_components_valid is not None:
@@ -441,7 +403,7 @@ class Trainer:
                 for key in loss_components_valid.keys():
                     log_str = f"  {key}"
                     for subkey, value in loss_components_valid[key].items():
-                        log_str += f" - {subkey}={value:4.3e}"
+                        log_str += f"\n    {subkey}={value:4.3e}"
                     self.logger.log(log_str)
 
     @partial(jax.jit, static_argnums=(0,3))

@@ -1,9 +1,11 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.time_integration.time_integrator import TimeIntegrator
+
+Array = jax.Array
 
 class Euler(TimeIntegrator):
     """First-order explicit Euler time integration scheme

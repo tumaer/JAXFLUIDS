@@ -4,15 +4,16 @@ from typing import Tuple, TYPE_CHECKING
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.halos.outer.levelset import BoundaryConditionLevelset
 from jaxfluids.domain.domain_information import DomainInformation
-from jaxfluids.levelset.geometry_calculator import compute_cut_cell_mask
-from jaxfluids.levelset.helper_functions import linear_filtering
+from jaxfluids.levelset.geometry.mask_functions import compute_cut_cell_mask_sign_change_based
+from jaxfluids.math.filter.linear_averaging import linear_averaging
 from jaxfluids.config import precision
 if TYPE_CHECKING:
     from jaxfluids.data_types.numerical_setup.levelset import LevelsetReinitializationSetup, NarrowBandSetup
+
+Array = jax.Array
 
 class LevelsetReinitializer(ABC):
     """Abstract class for levelset reinitialization.
@@ -54,9 +55,7 @@ class LevelsetReinitializer(ABC):
             self,
             levelset: Array
             ) -> Tuple[Array, Array]:
-        """Computes a mask indicating where to reintialize.
-        User can specify domain, halos, cut cells and 
-        and inactive reinitialization bandwidth.
+        """_summary_
 
         :param levelset: _description_
         :type levelset: Array
@@ -64,44 +63,23 @@ class LevelsetReinitializer(ABC):
         :rtype: Tuple[Array, Array]
         """
 
-        # DOMAIN INFORMATION
-        slice_cons_to_geometry = self.domain_information.domain_slices_conservatives_to_geometry
-        slice_geometry = self.domain_information.domain_slices_geometry
         slice_conservatives = self.domain_information.domain_slices_conservatives
         nh_conservatives = self.domain_information.nh_conservatives
         smallest_cell_size = self.domain_information.smallest_cell_size
 
-        is_domain = self.reinitialization_setup.is_domain
-        is_halos = self.reinitialization_setup.is_halos
         is_cut_cell = self.reinitialization_setup.is_cut_cell
         inactive_bandwidth = self.narrowband_setup.inactive_reinitialization_bandwidth
 
+        mask_reinitialize = jnp.ones_like(levelset[slice_conservatives], dtype=jnp.uint32)
+
         if not is_cut_cell:
-            mask_cut_cells = compute_cut_cell_mask(levelset, nh_conservatives)
+            mask_cut_cells = compute_cut_cell_mask_sign_change_based(levelset, nh_conservatives)
             inverse_mask_cut_cells = 1 - mask_cut_cells
+            mask_reinitialize *= inverse_mask_cut_cells
 
         if inactive_bandwidth > 0:
             inverse_inactive_bandwidth_mask = jnp.where(jnp.abs(levelset[slice_conservatives]/smallest_cell_size) <= inactive_bandwidth, 0, 1)
-
-        # REINITIALIZATION MASK
-        if is_halos:
-            levelset_mask = levelset[slice_cons_to_geometry]
-            mask_halos = self.boundary_condition_levelset.get_halo_mask(levelset_mask)
-            mask_domain = jnp.zeros_like(levelset_mask, dtype=jnp.uint32)
-            mask_domain = mask_domain.at[slice_geometry].set(1) if is_domain else mask_domain
-            mask_reinitialize = jnp.maximum(mask_domain, mask_halos)
-            if not is_cut_cell:
-                mask_reinitialize = mask_reinitialize.at[slice_geometry].mul(inverse_mask_cut_cells)
-            if inactive_bandwidth > 0:
-                mask_reinitialize = mask_reinitialize.at[slice_geometry].mul(inverse_inactive_bandwidth_mask)
-
-        else:
-            levelset_mask = levelset[slice_conservatives]
-            mask_reinitialize = jnp.ones_like(levelset_mask, dtype=jnp.uint32) if is_domain else jnp.zeros_like(levelset_mask, dtype=jnp.uint32)
-            if not is_cut_cell:
-                mask_reinitialize *= inverse_mask_cut_cells
-            if inactive_bandwidth > 0:
-                mask_reinitialize *= inverse_inactive_bandwidth_mask
+            mask_reinitialize *= inverse_inactive_bandwidth_mask
 
         return mask_reinitialize
     
@@ -227,7 +205,7 @@ class LevelsetReinitializer(ABC):
         if not include_center_value:
             slice_list = slice_list[1:]
 
-        mask = compute_cut_cell_mask(levelset, nh_offset)
+        mask = compute_cut_cell_mask_sign_change_based(levelset, nh_offset)
         mask = mask[nhx_,nhy_,nhz_]
         mask = jnp.stack([mask, mask])
         for s_ in slice_list:
@@ -236,7 +214,7 @@ class LevelsetReinitializer(ABC):
             conditions = jnp.stack([condition_positive, condition_negative])
             mask *= conditions
         mask = mask.any(axis=0)
-        filtered_levelset = linear_filtering(levelset, nh, include_center_value)
+        filtered_levelset = linear_averaging(levelset, nh, include_center_value)
         levelset = levelset.at[nhx,nhy,nhz].mul(1 - mask)
         levelset = levelset.at[nhx,nhy,nhz].add(filtered_levelset*mask)
         return levelset

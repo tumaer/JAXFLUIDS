@@ -13,13 +13,13 @@ def boundary_layer(
         ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     C = stretching_setup.tanh_value
     cell_face_ids = np.arange(nxi + 1) / nxi
-    cell_faces_xi = (domain_size_xi[1] - domain_size_xi[0]) * np.tanh(C * (cell_face_ids - 1)) / np.tanh(C) + \
+    delta = domain_size_xi[1] - domain_size_xi[0]
+    cell_faces_xi = delta * np.tanh(C * (cell_face_ids - 1)) / np.tanh(C) + \
                     domain_size_xi[1]
     cell_faces_xi[0] = domain_size_xi[0]
     cell_faces_xi[-1] = domain_size_xi[-1]
     cell_centers_xi = 0.5 * (cell_faces_xi[1:] + cell_faces_xi[:-1])
     cell_sizes_xi = cell_faces_xi[1:] - cell_faces_xi[:-1]
-    cell_sizes_xi = cell_sizes_xi
 
     shape = np.roll(np.s_[-1,1,1], axis)
     cell_centers_xi = cell_centers_xi.reshape(shape)

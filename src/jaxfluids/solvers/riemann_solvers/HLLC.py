@@ -2,12 +2,13 @@ from typing import Callable, Tuple
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.solvers.riemann_solvers.riemann_solver import RiemannSolver
 from jaxfluids.solvers.riemann_solvers.signal_speeds import compute_sstar
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.equation_manager import EquationManager
+
+Array = jax.Array
 
 class HLLC(RiemannSolver):
     """HLLC Riemann Solver
@@ -15,7 +16,9 @@ class HLLC(RiemannSolver):
 
     Supports:
     1) Single-phase / Two-phase level-set
+    2) 4-Equation Diffuse-interface model
     3) 5-Equation Diffuse-interface model
+    4) Multi-component Navier-Stokes
 
     For single-phase or two-phase level-set equations, the standard Riemann
     solver proposed by Toro is used. For diffuse-interface method, the HLLC
@@ -34,6 +37,46 @@ class HLLC(RiemannSolver):
         
         self.s_star = compute_sstar
 
+
+    def _compute_flux_star_K_single_phase(
+            self,
+            primitives_K: Array,
+            conservatives_K: Array,
+            wave_speed_simple_K: Array,
+            wave_speed_contact: Array,
+            axis: int,
+            left_right_id: str
+        ) -> Array:
+
+        # Toro 10.73
+        pre_factor_K = (wave_speed_simple_K - primitives_K[self.ids_velocity[axis]]) / (wave_speed_simple_K - wave_speed_contact) * primitives_K[self.ids_mass]
+
+        u_star_K = [
+            pre_factor_K,
+            pre_factor_K,
+            pre_factor_K,
+            pre_factor_K,
+            pre_factor_K * (conservatives_K[self.ids_energy] / conservatives_K[self.ids_mass] + (wave_speed_contact - primitives_K[self.ids_velocity[axis]]) * (wave_speed_contact + primitives_K[self.ids_energy] / primitives_K[self.ids_mass] / (wave_speed_simple_K - primitives_K[self.ids_velocity[axis]]) )) 
+        ]
+        u_star_K[self.ids_velocity[axis]] *= wave_speed_contact
+        u_star_K[self.velocity_minor[axis][0]] *= primitives_K[self.velocity_minor[axis][0]]
+        u_star_K[self.velocity_minor[axis][1]] *= primitives_K[self.velocity_minor[axis][1]]
+        u_star_K = jnp.stack(u_star_K)
+
+        fluxes_K = self.equation_manager.get_fluxes_xi(primitives_K, conservatives_K, axis)
+
+        # Toro 10.72
+        if left_right_id == "L":
+            wave_speed_K = jnp.minimum(wave_speed_simple_K, 0.0)
+        elif left_right_id == "R":
+            wave_speed_K = jnp.maximum(wave_speed_simple_K, 0.0)
+        else:
+            raise NotImplementedError
+
+        flux_star_K = fluxes_K + wave_speed_K * (u_star_K - conservatives_K)
+
+        return flux_star_K
+
     def _solve_riemann_problem_xi_single_phase(
             self,
             primitives_L: Array,
@@ -48,69 +91,83 @@ class HLLC(RiemannSolver):
         speed_of_sound_R = self.material_manager.get_speed_of_sound(primitives_R)
 
         wave_speed_simple_L, wave_speed_simple_R = self.signal_speed(
-            primitives_L[self.velocity_ids[axis]],
-            primitives_R[self.velocity_ids[axis]],
+            primitives_L[self.ids_velocity[axis]],
+            primitives_R[self.ids_velocity[axis]],
             speed_of_sound_L,
             speed_of_sound_R,
-            rho_L=primitives_L[self.mass_ids],
-            rho_R=primitives_R[self.mass_ids],
-            p_L=primitives_L[self.energy_ids],
-            p_R=primitives_R[self.energy_ids],
-            gamma=self.material_manager.get_gamma()
-        )
+            rho_L=primitives_L[self.ids_mass],
+            rho_R=primitives_R[self.ids_mass],
+            p_L=primitives_L[self.ids_energy],
+            p_R=primitives_R[self.ids_energy],
+            gamma=self.material_manager.get_gamma())
+
         wave_speed_contact = self.s_star(
-            primitives_L[self.velocity_ids[axis]],
-            primitives_R[self.velocity_ids[axis]],
-            primitives_L[self.energy_ids],
-            primitives_R[self.energy_ids],
-            primitives_L[self.mass_ids],
-            primitives_R[self.mass_ids],
+            primitives_L[self.ids_velocity[axis]],
+            primitives_R[self.ids_velocity[axis]],
+            primitives_L[self.ids_energy],
+            primitives_R[self.ids_energy],
+            primitives_L[self.ids_mass],
+            primitives_R[self.ids_mass],
             wave_speed_simple_L, 
             wave_speed_simple_R)
 
-        wave_speed_L = jnp.minimum(wave_speed_simple_L, 0.0)
-        wave_speed_R = jnp.maximum(wave_speed_simple_R, 0.0)
+        flux_star_L = self._compute_flux_star_K_single_phase(
+            primitives_L, conservatives_L, wave_speed_simple_L,
+            wave_speed_contact, axis, "L")
 
-        # Toro 10.73
-        pre_factor_L = (wave_speed_simple_L - primitives_L[self.velocity_ids[axis]]) / (wave_speed_simple_L - wave_speed_contact) * primitives_L[self.mass_ids]
-        pre_factor_R = (wave_speed_simple_R - primitives_R[self.velocity_ids[axis]]) / (wave_speed_simple_R - wave_speed_contact) * primitives_R[self.mass_ids]
-
-        # TODO check out performance with u_star_L = jnp.expand_dims(prefactor_L) / jnp.ones_like() 
-        # to avoid list + jnp.stack
-        u_star_L = [
-            pre_factor_L,
-            pre_factor_L,
-            pre_factor_L,
-            pre_factor_L,
-            pre_factor_L * (conservatives_L[self.energy_ids] / conservatives_L[self.mass_ids] + (wave_speed_contact - primitives_L[self.velocity_ids[axis]]) * (wave_speed_contact + primitives_L[self.energy_ids] / primitives_L[self.mass_ids] / (wave_speed_simple_L - primitives_L[self.velocity_ids[axis]]) )) ]
-        u_star_L[self.velocity_ids[axis]] *= wave_speed_contact
-        u_star_L[self.velocity_minor[axis][0]] *= primitives_L[self.velocity_minor[axis][0]]
-        u_star_L[self.velocity_minor[axis][1]] *= primitives_L[self.velocity_minor[axis][1]]
-        u_star_L = jnp.stack(u_star_L)
-
-        u_star_R = [
-            pre_factor_R,
-            pre_factor_R,
-            pre_factor_R,
-            pre_factor_R,
-            pre_factor_R * (conservatives_R[self.energy_ids] / conservatives_R[self.mass_ids] + (wave_speed_contact - primitives_R[self.velocity_ids[axis]]) * (wave_speed_contact + primitives_R[self.energy_ids] / primitives_R[self.mass_ids] / (wave_speed_simple_R - primitives_R[self.velocity_ids[axis]]) )) ]
-        u_star_R[self.velocity_ids[axis]] *= wave_speed_contact
-        u_star_R[self.velocity_minor[axis][0]] *= primitives_R[self.velocity_minor[axis][0]]
-        u_star_R[self.velocity_minor[axis][1]] *= primitives_R[self.velocity_minor[axis][1]]
-        u_star_R = jnp.stack(u_star_R)
-
-        # Phyiscal fluxes
-        fluxes_L = self.equation_manager.get_fluxes_xi(primitives_L, conservatives_L, axis)
-        fluxes_R = self.equation_manager.get_fluxes_xi(primitives_R, conservatives_R, axis)
-
-        # Toro 10.72
-        flux_star_L = fluxes_L + wave_speed_L * (u_star_L - conservatives_L)
-        flux_star_R = fluxes_R + wave_speed_R * (u_star_R - conservatives_R)
+        flux_star_R = self._compute_flux_star_K_single_phase(
+            primitives_R, conservatives_R, wave_speed_simple_R,
+            wave_speed_contact, axis, "R")
 
         # Kind of Toro 10.71
         fluxes_xi = 0.5 * (1 + jnp.sign(wave_speed_contact)) * flux_star_L \
                   + 0.5 * (1 - jnp.sign(wave_speed_contact)) * flux_star_R
+
         return fluxes_xi, None, None
+
+
+    def _compute_flux_star_K_5eqm(
+            self,
+            primitives_K: Array,
+            conservatives_K: Array,
+            rho_K: Array,
+            p_K_prime: Array,
+            wave_speed_simple_K: Array,
+            wave_speed_contact: Array,
+            axis: int,
+            left_right_id: str
+        ) -> Array:
+        velocity_major_K = primitives_K[self.ids_velocity[axis]]
+
+        pre_factor_K = (wave_speed_simple_K - velocity_major_K) / (wave_speed_simple_K - wave_speed_contact)
+
+        u_star_K = [
+            *primitives_K[self.s_mass],
+            rho_K,
+            rho_K,
+            rho_K,
+            conservatives_K[self.ids_energy] + (wave_speed_contact - velocity_major_K) * (rho_K * wave_speed_contact + p_K_prime / (wave_speed_simple_K - velocity_major_K)),
+            *primitives_K[self.s_volume_fraction],
+        ]
+        u_star_K[self.ids_velocity[axis]] *= wave_speed_contact
+        u_star_K[self.velocity_minor[axis][0]] *= primitives_K[self.velocity_minor[axis][0]]
+        u_star_K[self.velocity_minor[axis][1]] *= primitives_K[self.velocity_minor[axis][1]]
+        u_star_K = pre_factor_K * jnp.stack(u_star_K)
+
+        # Toro 10.72
+        if left_right_id == "L":
+            wave_speed_K = jnp.minimum(wave_speed_simple_K, 0.0)
+        elif left_right_id == "R":
+            wave_speed_K = jnp.maximum(wave_speed_simple_K, 0.0)
+        else:
+            raise NotImplementedError
+
+        fluxes_K = self.equation_manager.get_fluxes_xi(primitives_K, conservatives_K, axis)
+
+        flux_star_K = fluxes_K + wave_speed_K * (u_star_K - conservatives_K)
+        velocity_star_K = velocity_major_K + wave_speed_K * (pre_factor_K - 1.0)
+
+        return flux_star_K, velocity_star_K
 
     def _solve_riemann_problem_xi_diffuse_five_equation(
             self, 
@@ -129,87 +186,49 @@ class HLLC(RiemannSolver):
         """
         rho_L = self.material_manager.get_density(primitives_L)
         rho_R = self.material_manager.get_density(primitives_R)
-        u_L = primitives_L[self.velocity_ids[axis]]
-        u_R = primitives_R[self.velocity_ids[axis]]
-        p_L = primitives_L[self.energy_ids]
-        p_R = primitives_R[self.energy_ids]
+        u_L = primitives_L[self.ids_velocity[axis]]
+        u_R = primitives_R[self.ids_velocity[axis]]
+        p_L = primitives_L[self.ids_energy]
+        p_R = primitives_R[self.ids_energy]
         
         if self.is_surface_tension:
             kappa = 0.5 * (curvature_L + curvature_R)
-            sigma = self.material_manager.get_sigma()
-            alpha_L = primitives_L[self.vf_ids]
-            alpha_R = primitives_R[self.vf_ids]
-            p_L_prime = p_L - sigma * kappa * alpha_L
-            p_R_prime = p_R - sigma * kappa * alpha_R
+            sigma_kappa = self.material_manager.get_sigma() * kappa
+            alpha_L = primitives_L[self.ids_volume_fraction]
+            alpha_R = primitives_R[self.ids_volume_fraction]
+            p_L_prime = p_L - sigma_kappa * alpha_L
+            p_R_prime = p_R - sigma_kappa * alpha_R
         else:
             p_L_prime = p_L
             p_R_prime = p_R
 
         speed_of_sound_L = self.material_manager.get_speed_of_sound(
-            pressure=p_L, density=rho_L, volume_fractions=primitives_L[self.vf_slices])
+            pressure=p_L, density=rho_L, volume_fractions=primitives_L[self.s_volume_fraction])
         speed_of_sound_R = self.material_manager.get_speed_of_sound(
-            pressure=p_R, density=rho_R, volume_fractions=primitives_R[self.vf_slices])
+            pressure=p_R, density=rho_R, volume_fractions=primitives_R[self.s_volume_fraction])
     
         wave_speed_simple_L, wave_speed_simple_R = self.signal_speed(
-            u_L, u_R,
-            speed_of_sound_L, speed_of_sound_R,
-            rho_L=rho_L, rho_R=rho_R,
-            p_L=p_L, p_R=p_R,
+            u_L, u_R, speed_of_sound_L, speed_of_sound_R,
+            rho_L=rho_L, rho_R=rho_R, p_L=p_L, p_R=p_R,
             gamma=None)
         
         wave_speed_contact = self.s_star(
-            u_L, u_R,
-            p_L_prime, p_R_prime,
-            rho_L, rho_R,
-            wave_speed_simple_L, wave_speed_simple_R,)
+            u_L, u_R, p_L_prime, p_R_prime, rho_L, rho_R, 
+            wave_speed_simple_L, wave_speed_simple_R)
 
-        wave_speed_L = jnp.minimum(wave_speed_simple_L, 0.0)
-        wave_speed_R = jnp.maximum(wave_speed_simple_R, 0.0)
-
-        # Toro 10.73
-        pre_factor_L = (wave_speed_simple_L - u_L) / (wave_speed_simple_L - wave_speed_contact) 
-        pre_factor_R = (wave_speed_simple_R - u_R) / (wave_speed_simple_R - wave_speed_contact)
-
-        u_star_L = [
-            *primitives_L[self.mass_slices],
-            rho_L,
-            rho_L,
-            rho_L,
-            conservatives_L[self.energy_ids] + (wave_speed_contact - u_L) * (rho_L * wave_speed_contact + p_L_prime / (wave_speed_simple_L - u_L) ),
-            *primitives_L[self.vf_slices],
-        ]
-        u_star_L[self.velocity_ids[axis]] *= wave_speed_contact
-        u_star_L[self.velocity_minor[axis][0]] *= primitives_L[self.velocity_minor[axis][0]]
-        u_star_L[self.velocity_minor[axis][1]] *= primitives_L[self.velocity_minor[axis][1]]
-        u_star_L = pre_factor_L * jnp.stack(u_star_L)
-
-        u_star_R = [
-            *primitives_R[self.mass_slices],
-            rho_R,
-            rho_R,
-            rho_R,
-            conservatives_R[self.energy_ids] + (wave_speed_contact - u_R) * (rho_R * wave_speed_contact + p_R_prime / (wave_speed_simple_R - u_R) ),
-            *primitives_R[self.vf_slices],
-        ]
-        u_star_R[self.velocity_ids[axis]] *= wave_speed_contact
-        u_star_R[self.velocity_minor[axis][0]] *= primitives_R[self.velocity_minor[axis][0]]
-        u_star_R[self.velocity_minor[axis][1]] *= primitives_R[self.velocity_minor[axis][1]]
-        u_star_R = pre_factor_R * jnp.stack(u_star_R)
-
-        # Physical fluxes
-        fluxes_L = self.equation_manager.get_fluxes_xi(primitives_L, conservatives_L, axis)
-        fluxes_R = self.equation_manager.get_fluxes_xi(primitives_R, conservatives_R, axis)
-
-        # Toro 10.72
-        flux_star_L = fluxes_L + wave_speed_L * (u_star_L - conservatives_L)
-        flux_star_R = fluxes_R + wave_speed_R * (u_star_R - conservatives_R)
-
+        flux_star_L, velocity_star_L = self._compute_flux_star_K_5eqm(
+            primitives_L, conservatives_L, rho_L, p_L_prime,
+            wave_speed_simple_L, wave_speed_contact, axis, "L")
+        flux_star_R, velocity_star_R = self._compute_flux_star_K_5eqm(
+            primitives_R, conservatives_R, rho_R, p_R_prime,
+            wave_speed_simple_R, wave_speed_contact, axis, "R")
+        
         # Kind of Toro 10.71
         fluxes_xi = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * flux_star_L \
                   + 0.5 * (1.0 - jnp.sign(wave_speed_contact)) * flux_star_R
 
-        u_hat = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * (u_L + wave_speed_L * (pre_factor_L - 1.0)) \
-              + 0.5 * (1.0 - jnp.sign(wave_speed_contact)) * (u_R + wave_speed_R * (pre_factor_R - 1.0))
+        u_hat = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * velocity_star_L \
+              + 0.5 * (1.0 - jnp.sign(wave_speed_contact)) * velocity_star_R
         
         if self.is_surface_tension:
             alpha_hat = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * alpha_L \
@@ -225,3 +244,110 @@ class HLLC(RiemannSolver):
         # numerical_dissipation = jnp.abs(0.5 * numerical_dissipation)
 
         return fluxes_xi, u_hat, alpha_hat
+
+
+    def _compute_flux_star_K_4eqm(
+            self,
+            primitives_K: Array,
+            conservatives_K: Array,
+            rho_K: Array,
+            p_K_prime: Array,
+            wave_speed_simple_K: Array,
+            wave_speed_contact: Array,
+            axis: int,
+            left_right_id: str
+        ) -> Tuple[Array, Array]:
+        velocity_major_K = primitives_K[self.ids_velocity[axis]]
+
+        pre_factor_K = (wave_speed_simple_K - velocity_major_K) / (wave_speed_simple_K - wave_speed_contact) 
+
+        u_star_K = [
+            *primitives_K[self.s_mass],
+            rho_K,
+            rho_K,
+            rho_K,
+            conservatives_K[self.ids_energy] + (wave_speed_contact - velocity_major_K) * (rho_K * wave_speed_contact + p_K_prime / (wave_speed_simple_K - velocity_major_K) ),
+        ]
+        u_star_K[self.ids_velocity[axis]] *= wave_speed_contact
+        u_star_K[self.velocity_minor[axis][0]] *= primitives_K[self.velocity_minor[axis][0]]
+        u_star_K[self.velocity_minor[axis][1]] *= primitives_K[self.velocity_minor[axis][1]]
+        u_star_K = pre_factor_K * jnp.stack(u_star_K)
+
+        if left_right_id == "L":
+            wave_speed_K = jnp.minimum(wave_speed_simple_K, 0.0)
+        elif left_right_id == "R":
+            wave_speed_K = jnp.maximum(wave_speed_simple_K, 0.0)
+        else:
+            raise NotImplementedError
+
+        fluxes_K = self.equation_manager.get_fluxes_xi(primitives_K, conservatives_K, axis)
+
+        flux_star_K = fluxes_K + wave_speed_K * (u_star_K - conservatives_K)
+        velocity_star_K = velocity_major_K + wave_speed_K * (pre_factor_K - 1.0)
+
+        return flux_star_K, velocity_star_K
+
+    def _solve_riemann_problem_xi_diffuse_four_equation(
+            self, 
+            primitives_L: Array, 
+            primitives_R: Array, 
+            conservatives_L: Array, 
+            conservatives_R: Array, 
+            axis: int, 
+            curvature_L: Array,
+            curvature_R: Array,
+            **kwargs
+            ) -> Tuple[Array, Array, Array]:
+        """
+        HLLC approximate solution of the Riemann problem for the diffuse-interface model.
+        Following Coralic & Colonius.
+        """
+        rho_L = self.material_manager.get_density(primitives_L)
+        rho_R = self.material_manager.get_density(primitives_R)
+        u_L = primitives_L[self.ids_velocity[axis]]
+        u_R = primitives_R[self.ids_velocity[axis]]
+        p_L = primitives_L[self.ids_energy]
+        p_R = primitives_R[self.ids_energy]
+        
+        if self.is_surface_tension:
+            #TODO 4EQM
+            raise NotImplementedError
+            kappa = 0.5 * (curvature_L + curvature_R)
+            sigma = self.material_manager.get_sigma()
+            alpha_L = primitives_L[self.ids_volume_fraction]
+            alpha_R = primitives_R[self.ids_volume_fraction]
+            p_L_prime = p_L - sigma * kappa * alpha_L
+            p_R_prime = p_R - sigma * kappa * alpha_R
+        else:
+            p_L_prime = p_L
+            p_R_prime = p_R
+
+        speed_of_sound_L = self.material_manager.get_speed_of_sound(
+            pressure=p_L, partial_densities=primitives_L[self.s_mass])
+        speed_of_sound_R = self.material_manager.get_speed_of_sound(
+            pressure=p_R, partial_densities=primitives_R[self.s_mass])
+    
+        wave_speed_simple_L, wave_speed_simple_R = self.signal_speed(
+            u_L, u_R, speed_of_sound_L, speed_of_sound_R,
+            rho_L=rho_L, rho_R=rho_R, p_L=p_L, p_R=p_R,
+            gamma=None)
+        
+        wave_speed_contact = self.s_star(
+            u_L, u_R, p_L_prime, p_R_prime, rho_L, rho_R, 
+            wave_speed_simple_L, wave_speed_simple_R,)
+
+        flux_star_L, velocity_star_L = self._compute_flux_star_K_5eqm(
+            primitives_L, conservatives_L, rho_L, p_L_prime,
+            wave_speed_simple_L, wave_speed_contact, axis, "L")
+        flux_star_R, velocity_star_R = self._compute_flux_star_K_5eqm(
+            primitives_R, conservatives_R, rho_R, p_R_prime,
+            wave_speed_simple_R, wave_speed_contact, axis, "R")
+
+        # Kind of Toro 10.71
+        fluxes_xi = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * flux_star_L \
+                  + 0.5 * (1.0 - jnp.sign(wave_speed_contact)) * flux_star_R
+
+        u_hat = 0.5 * (1.0 + jnp.sign(wave_speed_contact)) * velocity_star_L \
+              + 0.5 * (1.0 - jnp.sign(wave_speed_contact)) * velocity_star_R
+
+        return fluxes_xi, u_hat, None

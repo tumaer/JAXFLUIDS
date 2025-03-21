@@ -1,7 +1,6 @@
 from typing import NamedTuple, Tuple
 
 import jax.numpy as jnp
-from jax import Array
 
 # DOMAIN & MESH
 class DomainDecompositionSetup(NamedTuple):

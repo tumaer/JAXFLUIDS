@@ -7,10 +7,12 @@
         },
         "convective_fluxes": {
             "convective_solver": "GODUNOV",
-            "riemann_solver": "HLLC",
-            "signal_speed": "EINFELDT",
-            "reconstruction_stencil": "WENO5-JS",
-            "reconstruction_variable": "PRIMITIVE"
+            "godunov": {
+                "riemann_solver": "HLLC",
+                "signal_speed": "EINFELDT",
+                "reconstruction_stencil": "WENO5-JS",
+                "reconstruction_variable": "PRIMITIVE"
+            }
         },
         "dissipative_fluxes": {
             "reconstruction_stencil": "CENTRAL4",
@@ -25,11 +27,12 @@
         "is_volume_force": false
     },
     "precision": {
-        "is_double_precision_compute": false,
-        "is_double_precision_output": false
+        "is_double_precision_compute": true,
+        "is_double_precision_output": true
     },
     "output":  {
-        "logging_frequency": 1000,
-        "derivative_stencil": "CENTRAL4"
+        "logging": {
+            "frequency": 100
+        }
     }
 }

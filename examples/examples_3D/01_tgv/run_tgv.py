@@ -13,19 +13,22 @@ initialization_manager = InitializationManager(input_manager)
 sim_manager = SimulationManager(input_manager)
 
 # RUN SIMULATION
-simulation_buffers, time_control_variables, \
-forcing_parameters = initialization_manager.initialization()
-sim_manager.simulate(simulation_buffers, time_control_variables)
+jxf_buffers = initialization_manager.initialization()
+sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
 quantities = ["velocity"]
-cell_centers, cell_sizes, times, data_dict = load_data(path, quantities)
+jxf_data = load_data(path, quantities)
+
+cell_centers = jxf_data.cell_centers
+data = jxf_data.data
+times = jxf_data.times
 
 plot_dict = {
-    "u": data_dict["velocity"][:,0],
-    "v": data_dict["velocity"][:,1],
-    "w": data_dict["velocity"][:,2],
+    "u": data["velocity"][:,0],
+    "v": data["velocity"][:,1],
+    "w": data["velocity"][:,2],
 }
 
 # PLOT
@@ -36,7 +39,7 @@ create_2D_animation(plot_dict, cell_centers, times, nrows_ncols=nrows_ncols, pla
                     save_png="images", fig_args={"figsize": (10,3)}, dpi=100)
 
 data_ref = np.loadtxt("tgv_reference_data.txt")
-TKE = 0.5 * np.mean(np.sum(data_dict["velocity"]**2, axis=1), axis=(-1,-2,-3))
+TKE = 0.5 * np.mean(np.sum(data["velocity"]**2, axis=1), axis=(-1,-2,-3))
 
 fig, ax = plt.subplots()
 ax.plot(times[:-1], -(TKE[1:]-TKE[:-1])/(times[1:]-times[:-1]), label="present")

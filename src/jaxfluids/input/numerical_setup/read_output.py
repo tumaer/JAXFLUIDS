@@ -65,13 +65,18 @@ def read_output_setup(
     is_time = get_setup_value(
         output_dict, "is_time", path, bool,
         is_optional=True, default_value=True)
+    
+    path = get_path_to_key(basepath, "is_sync_hosts")
+    is_sync_hosts = get_setup_value(
+        output_dict, "is_sync_hosts", path, bool,
+        is_optional=True, default_value=False)
 
     logging_setup = read_logging(output_dict)
 
     output_setup = OutputSetup(
         is_active, is_domain, is_wall_clock_times,
         derivative_stencil, is_xdmf, is_parallel_filesystem,
-        is_metadata, is_time, logging_setup)
+        is_metadata, is_time, is_sync_hosts, logging_setup)
 
     return output_setup
 
@@ -112,7 +117,8 @@ def read_logging(output_dict: Dict) -> LoggingSetup:
     
     logging_setup = LoggingSetup(
         level, frequency, is_positivity,
-        is_levelset_residuals, is_only_last_stage
+        is_levelset_residuals,
+        is_only_last_stage
     )
 
     return logging_setup

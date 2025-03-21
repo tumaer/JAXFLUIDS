@@ -2,17 +2,16 @@ import collections
 from typing import Dict, NamedTuple, Tuple
 
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.data_types.case_setup import GetPrimitivesCallable, DomainSetup
 from jaxfluids.data_types.case_setup.initial_conditions import *
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.equation_information import EquationInformation
-from jaxfluids.input.setup_reader import SetupReader, get_path_to_key, create_wrapper_for_callable
+from jaxfluids.input.setup_reader import SetupReader, get_path_to_key, create_wrapper_for_callable, assert_case
 from jaxfluids.input.case_setup import get_setup_value, loop_fields
 from jaxfluids.unit_handler import UnitHandler
-from jaxfluids.turb import TUPLE_HIT_ENERGY_SPECTRUM, TUPLE_HIT_IC_TYPE, \
+from jaxfluids.turbulence import TUPLE_HIT_ENERGY_SPECTRUM, TUPLE_HIT_IC_TYPE, \
     TUPLE_TURB_INIT_CONDITIONS, TUPLE_VELOCITY_PROFILES_CHANNEL
 
 def read_initial_condition_setup(
@@ -43,7 +42,20 @@ def read_initial_condition_setup(
         initial_condition_turbulent = None
         is_turb_init = False
 
-    if not is_turb_init:
+    if "cavitation" in initial_condition_case_setup.keys():
+        initial_condition_cavitation = read_cavitation(
+            initial_condition_case_setup, unit_handler)
+        is_cavitation_init = True
+    else:
+        initial_condition_cavitation = None
+        is_cavitation_init = False
+
+    assert_str = (
+        "Turbulent and cavitation initial condition"
+        "can not both be active.")
+    assert_case(not is_turb_init or not is_cavitation_init, assert_str)
+
+    if not is_turb_init and not is_cavitation_init:
         initial_condition_primitives = read_primitives(
             initial_condition_case_setup, equation_information,
             domain_setup, unit_handler)
@@ -57,20 +69,24 @@ def read_initial_condition_setup(
     else:
         initial_condition_levelset = None
 
-    # SOLID VELOCITY
-    if equation_information.levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-        initial_condition_solid_velocity = read_solid_velocity(
+    # SOLIDS
+    solid_coupling = equation_information.solid_coupling
+    if solid_coupling.thermal == "TWO-WAY":
+        raise NotImplementedError
+    if any((solid_coupling.dynamic == "TWO-WAY",)):
+        initial_condition_solids = read_solids(
             initial_condition_case_setup, equation_information, domain_setup,
             unit_handler)
     else:
-        initial_condition_solid_velocity = None
+        initial_condition_solids = None
 
     initial_condition_setup = InitialConditionSetup(
         initial_condition_primitives,
         initial_condition_levelset,
-        initial_condition_solid_velocity,
+        initial_condition_solids,
         initial_condition_turbulent,
-        is_turb_init)
+        initial_condition_cavitation,
+        is_turb_init, is_cavitation_init)
 
     return initial_condition_setup
 
@@ -264,6 +280,77 @@ def read_turbulent(
 
     return initial_condition_turbulent
 
+def read_cavitation(
+        initial_condition_case_setup: Dict,
+        unit_handler: UnitHandler
+        ) -> InitialConditionCavitation:
+
+    path_to_cavitation = get_path_to_key("initial_condition", "cavitation")
+
+    cavitation_case_setup: Dict = get_setup_value(
+        initial_condition_case_setup, "cavitation", path_to_cavitation, dict,
+        is_optional=True)
+
+    path = get_path_to_key(path_to_cavitation, "case")
+    case = get_setup_value(
+        cavitation_case_setup, "case", path, str,
+        is_optional=False)
+
+    path_to_parameters = get_path_to_key(path_to_cavitation, "parameters")
+    parameters_case_setup = get_setup_value(
+        cavitation_case_setup, "parameters", path_to_parameters, dict,
+        is_optional=False)
+
+    parameters_dict = {}
+    if case in ("SINGLE_BUBBLE_2D", "SINGLE_BUBBLE_3D"):
+        path = get_path_to_key(path_to_parameters, "bubble_radius")
+        value = get_setup_value(
+            parameters_case_setup, "bubble_radius", path, float,
+            is_optional=False, numerical_value_condition=(">", 0.0))
+        parameters_dict["bubble_radius"] = unit_handler.non_dimensionalize(value, "length")
+        
+        for key in ("x", "y", "z"):
+            is_optional = key == "z" and case.endswith("2D")
+            key = "bubble_origin_" + key
+            path = get_path_to_key(path_to_parameters, key)
+            value = get_setup_value(
+                parameters_case_setup, key, path, float,
+                is_optional=is_optional, default_value=0.0)
+            parameters_dict[key] = unit_handler.non_dimensionalize(value, "length")
+
+        path = get_path_to_key(path_to_parameters, "vapor_volume_fraction")
+        value = get_setup_value(
+            parameters_case_setup, "vapor_volume_fraction", path, float,
+            is_optional=False, numerical_value_condition=(">", 0.0))
+        parameters_dict["vapor_volume_fraction"] = value
+    
+        path = get_path_to_key(path_to_parameters, "driving_pressure")
+        value = get_setup_value(
+            parameters_case_setup, "driving_pressure", path, float,
+            is_optional=False, numerical_value_condition=(">", 0.0))
+        parameters_dict["driving_pressure"] = unit_handler.non_dimensionalize(value, "pressure")
+        
+        path = get_path_to_key(path_to_parameters, "is_one_r")
+        value = get_setup_value(
+            parameters_case_setup, "is_one_r", path, bool,
+            is_optional=False)
+        parameters_dict["is_one_r"] = value
+        
+        path = get_path_to_key(path_to_parameters, "is_barotropic")
+        value = get_setup_value(
+            parameters_case_setup, "is_barotropic", path, bool,
+            is_optional=False)
+        parameters_dict["is_barotropic"] = value    
+        
+    else:
+        raise NotImplementedError
+
+    parameters = SingleBubbleParameters(**parameters_dict)
+    initial_condition_cavitation = InitialConditionCavitation(
+        case, parameters)
+
+    return initial_condition_cavitation
+
 def read_primitives(
         initial_condition_case_setup: Dict,
         equation_information: EquationInformation,
@@ -347,13 +434,12 @@ def read_primitives(
                 initial_condition_primitives_case_setup,
                 equation_information.primes_tuple_, path_to_primes)
         else:
-            assert_string = (
-                "Consistency error in case setup file. "
+            assert_str = (
                 "Reading initial conditions for diffuse interface method "
                 "requires initialization via (alpharho_i, u, p, alpha_i) "
                 "or (rho_i, u, p, alpha_i). "
                 f"Neither was found valid, instead {init_cond_primitive_keys} was found.")
-            assert False, assert_string 
+            assert_case(False, assert_str)
 
     else:
         initial_condition_primitives = _read_primititves_callables(
@@ -405,7 +491,13 @@ def read_levelset(
                 is_optional=False)
             ParametersTuple = GetInitialLevelsetBlockParametersTuple(shape)
             parameters = loop_fields(ParametersTuple, parameters_case_setup,
-                                     path, unit_exceptions={"angle_of_attack": "None"})
+                                     path, unit="length", unit_handler=unit_handler,
+                                     unit_exceptions={"angle_of_attack": "None",
+                                                      "deg": "None",
+                                                      "deg_xz": "None",
+                                                      "deg_xz": "None",
+                                                      "deg_yz": "None",
+                                                      "N_points": "None"})
             path = get_path_to_key(path_to_levelset, "bounding_domain")
 
             bounding_domain_case_setup = get_setup_value(
@@ -413,8 +505,8 @@ def read_levelset(
                 is_optional=False)
             bounding_domain_callable = create_wrapper_for_callable(
                 bounding_domain_case_setup, input_argument_units,
-                input_argument_labels, None, path, 
-                perform_nondim=False, unit_handler=unit_handler)
+                input_argument_labels, "None", path, 
+                perform_nondim=True, unit_handler=unit_handler)
             
             levelset_block = InitialLevelsetBlock(
                 shape, parameters, bounding_domain_callable)
@@ -447,11 +539,12 @@ def read_levelset(
 
     return initial_condition_levelset
     
-def read_solid_velocity(
+def read_solids(
         initial_condition_case_setup: Dict,
         equation_information: EquationInformation,
         domain_setup: DomainSetup,
-        unit_handler: UnitHandler) -> VelocityCallable:
+        unit_handler: UnitHandler
+        ) -> InitialConditionSolids:
 
     active_axes = domain_setup.active_axes
     dim = domain_setup.dim
@@ -459,21 +552,40 @@ def read_solid_velocity(
     input_argument_labels = tuple(active_axes)
     input_argument_units = tuple(["length"] * dim)
 
-    path_solid_velocity = get_path_to_key("initial_condition", "solid_velocity")
-    solid_velocity_case_setup = get_setup_value(
-        initial_condition_case_setup, "solid_velocity",
-        path_solid_velocity, dict, is_optional=False)
+    solid_coupling = equation_information.solid_coupling
 
-    solid_velocity_callables_dict = {}
-    for velocity_xi in ["u","v","w"]:
-        path = get_path_to_key(path_solid_velocity, velocity_xi)
-        wall_velocity_xi_case_setup = get_setup_value(
-            solid_velocity_case_setup, velocity_xi, path, (float, str),
-            is_optional=False)
-        velocity_wrapper = create_wrapper_for_callable(
-            wall_velocity_xi_case_setup, input_argument_units,
-            input_argument_labels, "velocity", path,
-            perform_nondim=True, unit_handler=unit_handler)
-        solid_velocity_callables_dict[velocity_xi] = velocity_wrapper
-    solid_velocity_callable = VelocityCallable(**solid_velocity_callables_dict)
-    return solid_velocity_callable
+    path_solids = get_path_to_key("initial_condition", "solids")
+    solids_case_setup = get_setup_value(
+        initial_condition_case_setup, "solids",
+        path_solids, dict, is_optional=False)
+
+    if solid_coupling.dynamic == "TWO-WAY":
+        path_velocity = get_path_to_key(path_solids, "velocity")
+        velocity_case_setup = get_setup_value(
+            solids_case_setup, "velocity",
+            path_velocity, dict, is_optional=False)
+        
+        solid_velocity_callables_dict = {}
+        for velocity_xi in VelocityCallable._fields:
+            path = get_path_to_key(path_solids, velocity_xi)
+            wall_velocity_xi_case_setup = get_setup_value(
+                velocity_case_setup, velocity_xi, path, (float, str),
+                is_optional=False)
+            velocity_wrapper = create_wrapper_for_callable(
+                wall_velocity_xi_case_setup, input_argument_units,
+                input_argument_labels, "velocity", path,
+                perform_nondim=True, unit_handler=unit_handler)
+            solid_velocity_callables_dict[velocity_xi] = velocity_wrapper
+        velocity_callable = VelocityCallable(**solid_velocity_callables_dict)
+    else:
+        velocity_callable = None
+    
+    if solid_coupling.thermal == "TWO-WAY":
+        raise NotImplementedError
+    else:
+        temperature_callable = None
+    
+    initial_condition_solids = InitialConditionSolids(
+        velocity_callable, temperature_callable)
+    
+    return initial_condition_solids

@@ -24,7 +24,7 @@ def save_dict_to_grp(grp: h5py.Dataset, my_dict: Dict) -> None:
         else:
             grp.create_dataset(name=key, data=my_dict[key])
 
-def load_dict_from_h5(load_path: str) -> Dict:
+def load_dict_from_h5(load_path: str, verbose: bool = True) -> Dict:
     """Load the h5file from load_path and stores 
     the contents in a dictionary which is return.
 
@@ -36,6 +36,8 @@ def load_dict_from_h5(load_path: str) -> Dict:
     my_dict = {}
     if not load_path.endswith(".h5"):
         load_path = load_path + ".h5"
+    if verbose:
+        print(f"Loading time dict {load_path}")
     with h5py.File(load_path, "r") as h5file:
         load_from_grp_to_dict(h5file, my_dict)
     return my_dict

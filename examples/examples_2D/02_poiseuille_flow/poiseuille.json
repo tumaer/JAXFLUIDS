@@ -1,9 +1,9 @@
 {
     "general": {
         "case_name": "poiseuille",
-        "end_time": 10.0,
+        "end_time": 3.0,
         "save_path": "./results",
-        "save_dt": 0.5
+        "save_dt": 0.05
     },
     "domain": {
         "x": {
@@ -17,6 +17,11 @@
         "z": {
             "cells": 1,
             "range": [0.0, 1.0]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
         }
     },
     "boundary_conditions": {
@@ -48,11 +53,6 @@
         "w": 0.0,
         "p": 1.0
     },
-    "forcings": {
-        "mass_flow_direction": "x",
-        "mass_flow_target": 1.0,
-        "temperature_target": 1.0
-    },
     "material_properties": {
         "equation_of_state": {
             "model": "IdealGas",
@@ -79,5 +79,14 @@
     },
     "output": {
         "primitives": ["density", "velocity", "pressure", "temperature"]
+    },
+    "forcings": {
+        "mass_flow": {
+            "direction": "x",
+            "target_value": 0.05
+        },
+        "temperature": {
+            "target_value": 1.0
+        }
     }
 }

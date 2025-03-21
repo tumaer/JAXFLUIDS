@@ -1,7 +1,5 @@
 from typing import NamedTuple, Tuple
 
-from jaxfluids.stencils.spatial_derivative import SpatialDerivative
-
 class Epsilons(NamedTuple):
     density: float
     pressure: float
@@ -17,3 +15,4 @@ class PrecisionSetup(NamedTuple):
     interpolation_limiter_epsilons: Epsilons
     flux_limiter_epsilons: Epsilons
     thinc_limiter_epsilons: Epsilons
+    is_consistent_summation: bool

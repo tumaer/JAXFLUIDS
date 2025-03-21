@@ -2,24 +2,26 @@ from typing import Dict, Tuple, Union
 
 import jax
 import jax.numpy as jnp
-from jax import Array
-import jax
 
 from jaxfluids.config import precision
 from jaxfluids.data_types.numerical_setup import NumericalSetup
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 from jaxfluids.diffuse_interface.diffuse_interface_handler import DiffuseInterfaceHandler
 from jaxfluids.domain.domain_information import DomainInformation 
 from jaxfluids.equation_manager import EquationManager
 from jaxfluids.materials.material_manager import MaterialManager
 
 from jaxfluids.data_types.numerical_setup import NumericalSetup
-from jaxfluids.data_types.numerical_setup.conservatives import ConvectiveFluxesSetup, PositivitySetup
+from jaxfluids.data_types.numerical_setup.conservatives import (
+    ConvectiveFluxesSetup, PositivitySetup, HighOrderGodunovSetup)
 from jaxfluids.data_types.numerical_setup.diffuse_interface import DiffuseInterfaceSetup, THINCSetup
 
 from jaxfluids.solvers.convective_fluxes.high_order_godunov import HighOrderGodunov
 from jaxfluids.solvers.riemann_solvers import HLLC, signal_speed_Einfeldt
-from jaxfluids.stencils import WENO1
+from jaxfluids.stencils.reconstruction.shock_capturing.weno import WENO1
+from jaxfluids.stencils.reconstruction.central.central_2 import CentralSecondOrderReconstruction
 
+Array = jax.Array
 
 class PositivityLimiterFlux:
     """The PositivityLimiterFlux class implementes functionality
@@ -30,8 +32,6 @@ class PositivityLimiterFlux:
     place for all types of equations, only check_admissability() then
     distinguishes between equation types
 
-    #TODO 'invert' definition of theta, such that counter = sum(theta) 
-    and not sum(1 - theta)
     """
 
     def __init__(
@@ -51,27 +51,30 @@ class PositivityLimiterFlux:
         
         positivity_setup = numerical_setup.conservatives.positivity
         self.positivity_flux_limiter = positivity_setup.flux_limiter
+        self.partition_type = positivity_setup.flux_partition
         
         # SETTING UP HIGH-ORDER GODUNOV FLUX SOLVER WITH WENO1
-        _convective_fluxes_setup = ConvectiveFluxesSetup(
-            convective_solver=HighOrderGodunov,
+        _godunov_setup = HighOrderGodunovSetup(
             riemann_solver=HLLC,
             signal_speed=signal_speed_Einfeldt,
             reconstruction_stencil=WENO1,
             split_reconstruction=None,
-            flux_splitting=None,
-            reconstruction_variable="PRIMITIVE", 
+            reconstruction_variable="PRIMITIVE",
             frozen_state=None,
-            iles_setup=None,
-            catum_setup=None)
+            catum_setup=None
+        )
+        _convective_fluxes_setup = ConvectiveFluxesSetup(
+            convective_solver=HighOrderGodunov,
+            godunov=_godunov_setup)
 
         _positivity_setup = PositivitySetup(
             flux_limiter=None,
+            flux_partition="UNIFORM",
             is_interpolation_limiter=False,
+            limit_velocity=False,
             is_thinc_interpolation_limiter=False,
             is_volume_fraction_limiter=False,
-            is_acdi_flux_limiter=False,
-            is_logging=False)
+            is_acdi_flux_limiter=False)
         
         _thinc_setup = THINCSetup(
             is_thinc_reconstruction=False,
@@ -96,16 +99,14 @@ class PositivityLimiterFlux:
             positivity_handler=None)
         
         self.equation_type = self.equation_information.equation_type
-        self.partition_type = "UNIFORM"
-
-        self.mass_ids = self.equation_information.mass_ids
-        self.mass_slices = self.equation_information.mass_slices
-        self.vel_ids = self.equation_information.velocity_ids
-        self.vel_slices = self.equation_information.velocity_slices
-        self.energy_ids = self.equation_information.energy_ids
-        self.energy_slices = self.equation_information.energy_slices
-        self.vf_ids = self.equation_information.vf_ids
-        self.vf_slices = self.equation_information.vf_slices
+        self.ids_mass = self.equation_information.ids_mass
+        self.s_mass = self.equation_information.s_mass
+        self.vel_ids = self.equation_information.ids_velocity
+        self.vel_slices = self.equation_information.s_velocity
+        self.ids_energy = self.equation_information.ids_energy
+        self.s_energy = self.equation_information.s_energy
+        self.ids_volume_fraction = self.equation_information.ids_volume_fraction
+        self.s_volume_fraction = self.equation_information.s_volume_fraction
 
         nh_cons = domain_information.nh_conservatives
         self.dim = domain_information.dim
@@ -117,6 +118,10 @@ class PositivityLimiterFlux:
         self.nhx, self.nhy, self.nhz = domain_information.domain_slices_conservatives
         self.nhx_, self.nhy_, self.nhz_ = domain_information.domain_slices_geometry
         self.nhx__, self.nhy__, self.nhz__ = domain_information.domain_slices_conservatives_to_geometry
+
+        self.central_second_order_reconstruction_stencil = CentralSecondOrderReconstruction(
+            self.domain_information.nh_conservatives,
+            self.domain_information.inactive_axes)
 
         # SLICES FOR MINUS, PLUS
         if self.equation_information.levelset_model:
@@ -145,16 +150,16 @@ class PositivityLimiterFlux:
             u_hat_xi: Array,
             alpha_hat_xi: Array,
             primitives: Array,
-            conservatives: Array, 
+            conservatives: Array,
+            temperature: Array,
             levelset: Array,
             volume_fraction: Array, 
             apertures: Array, 
             curvature: Array, 
             physical_timestep_size: float, 
             axis: int, 
-            ml_parameters_dict: Union[Dict, None] = None,
-            ml_networks_dict: Union[Dict, None] = None
-            ) -> Tuple[Array, Array]:
+            ml_setup: MachineLearningSetup = None,
+        ) -> Tuple[Array, Array]:
         """Computes a positivity-preserving flux if the current convective flux 
         violates positivity. Two positivity-preserving methdods are implemented:
 
@@ -181,10 +186,8 @@ class PositivityLimiterFlux:
         :type physical_timestep_size: float
         :param axis: Spatial direction
         :type axis: int
-        :param ml_parameters_dict: Dictionary of ML parameters, defaults to None
-        :type ml_parameters_dict: Union[Dict, None], optional
-        :param ml_networks_dict: Dictionary of ML network architectures, defaults to None
-        :type ml_networks_dict: Union[Dict, None], optional
+        :param ml_setup: Dictionary of ML parameters, defaults to None
+        :type ml_setup: MachineLearningSetup, optional
         :return: Buffer of positivity-preserving flux
         :rtype: Array
         """
@@ -195,7 +198,13 @@ class PositivityLimiterFlux:
 
         one_cell_sizes_halos = self.domain_information.get_device_one_cell_sizes_halos()
         one_cell_sizes_halos_xi = one_cell_sizes_halos[axis]
-        lambda_pos = physical_timestep_size * one_cell_sizes_halos_xi * self.dim
+        one_sigma_xi = self.compute_partition(primitives, one_cell_sizes_halos, axis)
+        lambda_pos = physical_timestep_size * one_cell_sizes_halos_xi * one_sigma_xi
+
+        if self.equation_information.is_compute_temperature:
+            temperature_cf = self.central_second_order_reconstruction_stencil.reconstruct_xi(temperature, axis)
+        else:
+            temperature_cf = None
 
         # POSITIVITY FIX BASED ON HU, ADAMS, SHU
         if self.positivity_flux_limiter == "HAS":
@@ -204,8 +213,8 @@ class PositivityLimiterFlux:
             flux_xi_convective_pos, *_ = \
             self.convective_flux_solver_positive.compute_flux_xi(
                 primitives, conservatives,
-                axis, ml_parameters_dict,
-                ml_networks_dict)
+                axis, ml_setup,
+            )
 
             # FIRST INTEGRATION CHECK - DENSITY
             U_minus = conservatives[slice_minus] + 2 * lambda_pos * flux_xi_convective
@@ -246,16 +255,17 @@ class PositivityLimiterFlux:
             # Evaluate first-order positivity preserving flux
             flux_xi_convective_pos, u_hat_xi_pos, alpha_hat_xi_pos, *_ \
             = self.convective_flux_solver_positive.compute_flux_xi(
-                primitives, conservatives, axis, curvature,
-                ml_parameters_dict, ml_networks_dict)
+                primitives, conservatives, axis,
+                curvature, ml_setup
+            )
 
             if self.equation_type == "TWO-PHASE-LS":
-                # Volume fraction & apertures are stacked such that they have
-                # shape = (2,Nx,Ny,Nz)
+                # NOTE Volume fraction & apertures are stacked 
+                # such that they have shape = (2,Nx,Ny,Nz)
                 volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
                 apertures = apertures[...,self.nhx_,self.nhy_,self.nhz_]
                 apertures = jnp.stack([apertures, 1.0 - apertures], axis=0)
-            elif self.equation_type == "SINGLE-PHASE-SOLID-LS":
+            elif self.equation_information.is_solid_levelset:
                 apertures = apertures[...,self.nhx_,self.nhy_,self.nhz_]
             else:
                 volume_fraction = apertures = None
@@ -320,6 +330,7 @@ class PositivityLimiterFlux:
         one_cell_sizes_halos_xi = one_cell_sizes_halos[axis]
         lambda_pos = physical_timestep_size * one_cell_sizes_halos_xi * self.dim
 
+        # TODO combine 4EQM and 5EQM
         if self.equation_type == "DIFFUSE-INTERFACE-5EQM":
             test_flux = flux_xi_convective - interface_regularization_flux_xi
             
@@ -333,15 +344,15 @@ class PositivityLimiterFlux:
                 axis=axis)
 
             theta = jnp.where(
-                (jnp.minimum(U_minus[self.mass_slices], U_plus[self.mass_slices]) < self.eps.density        ).any(axis=0) |
-                (jnp.minimum(U_minus[self.vf_slices], U_plus[self.vf_slices])     < self.eps.volume_fraction).any(axis=0) |
-                (jnp.maximum(U_minus[self.vf_slices], U_plus[self.vf_slices])     > 1.0 - self.eps.volume_fraction).any(axis=0),
-                0, 1)
+                (jnp.minimum(U_minus[self.s_mass], U_plus[self.s_mass]) < self.eps.density        ).any(axis=0) |
+                (jnp.minimum(U_minus[self.s_volume_fraction], U_plus[self.s_volume_fraction])     < self.eps.volume_fraction).any(axis=0) |
+                (jnp.maximum(U_minus[self.s_volume_fraction], U_plus[self.s_volume_fraction])     > 1.0 - self.eps.volume_fraction).any(axis=0),
+                1, 0)
             
-            positivity_count += jnp.sum(1 - theta)
+            positivity_count += jnp.sum(theta)
         
-            interface_regularization_flux_xi = (1 - theta) * jnp.zeros_like(interface_regularization_flux_xi) \
-                + theta * interface_regularization_flux_xi
+            interface_regularization_flux_xi = theta * jnp.zeros_like(interface_regularization_flux_xi) \
+                + (1 - theta) * interface_regularization_flux_xi
             test_flux = flux_xi_convective - interface_regularization_flux_xi
 
             # CHECK PSEUDO SPEED OF SOUND
@@ -356,31 +367,82 @@ class PositivityLimiterFlux:
             W_minus = self.equation_manager.get_primitives_from_conservatives(U_minus)
             W_plus = self.equation_manager.get_primitives_from_conservatives(U_plus)
 
-            pb_minus = self.material_manager.get_background_pressure(W_minus[self.vf_slices])
-            pb_plus = self.material_manager.get_background_pressure(W_plus[self.vf_slices])
+            pb_minus = self.material_manager.get_background_pressure(W_minus[self.s_volume_fraction])
+            pb_plus = self.material_manager.get_background_pressure(W_plus[self.s_volume_fraction])
 
             # OPTION 1 - CHECK PRESSURE DIRECTLY
             theta = jnp.where(
-                (jnp.minimum(W_minus[self.energy_ids] + pb_minus, W_plus[self.energy_ids] + pb_plus) < self.eps.pressure),
-                0, 1)
+                (jnp.minimum(W_minus[self.ids_energy] + pb_minus, W_plus[self.ids_energy] + pb_plus) < self.eps.pressure),
+                1, 0)
 
             # print("SUM THETA ALPHA/RHOALPHA = {}".format(jnp.sum(1 - theta)))
 
             # OPTION 2 - CHECK VIA INTERNAL ENERGY
             # rho_minus  = self.material_manager.get_density(U_minus)
             # rho_plus   = self.material_manager.get_density(U_plus)
-            # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(W_minus[self.energy_ids], rho=rho_minus, alpha_i=W_minus[self.vf_slices])
-            # rhoe_plus  = rho_plus  * self.material_manager.get_specific_energy(W_plus[self.energy_ids], rho=rho_plus, alpha_i=W_plus[self.vf_slices])
-
+            # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(W_minus[self.ids_energy], rho=rho_minus, alpha_i=W_minus[self.s_volume_fraction])
+            # rhoe_plus  = rho_plus  * self.material_manager.get_specific_energy(W_plus[self.ids_energy], rho=rho_plus, alpha_i=W_plus[self.s_volume_fraction])
             # theta   = jnp.where( 
-            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 0, 1
+            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 1, 0
             # )
 
-            positivity_count += jnp.sum(1 - theta)
+            positivity_count += jnp.sum(theta)
 
             interface_regularization_flux_xi = \
-                (1 - theta) * jnp.zeros_like(interface_regularization_flux_xi) \
-                + theta * interface_regularization_flux_xi
+                theta * jnp.zeros_like(interface_regularization_flux_xi) \
+                + (1 - theta) * interface_regularization_flux_xi
+        
+        elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":            
+            test_flux = flux_xi_convective - interface_regularization_flux_xi
+            
+            # CHECK PARTIAL DENSITIES AND VOLUME FRACTIONS
+            U_minus, U_plus = self.integrate_positivity(
+                conservatives=conservatives,
+                primitives=primitives,
+                lambda_pos=lambda_pos,
+                flux_xi_convective=test_flux,
+                u_hat_xi=u_hat_xi,
+                axis=axis)
+
+            theta = jnp.where(
+                (jnp.minimum(U_minus[self.s_mass], U_plus[self.s_mass]) < self.eps.density).any(axis=0),
+                1, 0)
+            positivity_count += jnp.sum(theta)
+            interface_regularization_flux_xi = theta * jnp.zeros_like(interface_regularization_flux_xi) \
+                + (1 - theta) * interface_regularization_flux_xi
+            test_flux = flux_xi_convective - interface_regularization_flux_xi
+
+            # CHECK PSEUDO SPEED OF SOUND
+            U_minus, U_plus = self.integrate_positivity(
+                conservatives=conservatives,
+                primitives=primitives,
+                lambda_pos=lambda_pos,
+                flux_xi_convective=test_flux,
+                u_hat_xi=u_hat_xi,
+                axis=axis)
+
+            W_minus = self.equation_manager.get_primitives_from_conservatives(U_minus)
+            W_plus = self.equation_manager.get_primitives_from_conservatives(U_plus)
+
+            pb = self.material_manager.get_phase_background_pressure()
+            # OPTION 1 - CHECK PRESSURE DIRECTLY
+            theta = jnp.where(
+                (jnp.minimum(W_minus[self.ids_energy] + pb, W_plus[self.ids_energy] + pb) < self.eps.pressure).any(axis=0),
+                1, 0)
+
+            # OPTION 2 - CHECK VIA INTERNAL ENERGY
+            # rho_minus  = self.material_manager.get_density(U_minus)
+            # rho_plus   = self.material_manager.get_density(U_plus)
+            # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(W_minus[self.ids_energy], rho=rho_minus, alpha_i=W_minus[self.s_volume_fraction])
+            # rhoe_plus  = rho_plus  * self.material_manager.get_specific_energy(W_plus[self.ids_energy], rho=rho_plus, alpha_i=W_plus[self.s_volume_fraction])
+            # theta   = jnp.where( 
+            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 1, 0
+            # )
+
+            positivity_count += jnp.sum(theta)
+            interface_regularization_flux_xi = \
+                theta * jnp.zeros_like(interface_regularization_flux_xi) \
+                + (1 - theta) * interface_regularization_flux_xi
         
         else:
             raise NotImplementedError
@@ -391,7 +453,7 @@ class PositivityLimiterFlux:
             self,
             conservatives: Array,
             primitives: Array,
-            lambda_pos: jnp.float32,
+            lambda_pos: Union[int, Array],
             flux_xi_convective: Array,
             u_hat_xi: Array,
             axis: jnp.int32,
@@ -405,7 +467,7 @@ class PositivityLimiterFlux:
         :param primitives: _description_
         :type primitives: Array
         :param lambda_pos: _description_
-        :type lambda_pos: jnp.float32
+        :type lambda_pos: Union[int, Array]
         :param flux_xi_convective: _description_
         :type flux_xi_convective: Array
         :param u_hat_xi: _description_
@@ -421,52 +483,80 @@ class PositivityLimiterFlux:
         mesh_slice_minus = self.mesh_positivity_slices[axis][0]
         mesh_slice_plus = self.mesh_positivity_slices[axis][1]
 
+        # NOTE if is_mesh_stretching, then lambda_pos has halo cells.
+        # In the case of UNIFORM partitioning, the halo cells are only
+        # in the given axis direction, else halo cells are present in all
+        # active directions.
+
+        # TODO check what happens if mesh_stretching is false in a given
+        # direction, but CELLSIZE or WAVESPEED are chosen
         if self.is_mesh_stretching[axis]:
-            lambda_pos_minus = lambda_pos[mesh_slice_minus]
-            lambda_pos_plus = lambda_pos[mesh_slice_plus]
+            if self.partition_type == "UNIFORM":
+                lambda_pos_minus = lambda_pos[mesh_slice_minus]
+                lambda_pos_plus = lambda_pos[mesh_slice_plus]
+            elif self.partition_type in ("CELLSIZE", "WAVESPEED"):
+                lambda_pos_minus = lambda_pos[slice_minus]
+                lambda_pos_plus = lambda_pos[slice_plus]
+            else:
+                raise NotImplementedError
         else:
             lambda_pos_minus = lambda_pos_plus = lambda_pos
 
         # DETERMINE U_MINUS AND U_PLUS STATES
-        if self.equation_type in ("SINGLE-PHASE",
-                                  "DIFFUSE-INTERFACE-5EQM"):
-            if self.positivity_flux_limiter == "SIMPLE":
-                conservatives_minus = conservatives[slice_minus] + 2.0 * lambda_pos_minus * flux_xi_convective
-                conservatives_plus = conservatives[slice_plus] - 2.0 * lambda_pos_plus * flux_xi_convective
-
-            if self.positivity_flux_limiter == "NASA":
-                flux_xi_simple = self.equation_manager.get_fluxes_xi(primitives, conservatives, axis)
-                if self.equation_type == "DIFFUSE-INTERFACE-5EQM":
-                    # SET VOLUME FRACTION FLUX IN THE SIMPLE FLUX TO ZERO
-                    flux_xi_simple = flux_xi_simple.at[self.vf_slices].set(0.0)
-
-                conservatives_minus = conservatives[slice_minus] \
-                    + 2.0 * lambda_pos_minus * (flux_xi_convective - flux_xi_simple[slice_minus])
-                conservatives_plus = conservatives[slice_plus] \
-                    - 2.0 * lambda_pos_plus * (flux_xi_convective - flux_xi_simple[slice_plus])
-
-            if self.equation_type == "DIFFUSE-INTERFACE-5EQM":
-                conservatives_minus = conservatives_minus.at[self.vf_slices].add(
-                    -2.0 * lambda_pos_minus * conservatives[(self.vf_slices,)+(slice_minus)] * u_hat_xi)
-                conservatives_plus = conservatives_plus.at[self.vf_slices].add(
-                    2.0 * lambda_pos_plus * conservatives[(self.vf_slices,)+(slice_plus)] * u_hat_xi)
-
-        elif self.equation_type in ("SINGLE-PHASE-SOLID-LS", "TWO-PHASE-LS"):
-            # VOLUME-AVERAGED CONS --> CONS # TODO WHAT ABOUT INTERFACE FLUX ?
+        
+        if self.equation_information.levelset_model:
+            # NOTE transform volume-averaged conservatives to conservatives
             alpha_cons = volume_fraction * conservatives[...,self.nhx__,self.nhy__,self.nhz__]
-            flux_xi_simple = self.equation_manager.get_fluxes_xi(primitives, conservatives, axis)
-            flux_xi_simple = flux_xi_simple[...,self.nhx__,self.nhy__,self.nhz__]
-
-            alpha_cons_minus = alpha_cons[slice_minus] + \
-                2.0 * lambda_pos_minus * apertures * (flux_xi_convective - flux_xi_simple[slice_minus])
-            alpha_cons_plus = alpha_cons[slice_plus] - \
-                2.0 * lambda_pos_plus * apertures * (flux_xi_convective - flux_xi_simple[slice_plus])
-
-            conservatives_minus = alpha_cons_minus / (volume_fraction[slice_minus] + 1e-10)
-            conservatives_plus = alpha_cons_plus / (volume_fraction[slice_plus] + 1e-10)
+            conservatives_minus = alpha_cons[slice_minus]
+            conservatives_plus = alpha_cons[slice_plus]
 
         else:
+            conservatives_minus = conservatives[slice_minus]
+            conservatives_plus = conservatives[slice_plus]
+
+        if self.positivity_flux_limiter == "SIMPLE":
+            if self.equation_information.levelset_model:
+                conservatives_minus = conservatives_minus + 2.0 * apertures * lambda_pos_minus * flux_xi_convective
+                conservatives_plus = conservatives_plus - 2.0 * apertures * lambda_pos_plus * flux_xi_convective
+            else:
+                conservatives_minus = conservatives_minus + 2.0 * lambda_pos_minus * flux_xi_convective
+                conservatives_plus = conservatives_plus - 2.0 * lambda_pos_plus * flux_xi_convective
+
+        elif self.positivity_flux_limiter == "NASA":
+            flux_xi_simple = self.equation_manager.get_fluxes_xi(primitives, conservatives, axis)
+            if self.equation_type == "DIFFUSE-INTERFACE-5EQM":
+                # NOTE Set volume fraction flux in the simple flux to zero
+                flux_xi_simple = flux_xi_simple.at[self.s_volume_fraction].set(0.0)
+
+            if self.equation_information.levelset_model:
+                flux_xi_simple = flux_xi_simple[...,self.nhx__,self.nhy__,self.nhz__]
+
+            if self.equation_information.levelset_model:
+                conservatives_minus = conservatives_minus \
+                    + 2.0 * lambda_pos_minus * apertures * (flux_xi_convective - flux_xi_simple[slice_minus])
+                conservatives_plus = conservatives_plus \
+                    - 2.0 * lambda_pos_plus * apertures * (flux_xi_convective - flux_xi_simple[slice_plus])
+            else:
+                conservatives_minus = conservatives_minus \
+                    + 2.0 * lambda_pos_minus * (flux_xi_convective - flux_xi_simple[slice_minus])
+                conservatives_plus = conservatives_plus \
+                    - 2.0 * lambda_pos_plus * (flux_xi_convective - flux_xi_simple[slice_plus])
+        
+        else:
             raise NotImplementedError
+
+        if self.equation_type == "DIFFUSE-INTERFACE-5EQM":
+            # NOTE
+            conservatives_minus = conservatives_minus.at[self.s_volume_fraction].add(
+                -2.0 * lambda_pos_minus * conservatives[(self.s_volume_fraction,)+(slice_minus)] * u_hat_xi)
+            conservatives_plus = conservatives_plus.at[self.s_volume_fraction].add(
+                2.0 * lambda_pos_plus * conservatives[(self.s_volume_fraction,)+(slice_plus)] * u_hat_xi)
+
+        if self.equation_information.levelset_model:
+            # NOTE transform back to volume-averaged conservatives 
+            conservatives_minus /= (volume_fraction[slice_minus] + 1e-10)
+            conservatives_plus /= (volume_fraction[slice_plus] + 1e-10)
+
 
         return conservatives_minus, conservatives_plus
 
@@ -476,18 +566,12 @@ class PositivityLimiterFlux:
             U_plus: Array,
             apertures: Array = None
             ) -> Array:
+        
         if self.equation_type == "SINGLE-PHASE":
             # Check density > eps_density
             theta = jnp.where(
-                (jnp.minimum(U_minus[self.mass_slices], U_plus[self.mass_slices]) < self.eps.density).any(axis=0), 
-                0, 1)
-
-        elif self.equation_type == "SINGLE-PHASE-SOLID-LS":
-            # Check density > eps_density at all cell faces
-            # with apertures > 0, i.e., all fluid cell faces.
-            theta = jnp.where(
-                (apertures > 0.0) & (jnp.minimum(U_minus[self.mass_ids], U_plus[self.mass_ids]) < self.eps.density), 
-                0, 1)
+                jnp.minimum(U_minus[self.ids_mass], U_plus[self.ids_mass]) < self.eps.density, 
+                1, 0)
 
         elif self.equation_type == "TWO-PHASE-LS":
             # Check density > eps_density at all cell faces
@@ -495,19 +579,29 @@ class PositivityLimiterFlux:
             # to each fluid phase, i.e., apertures have shape
             # (2,Nx,Ny,Nz)
             theta = jnp.where(
-                (apertures > 0.0) & (jnp.minimum(U_minus[self.mass_ids], U_plus[self.mass_ids]) < self.eps.density), 
-                0, 1)
+                (apertures > 0.0) & (jnp.minimum(U_minus[self.ids_mass], U_plus[self.ids_mass]) < self.eps.density), 
+                1, 0)
+
+        elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":
+            # Check partial densities (rho_i alpha_i) > eps_density
+            theta = jnp.where(
+                (jnp.minimum(U_minus[self.s_mass], U_plus[self.s_mass]) < self.eps.density).any(axis=0),
+                1, 0)
 
         elif self.equation_type == "DIFFUSE-INTERFACE-5EQM":
             # Check partial densities and volume fractions
             theta = jnp.where(
-                (jnp.minimum(U_minus[self.mass_slices], U_plus[self.mass_slices]) < self.eps.density).any(axis=0) |
-                (jnp.minimum(U_minus[self.vf_slices], U_plus[self.vf_slices]) < self.eps.volume_fraction).any(axis=0) |
-                (jnp.maximum(U_minus[self.vf_slices], U_plus[self.vf_slices]) > 1.0 - self.eps.volume_fraction).any(axis=0),
-                0, 1)
+                (jnp.minimum(U_minus[self.s_mass], U_plus[self.s_mass]) < self.eps.density).any(axis=0) |
+                (jnp.minimum(U_minus[self.s_volume_fraction], U_plus[self.s_volume_fraction])     < self.eps.volume_fraction).any(axis=0) |
+                (jnp.maximum(U_minus[self.s_volume_fraction], U_plus[self.s_volume_fraction])     > 1.0 - self.eps.volume_fraction).any(axis=0),
+                1, 0)
 
         else:
             raise NotImplementedError
+
+        if self.equation_information.is_solid_levelset:
+            # If solid level-set is active, check admissibility only where apertures > 0, i.e., all fluid cell faces.
+            theta = jnp.where(apertures > 0.0, theta, 0)  
 
         return theta
 
@@ -519,98 +613,117 @@ class PositivityLimiterFlux:
             ) -> Array:
         W_minus = self.equation_manager.get_primitives_from_conservatives(U_minus)
         W_plus = self.equation_manager.get_primitives_from_conservatives(U_plus)
-        pressure_minus = W_minus[self.energy_ids]
-        pressure_plus = W_plus[self.energy_ids]
+        pressure_minus = W_minus[self.ids_energy]
+        pressure_plus = W_plus[self.ids_energy]
 
         if self.equation_type == "SINGLE-PHASE":
             # Check speed of sound via 1) pressure or 2) internal energy
-            pb_minus = self.material_manager.get_background_pressure(W_minus[self.vf_slices])
-            pb_plus = self.material_manager.get_background_pressure(W_plus[self.vf_slices])
+            pb_minus = self.material_manager.get_background_pressure(W_minus[self.s_volume_fraction])
+            pb_plus = self.material_manager.get_background_pressure(W_plus[self.s_volume_fraction])
 
             # Option 1 - check PRESSURE DIRECTLY
             theta = jnp.where(
                 (jnp.minimum(pressure_minus + pb_minus, pressure_plus + pb_plus) < self.eps.pressure),
-                0, 1)
+                1, 0)
 
             # OPTION 2 - CHECK VIA INTERNAL ENERGY
             # rho_minus  = self.material_manager.get_density(U_minus)
             # rho_plus   = self.material_manager.get_density(U_plus)
-            # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(pressure_minus, rho=rho_minus, alpha_i=W_minus[self.vf_slices])
-            # rhoe_plus  = rho_plus  * self.material_manager.get_specific_energy(pressure_plus, rho=rho_plus, alpha_i=W_plus[self.vf_slices])
+            # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(pressure_minus, rho=rho_minus, alpha_i=W_minus[self.s_volume_fraction])
+            # rhoe_plus  = rho_plus  * self.material_manager.get_specific_energy(pressure_plus, rho=rho_plus, alpha_i=W_plus[self.s_volume_fraction])
 
             # theta   = jnp.where( 
-            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 0, 1
+            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 1, 0
             # )
 
-        elif self.equation_type == "SINGLE-PHASE-SOLID-LS":
-            pb_minus = self.material_manager.get_background_pressure(W_minus[self.vf_slices])
-            pb_plus = self.material_manager.get_background_pressure(W_plus[self.vf_slices])
-
-            theta = jnp.where( 
-                (apertures > 0.0) & (jnp.minimum(pressure_minus + pb_minus, pressure_plus + pb_plus) < self.eps.pressure),
-                0, 1)
-
         elif self.equation_type == "TWO-PHASE-LS":
-            pb_minus = self.material_manager.get_background_pressure(W_minus[self.vf_slices])
-            pb_plus = self.material_manager.get_background_pressure(W_plus[self.vf_slices])
+            pb_minus = self.material_manager.get_background_pressure(W_minus[self.s_volume_fraction])
+            pb_plus = self.material_manager.get_background_pressure(W_plus[self.s_volume_fraction])
 
             theta = jnp.where( 
                 (apertures > 0.0) & (jnp.minimum(pressure_minus + pb_minus, pressure_plus + pb_plus) < self.eps.pressure),
-                0, 1)
+                1, 0)
+
+        elif self.equation_type == "DIFFUSE-INTERFACE-4EQM":
+            # CHECK PSEUDO SPEED OF SOUND
+            pb = self.material_manager.get_phase_background_pressure()
+
+            # OPTION 1 - CHECK PRESSURE DIRECTLY
+            theta = jnp.where(
+                (jnp.minimum(pressure_minus + pb, pressure_plus + pb) < self.eps.pressure).any(axis=0),
+                1, 0)
+
+            # OPTION 2 - CHECK VIA INTERNAL ENERGY
+            # rho_minus  = self.material_manager.get_density(U_minus)
+            # rho_plus   = self.material_manager.get_density(U_plus)
+            # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(pressure_minus, rho=rho_minus, alpha_i=W_minus[self.s_volume_fraction])
+            # rhoe_plus  = rho_plus  * self.material_manager.get_specific_energy(pressure_plus, rho=rho_plus, alpha_i=W_plus[self.s_volume_fraction])
+            # theta   = jnp.where( 
+            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 1, 0
+            # )
 
         elif self.equation_type == "DIFFUSE-INTERFACE-5EQM":
             # CHECK PSEUDO SPEED OF SOUND
-            pb_minus = self.material_manager.get_background_pressure(W_minus[self.vf_slices])
-            pb_plus = self.material_manager.get_background_pressure(W_plus[self.vf_slices])
+            pb_minus = self.material_manager.get_background_pressure(W_minus[self.s_volume_fraction])
+            pb_plus = self.material_manager.get_background_pressure(W_plus[self.s_volume_fraction])
 
             # OPTION 1 - CHECK PRESSURE DIRECTLY
-            theta = jnp.where((jnp.minimum(pressure_minus + pb_minus, pressure_plus + pb_plus) < self.eps.pressure),
-                0, 1)
+            theta = jnp.where(
+                (jnp.minimum(pressure_minus + pb_minus, pressure_plus + pb_plus) < self.eps.pressure),
+                1, 0)
 
             # OPTION 2 - CHECK VIA INTERNAL ENERGY
             # rho_minus = self.material_manager.get_density(U_minus)
             # rho_plus = self.material_manager.get_density(U_plus)
             # rhoe_minus = rho_minus * self.material_manager.get_specific_energy(
-            #     pressure_minus, rho=rho_minus, alpha_i=W_minus[self.vf_slices])
+            #     pressure_minus, rho=rho_minus, alpha_i=W_minus[self.s_volume_fraction])
             # rhoe_plus = rho_plus * self.material_manager.get_specific_energy(
-            #     pressure_plus, rho=rho_plus, alpha_i=W_plus[self.vf_slices])
+            #     pressure_plus, rho=rho_plus, alpha_i=W_plus[self.s_volume_fraction])
 
-            # theta   = jnp.where( 
-            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 0, 1
+            # theta = jnp.where( 
+            #     (jnp.minimum(rhoe_minus - pb_minus, rhoe_plus - pb_plus) < self.eps.pressure), 1, 0
             # )
 
         else:
             raise NotImplementedError
+
+        if self.equation_information.is_solid_levelset:
+            # If solid level-set is active, check admissibility only where apertures > 0, i.e., all fluid cell faces.
+            theta = jnp.where(apertures > 0.0, theta, 0)  
 
         return theta
 
     def compute_partition(
             self,
             primitives: Array,
+            one_cell_sizes_halos: Tuple[Array],
             axis: int
         ) -> Array:
+        """Computes partition of the directional contributions.
+
+        :param primitives: _description_
+        :type primitives: Array
+        :param one_cell_sizes_halos: _description_
+        :type one_cell_sizes_halos: Tuple[Array]
+        :param axis: _description_
+        :type axis: int
+        :raises NotImplementedError: _description_
+        :return: _description_
+        :rtype: Array
+        """
         if self.partition_type == "UNIFORM":
             one_sigma_axis = self.dim
         
-        elif self.partition_type == "GEOMETRIC":
-            one_sigma_axis = self.one_cell_size_halos[axis] \
-                / sum(self.one_cell_size_halos[axis_id] for axis_id in self.active_axes_indices)
+        elif self.partition_type == "CELLSIZE":
+            one_sigma_axis = sum(one_cell_sizes_halos[axis_id] for axis_id in self.active_axes_indices) / one_cell_sizes_halos[axis]
 
         elif self.partition_type == "WAVESPEED":
-            vel_ids = self.vel_ids
             speed_of_sound = self.material_manager.get_speed_of_sound(primitives)
-            max_wave_propagation = []
-            for i in range(3):
-                if i in self.active_axes_indices:
-                    max_wave_propagation_i = jnp.max(jnp.abs(primitives[vel_ids[i]]) + speed_of_sound)
-                    if self.is_parallel:
-                        max_wave_propagation_i = jax.lax.all_gather(max_wave_propagation_i, axis_name="i")
-                        max_wave_propagation_i = jnp.max(max_wave_propagation_i)
-                    max_wave_propagation.append(max_wave_propagation_i)
-                else:
-                    max_wave_propagation.append(0.0)
-            one_sigma_axis = max_wave_propagation[axis] * self.one_cell_size_halos[axis] \
-                / sum(max_wave_propagation[axis_id] * self.one_cell_size_halos[axis_id] for axis_id in self.active_axes_indices)
+            max_wave_propagation = jnp.max(jnp.abs(primitives[self.vel_slices]) + speed_of_sound, axis=(-1,-2,-3))
+            if self.is_parallel:
+                max_wave_propagation = jax.lax.pmax(max_wave_propagation, axis_name="i")
+
+            one_sigma_axis = sum(max_wave_propagation[axis_id] * one_cell_sizes_halos[axis_id] for axis_id in self.active_axes_indices) / (max_wave_propagation[axis] * one_cell_sizes_halos[axis])
 
         else:
             raise NotImplementedError
@@ -649,13 +762,14 @@ class PositivityLimiterFlux:
         :return: _description_
         :rtype: Tuple[Array, Array, Array, jnp.int32]
         """
-        positivity_count += jnp.sum(1 - theta)
-        flux_xi_convective = (1 - theta) * flux_xi_convective_pos + theta * flux_xi_convective
+        positivity_count += jnp.sum(theta)
+        flux_xi_convective = theta * flux_xi_convective_pos + (1 - theta) * flux_xi_convective
 
-        if self.equation_type in ("DIFFUSE-INTERFACE-5EQM"):
-            u_hat_xi = (1 - theta) * u_hat_xi_pos + theta * u_hat_xi
+        if self.equation_type in ("DIFFUSE-INTERFACE-4EQM",
+                                  "DIFFUSE-INTERFACE-5EQM"):
+            u_hat_xi = theta * u_hat_xi_pos + (1 - theta) * u_hat_xi
 
         if self.equation_type == "DIFFUSE-INTERFACE-5EQM" and alpha_hat_xi is not None:
-            alpha_hat_xi = (1 - theta) * alpha_hat_xi_pos + theta * alpha_hat_xi
+            alpha_hat_xi = theta * alpha_hat_xi_pos + (1 - theta) * alpha_hat_xi
         
         return flux_xi_convective, u_hat_xi, alpha_hat_xi, positivity_count

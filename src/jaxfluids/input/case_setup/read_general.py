@@ -2,12 +2,11 @@ import os
 from typing import Dict
 
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.data_types.case_setup import GeneralSetup
 from jaxfluids.data_types.numerical_setup import NumericalSetup
-from jaxfluids.input.setup_reader import SetupReader, get_path_to_key, create_wrapper_for_callable
+from jaxfluids.input.setup_reader import SetupReader, get_path_to_key, create_wrapper_for_callable, assert_case
 from jaxfluids.input.case_setup import get_setup_value, loop_fields
 from jaxfluids.unit_handler import UnitHandler
 
@@ -42,9 +41,8 @@ def read_general_setup(
         is_optional=True, default_value=False,
         numerical_value_condition=(">=", 0))
 
-    assert_string = ("Consistency error in case setup file. "
-        "Either end_time or end_step must be given.")
-    assert isinstance(end_step, int) or isinstance(end_time, float), assert_string
+    assert_str = "Either end_time or end_step must be given."
+    assert_case(isinstance(end_step, int) or isinstance(end_time, float), assert_str)
 
     is_double = numerical_setup.precision.is_double_precision_compute
     dtype_int = jnp.int64 if is_double else jnp.int32
@@ -66,6 +64,8 @@ def read_general_setup(
         general_dict, "save_dt", path, float,
         is_optional=True, default_value=False,
         numerical_value_condition=(">", 0.0))
+    if save_dt:
+        save_dt = unit_handler.non_dimensionalize(save_dt, "time")
 
     path = get_path_to_key(basepath, "save_step")
     save_step = get_setup_value(
@@ -77,26 +77,22 @@ def read_general_setup(
     save_timestamps = get_setup_value(
         general_dict, "save_timestamps", path, list,
         is_optional=True, default_value=False)
-
-    assert_string = ("Consistency error in case setup file. "
-        "Either save_dt, save_step or save_timestamps must be given.")
-    assert any((save_dt, save_step, save_timestamps)), assert_string
-
-    is_double = numerical_setup.precision.is_double_precision_compute
-    dtype_int = jnp.int64 if is_double else jnp.int32
-    dtype_float = jnp.float64 if is_double else jnp.float32
-    if save_dt:
-        save_dt = unit_handler.non_dimensionalize(save_dt, "time")
+    if save_timestamps == []:
+        save_timestamps = False
     if save_timestamps:
         save_timestamps = [
             unit_handler.non_dimensionalize(time_stamp, "time") for time_stamp in save_timestamps]
         save_timestamps = np.sort(save_timestamps)
+
+    assert_str = "Either save_dt, save_step or save_timestamps must be given."
+    assert_case(any((save_dt, save_step, save_timestamps)), assert_str)
 
     path = get_path_to_key(basepath, "save_start")
     save_start = get_setup_value(
         general_dict, "save_start", path, float,
         is_optional=True, default_value=0.0,
         numerical_value_condition=(">=", 0.0))
+    save_start = unit_handler.non_dimensionalize(save_start, "time")
 
     general_setup = GeneralSetup(
         case_name=case_name,

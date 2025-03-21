@@ -1,133 +1,81 @@
+import jax
 import jax.numpy as jnp
-from jax import Array
 
-def linear_filtering(
-        buffer: Array,
-        nh: int,
-        include_center_value: bool = True
+from jaxfluids.domain.domain_information import DomainInformation
+
+Array = jax.Array
+
+def transform_to_conserved(
+        conservatives: Array,
+        volume_fraction: Array,
+        domain_information: DomainInformation,
+        levelset_model: str
         ) -> Array:
-    """Linearly interpolates the cell center
-    values with its neighbors within a 3x3x3 stencil.
-    The argument include_center_value specifies if the
-    cell center value contributes to the
-    interpolation.
+    nhx, nhy, nhz = domain_information.domain_slices_conservatives
+    nhx_, nhy_, nhz_ = domain_information.domain_slices_geometry
+    if levelset_model == "FLUID-FLUID":
+        volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
+    conservatives = conservatives.at[...,nhx,nhy,nhz].mul(volume_fraction[...,nhx_,nhy_,nhz_])
+    return conservatives
 
-    :param buffer: _description_
-    :type buffer: Array
-    :param nh: _description_
-    :type nh: int
-    :return: _description_
+def transform_to_volume_average(
+        conservatives: Array,
+        volume_fraction: Array,
+        domain_information: DomainInformation
+        ) -> Array:
+    nhx, nhy, nhz = domain_information.domain_slices_conservatives
+    nhx_, nhy_, nhz_ = domain_information.domain_slices_geometry
+    mask = volume_fraction[...,nhx_,nhy_,nhz_] == 0.0
+    denominator = volume_fraction[...,nhx_,nhy_,nhz_] + mask * 1e-20
+    conservatives = conservatives.at[...,nhx,nhy,nhz].mul(1.0/denominator)
+    return conservatives
+
+def weight_cell_face_flux_xi(
+        flux_xi: Array,
+        apertures: Array,
+        domain_information: DomainInformation,
+        levelset_model: str
+        ) -> Array:
+    """Weights the flux at a given cell face
+    with the corresponding aperture. 
+
+    :param flux_xi: Cell-face flux in xi-direction
+    :type flux_xi: Array
+    :param apertures: Aperture in xi-direction
+    :type apertures: Array
+    :param domain_information: DomainInformation
+    :type domain_information: DomainInformation
+    :param levelset_model: String identifier of the active level-set model
+    :type levelset_model: str
+    :return: Aperture-weighted flux
     :rtype: Array
     """
-    shape = buffer.shape[-3:]
-    active_axes_indices = tuple([i for i in range(3) if shape[i] > 1])
-    nhx,nhy,nhz = tuple(
-        [jnp.s_[nh:-nh] if
-        i in active_axes_indices else
-        jnp.s_[:] for i in range(3)])
-    dim = len(active_axes_indices)
+    nhx_, nhy_, nhz_ = domain_information.domain_slices_geometry
+    if levelset_model == "FLUID-FLUID": 
+        apertures = jnp.stack([apertures, 1.0 - apertures], axis=0)
+    flux_xi *= apertures[...,nhx_,nhy_,nhz_]
+    return flux_xi
 
-    if dim == 1:
-        if active_axes_indices == (0,):
-            slice_list = [
-                jnp.s_[...,nhx       ,nhy,nhz],
-                jnp.s_[...,nh-1:-nh-1,nhy,nhz],
-                jnp.s_[...,nh+1:-nh+1,nhy,nhz]
-            ]
-        if active_axes_indices == (1,):
-            slice_list = [
-                jnp.s_[...,nhx       ,nhy,nhz],
-                jnp.s_[...,nhx,nh-1:-nh-1,nhz],
-                jnp.s_[...,nhx,nh+1:-nh+1,nhz]
-            ]
-        if active_axes_indices == (2,):
-            slice_list = [
-                jnp.s_[...,nhx       ,nhy,nhz],
-                jnp.s_[...,nhx,nhy,nh-1:-nh-1],
-                jnp.s_[...,nhx,nhy,nh+1:-nh+1]
-            ]
+def weight_volume_force(
+        volume_force: Array,
+        volume_fraction: Array,
+        domain_information: DomainInformation,
+        levelset_model: str
+        ) -> Array:
+    nhx_, nhy_, nhz_ = domain_information.domain_slices_geometry
+    if levelset_model == "FLUID-FLUID":
+        volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
+    volume_force *= volume_fraction[...,nhx_,nhy_,nhz_]
+    return volume_force
 
-    elif dim == 2:
-        if active_axes_indices == (0,1):
-            slice_list = [
-                jnp.s_[...,nhx       ,nhy       ,nhz],
-                jnp.s_[...,nh-1:-nh-1,nh-1:-nh-1,nhz],
-                jnp.s_[...,nh-1:-nh-1,nh  :-nh  ,nhz],
-                jnp.s_[...,nh-1:-nh-1,nh+1:-nh+1,nhz],
-                jnp.s_[...,nh  :-nh  ,nh+1:-nh+1,nhz],
-                jnp.s_[...,nh+1:-nh+1,nh+1:-nh+1,nhz],
-                jnp.s_[...,nh+1:-nh+1,nh  :-nh  ,nhz],
-                jnp.s_[...,nh+1:-nh+1,nh-1:-nh-1,nhz],
-                jnp.s_[...,nh  :-nh,  nh-1:-nh-1,nhz],
-                ]
-        if active_axes_indices == (0,2):
-            slice_list = [
-                jnp.s_[...,nhx       ,nhy,       nhz],
-                jnp.s_[...,nh-1:-nh-1,nhy,nh-1:-nh-1],
-                jnp.s_[...,nh-1:-nh-1,nhy,nh  :-nh  ],
-                jnp.s_[...,nh-1:-nh-1,nhy,nh+1:-nh+1],
-                jnp.s_[...,nh  :-nh  ,nhy,nh+1:-nh+1],
-                jnp.s_[...,nh+1:-nh+1,nhy,nh+1:-nh+1],
-                jnp.s_[...,nh+1:-nh+1,nhy,nh  :-nh  ],
-                jnp.s_[...,nh+1:-nh+1,nhy,nh-1:-nh-1],
-                jnp.s_[...,nh  :-nh,  nhy,nh-1:-nh-1],
-                ]
-        if active_axes_indices == (1,2):
-            slice_list = [
-                jnp.s_[...,nhx,       nhy,       nhz],
-                jnp.s_[...,nhx,nh-1:-nh-1,nh-1:-nh-1],
-                jnp.s_[...,nhx,nh-1:-nh-1,nh  :-nh  ],
-                jnp.s_[...,nhx,nh-1:-nh-1,nh+1:-nh+1],
-                jnp.s_[...,nhx,nh  :-nh  ,nh+1:-nh+1],
-                jnp.s_[...,nhx,nh+1:-nh+1,nh+1:-nh+1],
-                jnp.s_[...,nhx,nh+1:-nh+1,nh  :-nh  ],
-                jnp.s_[...,nhx,nh+1:-nh+1,nh-1:-nh-1],
-                jnp.s_[...,nhx,nh  :-nh,  nh-1:-nh-1],
-                ]
-    else:
-
-        slice_list = [
-            jnp.s_[...,nh  :-nh  ,nh  :-nh  ,nh  :-nh  ],
-            jnp.s_[...,nh-1:-nh-1,nh-1:-nh-1,nh  :-nh  ],
-            jnp.s_[...,nh-1:-nh-1,nh  :-nh  ,nh  :-nh  ],
-            jnp.s_[...,nh-1:-nh-1,nh+1:-nh+1,nh  :-nh  ],
-            jnp.s_[...,nh  :-nh  ,nh+1:-nh+1,nh  :-nh  ],
-            jnp.s_[...,nh+1:-nh+1,nh+1:-nh+1,nh  :-nh  ],
-            jnp.s_[...,nh+1:-nh+1,nh  :-nh  ,nh  :-nh  ],
-            jnp.s_[...,nh+1:-nh+1,nh-1:-nh-1,nh  :-nh  ],
-            jnp.s_[...,nh  :-nh,  nh-1:-nh-1,nh  :-nh  ],
-
-            jnp.s_[...,nh  :-nh  ,nh  :-nh  ,nh-1:-nh-1],
-            jnp.s_[...,nh-1:-nh-1,nh-1:-nh-1,nh-1:-nh-1],
-            jnp.s_[...,nh-1:-nh-1,nh  :-nh  ,nh-1:-nh-1],
-            jnp.s_[...,nh-1:-nh-1,nh+1:-nh+1,nh-1:-nh-1],
-            jnp.s_[...,nh  :-nh  ,nh+1:-nh+1,nh-1:-nh-1],
-            jnp.s_[...,nh+1:-nh+1,nh+1:-nh+1,nh-1:-nh-1],
-            jnp.s_[...,nh+1:-nh+1,nh  :-nh  ,nh-1:-nh-1],
-            jnp.s_[...,nh+1:-nh+1,nh-1:-nh-1,nh-1:-nh-1],
-            jnp.s_[...,nh  :-nh,  nh-1:-nh-1,nh-1:-nh-1],
-
-            jnp.s_[...,nh  :-nh  ,nh  :-nh  ,nh+1:-nh+1],
-            jnp.s_[...,nh-1:-nh-1,nh-1:-nh-1,nh+1:-nh+1],
-            jnp.s_[...,nh-1:-nh-1,nh  :-nh  ,nh+1:-nh+1],
-            jnp.s_[...,nh-1:-nh-1,nh+1:-nh+1,nh+1:-nh+1],
-            jnp.s_[...,nh  :-nh  ,nh+1:-nh+1,nh+1:-nh+1],
-            jnp.s_[...,nh+1:-nh+1,nh+1:-nh+1,nh+1:-nh+1],
-            jnp.s_[...,nh+1:-nh+1,nh  :-nh  ,nh+1:-nh+1],
-            jnp.s_[...,nh+1:-nh+1,nh-1:-nh-1,nh+1:-nh+1],
-            jnp.s_[...,nh  :-nh,  nh-1:-nh-1,nh+1:-nh+1],
-            ]
-    
-    if not include_center_value:
-        slice_list = slice_list[1:]
-
-    filtered_buffer = 0.0
-    factor = 0
-    for s_ in slice_list:
-        filtered_buffer += buffer[s_]
-        factor += 1
-    filtered_buffer *= 1.0/factor
-
-    return filtered_buffer
-
+def weight_solid_energy(
+        solid_energy: Array,
+        volume_fraction: Array,
+        domain_information: DomainInformation,
+        ) -> Array:
+    nhx, nhy, nhz = domain_information.domain_slices_conservatives
+    nhx_, nhy_, nhz_ = domain_information.domain_slices_geometry
+    volume_fraction_solid = 1.0 - volume_fraction[...,nhx_,nhy_,nhz_]
+    solid_energy = solid_energy.at[...,nhx,nhy,nhz].mul(volume_fraction_solid)
+    return solid_energy
 

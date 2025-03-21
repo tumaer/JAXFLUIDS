@@ -1,9 +1,11 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+
+Array = jax.Array
 
 class SecondDerivativeFourthOrderCenter(SpatialDerivative):
     ''' 
@@ -52,7 +54,6 @@ class SecondDerivativeFourthOrderCenter(SpatialDerivative):
                 jnp.s_[..., jnp.s_[self.n+2:-self.n+2] if self.n != 2 else jnp.s_[self.n+2:None], jnp.s_[self.n+2:-self.n+2] if self.n != 2 else jnp.s_[self.n+2:None], self.nhz]],  # i+2,j+2,k
 
 
-
             [   jnp.s_[..., self.n-2:-self.n-2, self.nhy, self.n-2:-self.n-2],   # i-2,j,k-2
                 jnp.s_[..., self.n-2:-self.n-2, self.nhy, self.n-1:-self.n-1],   # i-2,j,k-1   
                 jnp.s_[..., self.n-2:-self.n-2, self.nhy, self.n+1:-self.n+1],   # i-2,j,k+1
@@ -95,7 +96,12 @@ class SecondDerivativeFourthOrderCenter(SpatialDerivative):
                 jnp.s_[..., self.nhx, jnp.s_[self.n+2:-self.n+2] if self.n != 2 else jnp.s_[self.n+2:None], jnp.s_[self.n+2:-self.n+2] if self.n != 2 else jnp.s_[self.n+2:None]]],  # i,j+2,k+2
         ]
 
-        self.index_pair_dict = {"01": 0, "02": 1, "12": 2}
+        # self.index_pair_dict = {"01": 0, "02": 1, "12": 2}
+
+        self.index_pair_dict = {
+            "01": 0, "02": 1, "12": 2,
+            "10": 0, "20": 1, "21": 2,
+        }
 
     def derivative_xi(
             self,
@@ -105,7 +111,7 @@ class SecondDerivativeFourthOrderCenter(SpatialDerivative):
             **kwargs
             ) -> Array:
         s1_ = self.s_[axis]
-        deriv_xi = (1.0 / 12.0 / dxi / dxi) * (- buffer[s1_[0]] + 16.0 * buffer[s1_[1]] - 30.0 * buffer[s1_[2]] + 16.0 * buffer[s1_[3]] - buffer[s1_[4]])
+        deriv_xi = 1.0 / (12.0 * dxi * dxi) * (- buffer[s1_[0]] + 16.0 * buffer[s1_[1]] - 30.0 * buffer[s1_[2]] + 16.0 * buffer[s1_[3]] - buffer[s1_[4]])
         return deriv_xi
 
     def derivative_xi_xj(
@@ -117,7 +123,7 @@ class SecondDerivativeFourthOrderCenter(SpatialDerivative):
             j: int
             ) -> Array:
         s1_ = self.s__[self.index_pair_dict[str(i) + (str(j))]]
-        deriv_xi_xj = 1.0 / 144.0 / dxi / dxj  * \
+        deriv_xi_xj = 1.0 / (144.0 * dxi * dxj) * \
                 ( + 1 * ( buffer[s1_[0]]  - 8 * buffer[s1_[1]]  + 8 * buffer[s1_[2]]  - buffer[s1_[3]] )  
                   - 8 * ( buffer[s1_[4]]  - 8 * buffer[s1_[5]]  + 8 * buffer[s1_[6]]  - buffer[s1_[7]] )              
                   + 8 * ( buffer[s1_[8]]  - 8 * buffer[s1_[9]]  + 8 * buffer[s1_[10]] - buffer[s1_[11]])              

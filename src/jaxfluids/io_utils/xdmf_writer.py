@@ -182,9 +182,9 @@ class XDMFWriter():
         :rtype: str
         """
         precision = 8 if self.is_double else 4
-        if quant in ["velocity", "momentum", "vorticity",
+        if quant in ("velocity", "momentum", "vorticity",
                      "velocity_0", "momentum_0", "velocity_1", "momentum_1",
-                     "interface_pressure"]:
+                     "interface_pressure", "Y_k", "rhoY_k", "X_k"):
             if quant == "vorticity":
                 # TODO should also be dim, but must be changed accordingly in hdf5 writer
                 # see comment in hdf5 writer
@@ -196,6 +196,8 @@ class XDMFWriter():
                     dim = 1
             elif quant == "interface_pressure":
                 dim = 2
+            elif quant in ("Y_k", "rhoY_k", "X_k"):
+                dim = self.equation_information.no_components
             else:
                 dim = self.domain_information.dim
             xdmf =f'''<Attribute Name="{quant:s}" AttributeType="Vector" Center="Cell">

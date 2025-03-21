@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING, Tuple
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.materials.material_manager import MaterialManager
@@ -10,8 +10,13 @@ from jaxfluids.solvers.convective_fluxes.convective_flux_solver import Convectiv
 from jaxfluids.solvers.riemann_solvers.eigendecomposition import Eigendecomposition
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 from jaxfluids.equation_manager import EquationManager
+
 if TYPE_CHECKING:
-    from jaxfluids.data_types.numerical_setup.conservatives import ConvectiveFluxesSetup
+    from jaxfluids.data_types.ml_buffers import MachineLearningSetup
+    from jaxfluids.data_types.numerical_setup.conservatives import (
+        ConvectiveFluxesSetup, FluxSplittingSetup)
+
+Array = jax.Array
 
 class FluxSplittingScheme(ConvectiveFluxSolver):
     """Base class for the Flux-Splitting Scheme. The flux-splitting schemes
@@ -37,7 +42,9 @@ class FluxSplittingScheme(ConvectiveFluxSolver):
         super(FluxSplittingScheme, self).__init__(
             convective_fluxes_setup, material_manager, domain_information, equation_manager)
 
-        reconstruction_stencil = convective_fluxes_setup.reconstruction_stencil
+        flux_splitting_setup: FluxSplittingSetup = convective_fluxes_setup.flux_splitting
+
+        reconstruction_stencil = flux_splitting_setup.reconstruction_stencil
         reconstruction_stencil: SpatialReconstruction = reconstruction_stencil(
             nh = domain_information.nh_conservatives, 
             inactive_axes = domain_information.inactive_axes,
@@ -48,22 +55,21 @@ class FluxSplittingScheme(ConvectiveFluxSolver):
         self.reconstruction_stencil.set_slices_stencil()
 
         self.eigendecomposition = Eigendecomposition(
-            material_manager = self.material_manager,
-            stencil_size = self.reconstruction_stencil._stencil_size, 
-            domain_information = domain_information,
-            equation_information = equation_manager.equation_information, 
-            flux_splitting = convective_fluxes_setup.flux_splitting,
-            frozen_state = convective_fluxes_setup.frozen_state)
+            material_manager=self.material_manager,
+            stencil_size=self.reconstruction_stencil._stencil_size, 
+            domain_information=domain_information,
+            equation_information=equation_manager.equation_information, 
+            flux_splitting=flux_splitting_setup.flux_splitting,
+            frozen_state=flux_splitting_setup.frozen_state)
 
     def compute_flux_xi(
             self,
             primitives: Array,
             conservatives: Array,
             axis: int,
-            ml_parameters_dict: Union[Dict, None] = None,
-            ml_networks_dict: Union[Dict, None] = None,
+            ml_setup: MachineLearningSetup = None,
             **kwargs,
-            ) -> Tuple[Array, None, None, None]:
+        ) -> Tuple[Array, None, None, None]:
         """Computes the numerical flux in axis direction.
 
         :param primitives: Buffer of primitive variables

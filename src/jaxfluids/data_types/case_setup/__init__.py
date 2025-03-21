@@ -10,6 +10,7 @@ from jaxfluids.data_types.case_setup.material_properties import MaterialManagerS
 from jaxfluids.data_types.case_setup.solid_properties import SolidPropertiesSetup
 from jaxfluids.data_types.case_setup.forcings import ForcingSetup
 from jaxfluids.data_types.case_setup.output import OutputQuantitiesSetup
+from jaxfluids.data_types.case_setup.statistics import StatisticsSetup
 
 def GetPrimitivesCallable(
         primitives_callable_dict: Dict
@@ -18,6 +19,14 @@ def GetPrimitivesCallable(
     PrimitivesCallable = namedtuple("PrimitivesCallable", fields)
     primitives_callable = PrimitivesCallable(**primitives_callable_dict)
     return primitives_callable
+
+def GetConservativesCallable(
+        conservatives_callable_dict: Dict
+        ):
+    fields = conservatives_callable_dict.keys()
+    ConservativesCallable = namedtuple("ConservativesCallable", fields)
+    conservatives_callable = ConservativesCallable(**conservatives_callable_dict)
+    return conservatives_callable
 
 class CaseSetup(NamedTuple):
     general_setup: GeneralSetup
@@ -29,4 +38,4 @@ class CaseSetup(NamedTuple):
     solid_properties_setup: SolidPropertiesSetup
     forcing_setup: ForcingSetup
     output_quantities_setup: OutputQuantitiesSetup
-
+    statistics_setup: StatisticsSetup

@@ -1,8 +1,7 @@
 from typing import NamedTuple, Tuple
 
 import jax
-import jax.numpy as jnp
-from jax import Array 
+import jax.numpy as jnp 
 
 class Epsilons(NamedTuple):
     density: float
@@ -25,6 +24,8 @@ class PrecisionConfig:
             self.enable_double_precision()
         else:
             self.enable_single_precision()
+
+        self.is_consistent_summation = False
 
     def enable_single_precision(self) -> None:
         """Enables single precision as default for 
@@ -54,6 +55,9 @@ class PrecisionConfig:
         self.__flux_limiter_eps = Epsilons(1e-12, 1e-10, 1e-12)
         self.__thinc_limiter_eps = Epsilons(1e-11, 1e-9, 1e-11)
     
+    def enable_consistent_summation(self) -> None:
+        self.is_consistent_summation = True
+
     def set_eps(self, eps: float) -> None:
         """Sets the general epsilon used in jaxfluids.
 

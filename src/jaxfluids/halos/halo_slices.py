@@ -1,7 +1,6 @@
 from typing import Tuple, List, Dict
 
 import jax.numpy as jnp
-from jax import Array
 
 class HaloSlices:
     """The HaloSlices class provides
@@ -99,20 +98,20 @@ def get_edge_slices(
     edge_slices = {
         
         "west_south"    : jnp.s_[..., :nh, :nh, nhz],
-        "west_south_10"  : jnp.s_[..., nh:2*nh, :nh, nhz],
-        "west_south_01"  : jnp.s_[..., :nh, nh:2*nh, nhz],
+        "west_south_10" : jnp.s_[..., nh:2*nh, :nh, nhz],
+        "west_south_01" : jnp.s_[..., :nh, nh:2*nh, nhz],
 
         "west_north"    : jnp.s_[..., :nh, -nh:, nhz],
-        "west_north_10"  : jnp.s_[..., nh:2*nh, -nh:, nhz],
-        "west_north_01"  : jnp.s_[..., :nh, -2*nh:-nh, nhz],
+        "west_north_10" : jnp.s_[..., nh:2*nh, -nh:, nhz],
+        "west_north_01" : jnp.s_[..., :nh, -2*nh:-nh, nhz],
 
         "east_south"    : jnp.s_[..., -nh:, :nh, nhz], 
-        "east_south_10"  : jnp.s_[..., -2*nh:-nh, :nh, nhz],
-        "east_south_01"  : jnp.s_[..., -nh:, nh:2*nh, nhz],
+        "east_south_10" : jnp.s_[..., -2*nh:-nh, :nh, nhz],
+        "east_south_01" : jnp.s_[..., -nh:, nh:2*nh, nhz],
 
         "east_north"    : jnp.s_[..., -nh:, -nh:, nhz],
-        "east_north_10"  : jnp.s_[..., -2*nh:-nh, -nh:, nhz],
-        "east_north_01"  : jnp.s_[..., -nh:, -2*nh:-nh, nhz],
+        "east_north_10" : jnp.s_[..., -2*nh:-nh, -nh:, nhz],
+        "east_north_01" : jnp.s_[..., -nh:, -2*nh:-nh, nhz],
 
         "south_bottom"      : jnp.s_[..., nhx, :nh, :nh],  
         "south_bottom_10"   : jnp.s_[..., nhx, nh:2*nh, :nh],
@@ -130,19 +129,19 @@ def get_edge_slices(
         "north_top_10"  : jnp.s_[..., nhx, -2*nh:-nh, -nh:],
         "north_top_01"  : jnp.s_[..., nhx, -nh:, -2*nh:-nh],
 
-        "west_bottom"   : jnp.s_[..., :nh, nhy, :nh],
+        "west_bottom"    : jnp.s_[..., :nh, nhy, :nh],
         "west_bottom_10" : jnp.s_[..., nh:2*nh, nhy, :nh],
         "west_bottom_01" : jnp.s_[..., :nh, nhy, nh:2*nh],
 
-        "east_bottom"   : jnp.s_[..., -nh:, nhy, :nh],
+        "east_bottom"    : jnp.s_[..., -nh:, nhy, :nh],
         "east_bottom_10" : jnp.s_[..., -2*nh:-nh, nhy, :nh],
         "east_bottom_01" : jnp.s_[..., -nh:, nhy, nh:2*nh],
 
-        "east_top"      : jnp.s_[..., -nh:, nhy, -nh:],
+        "east_top"       : jnp.s_[..., -nh:, nhy, -nh:],
         "east_top_10"    : jnp.s_[...,  -2*nh:-nh, nhy, -nh:],
         "east_top_01"    : jnp.s_[...,  -nh:, nhy, -2*nh:-nh], 
 
-        "west_top"      : jnp.s_[..., :nh, nhy, -nh:],
+        "west_top"       : jnp.s_[..., :nh, nhy, -nh:],
         "west_top_01"    : jnp.s_[..., :nh, nhy, -2*nh:-nh],
         "west_top_10"    : jnp.s_[..., nh:2*nh, nhy, -nh:],
     }

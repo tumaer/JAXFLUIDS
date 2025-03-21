@@ -1,9 +1,11 @@
 from typing import List
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+
+Array = jax.Array
 
 class DerivativeSecondOrderCenter(SpatialDerivative):
     """2nd order stencil for 1st derivative at the cell center
@@ -27,6 +29,7 @@ class DerivativeSecondOrderCenter(SpatialDerivative):
                                                           offset=offset)
 
         self.array_slices([(-1,1)], at_cell_center=True)
+        self.coeffs = jnp.array([1.0 / 2.0])
 
     def derivative_xi(
             self,
@@ -36,5 +39,5 @@ class DerivativeSecondOrderCenter(SpatialDerivative):
             **kwargs
         ) -> Array:
         s1_ = self.s_[axis]
-        deriv_xi = (1.0 / 2.0 / dxi) * (-buffer[s1_[0]] + buffer[s1_[1]])
+        deriv_xi = 1.0 / dxi * self.coeffs[0] * (buffer[s1_[1]] - buffer[s1_[0]])
         return deriv_xi

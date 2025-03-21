@@ -46,11 +46,5 @@
     },
     "output": {
         "primitives": ["density", "velocity", "pressure", "temperature"]
-    },
-    "nondimensionalization_parameters": {
-        "density_reference": 1.0,
-        "length_reference": 1.0,
-        "velocity_reference": 1.0,
-        "temperature_reference": 1.0
     }
 }

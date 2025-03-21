@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Union
 import types
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.materials import DICT_MATERIAL
@@ -11,6 +11,8 @@ from jaxfluids.materials.mixture_materials.mixture import Mixture
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.materials.single_materials.material import Material
 from jaxfluids.data_types.case_setup.material_properties import LevelsetMixtureSetup, MaterialPropertiesSetup
+
+Array = jax.Array
 
 class LevelsetMixture(Mixture):
 
@@ -63,8 +65,8 @@ class LevelsetMixture(Mixture):
         return bulk_viscosity
     
     def get_specific_heat_capacity(self, temperature: Array) -> Array:
-        specific_heat_capacity_1 = self.materials["positive"].get_dynamic_viscosity(temperature[0])
-        specific_heat_capacity_2 = self.materials["negative"].get_dynamic_viscosity(temperature[1])
+        specific_heat_capacity_1 = self.materials["positive"].get_specific_heat_capacity(temperature[0])
+        specific_heat_capacity_2 = self.materials["negative"].get_specific_heat_capacity(temperature[1])
         specific_heat_capacity = jnp.stack(
             [specific_heat_capacity_1 * jnp.ones_like(specific_heat_capacity_2),
             specific_heat_capacity_2 * jnp.ones_like(specific_heat_capacity_1)],
@@ -111,26 +113,24 @@ class LevelsetMixture(Mixture):
         return energy
 
     def get_total_energy(self,
-        p: Array, u: Array,
-        v: Array, w: Array,
+        p: Array, velocity_vec: Array,
         rho: Array
         ) -> Array:
         # Total energy per unit volume
         total_energy = []
         for i, fluid in enumerate(self.materials):
-            total_energy.append( self.materials[fluid].get_total_energy(p[i], rho[i], u[i], v[i], w[i]) )
+            total_energy.append( self.materials[fluid].get_total_energy(p[i], rho[i], velocity_vec[:,i]) )
         total_energy = jnp.stack(total_energy, axis=0)
         return total_energy
 
     def get_total_enthalpy(self,
-        p:Array, u:Array,
-        v:Array, w:Array,
+        p: Array, velocity_vec: Array,
         rho: Array
         ) -> Array:
         # Total specific enthalpy
         total_enthalpy = []
         for i, fluid in enumerate(self.materials):
-            total_enthalpy.append( self.materials[fluid].get_total_enthalpy(p[i], rho[i], u[i], v[i], w[i]) )
+            total_enthalpy.append( self.materials[fluid].get_total_enthalpy(p[i], rho[i], velocity_vec[:,i]) )
         total_enthalpy = jnp.stack(total_enthalpy, axis=0)
         return total_enthalpy
 

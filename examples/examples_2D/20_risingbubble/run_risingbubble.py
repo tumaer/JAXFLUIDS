@@ -13,24 +13,27 @@ initialization_manager = InitializationManager(input_manager)
 sim_manager = SimulationManager(input_manager)
 
 # RUN SIMULATION
-simulation_buffers, time_control_variables, \
-forcing_parameters = initialization_manager.initialization()
-sim_manager.simulate(simulation_buffers, time_control_variables)
+jxf_buffers = initialization_manager.initialization()
+sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
 quantities = [
     "real_pressure", "real_density", "real_velocity",
     "levelset", "velocity", "volume_fraction", "density"]
-cell_centers, cell_sizes, times, data_dict = load_data(path, quantities)
+jxf_data = load_data(path, quantities)
+
+cell_centers = jxf_data.cell_centers
+data = jxf_data.data
+times = jxf_data.times
 
 # PLOT
 nrows_ncols = (1,4)
 plot_dict = {
-    "real_pressure": data_dict["real_pressure"],
-    "real_density" : data_dict["real_density"],
-    "velocityX": data_dict["real_velocity"][:,0],
-    "velocityY": data_dict["real_velocity"][:,1],
+    "real_pressure": data["real_pressure"],
+    "real_density" : data["real_density"],
+    "velocityX": data["real_velocity"][:,0],
+    "velocityY": data["real_velocity"][:,1],
 }
 
 image_path = "./images"
@@ -53,9 +56,9 @@ create_2D_figure(
 # MASS
 X, Y, Z = np.meshgrid(cell_centers[0], cell_centers[1], cell_centers[2], indexing="ij")
 cell_volume = np.prod(np.array(cell_sizes))
-volume_fraction = 1.0 - data_dict["volume_fraction"]
-density = data_dict["density"][:,1]
-velocity = data_dict["velocity"][:,1,1]
+volume_fraction = 1.0 - data["volume_fraction"]
+density = data["density"][:,1]
+velocity = data["velocity"][:,1,1]
 
 cell_mass = volume_fraction * density * cell_volume
 mass = np.sum(cell_mass, axis=(-3,-2,-1))

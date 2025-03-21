@@ -4,44 +4,35 @@ import types
 
 import jax
 import jax.numpy as jnp
-from jax import Array
 
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 from jaxfluids.domain.domain_information import DomainInformation
-from jaxfluids.levelset.geometry_calculator import compute_fluid_masks, compute_cut_cell_mask
-from jaxfluids.levelset.helper_functions import linear_filtering
-from jaxfluids.levelset.interface_quantity_computer import InterfaceQuantityComputer
-from jaxfluids.levelset.interface_flux_computer import InterfaceFluxComputer 
+from jaxfluids.levelset.helper_functions import transform_to_volume_average
+from jaxfluids.levelset.geometry.mask_functions import compute_fluid_masks, compute_cut_cell_mask_sign_change_based, compute_narrowband_mask
 from jaxfluids.levelset.reinitialization.levelset_reinitializer import LevelsetReinitializer
-from jaxfluids.levelset.ghost_cell_handler import GhostCellHandler
+from jaxfluids.levelset.reinitialization.pde_based_reinitializer import PDEBasedReinitializer
+from jaxfluids.levelset.fluid_fluid.fluid_fluid_handler import FluidFluidLevelsetHandler
+from jaxfluids.levelset.fluid_solid.fluid_solid_handler import FluidSolidLevelsetHandler
+from jaxfluids.levelset.extension.material_fields.extension_handler import ghost_cell_extension_material_fields
 from jaxfluids.materials.material_manager import MaterialManager
-from jaxfluids.levelset.geometry_calculator import GeometryCalculator
+from jaxfluids.levelset.geometry.geometry_calculator import GeometryCalculator
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+from jaxfluids.data_types.information import LevelsetProcedureInformation
 from jaxfluids.halos.halo_manager import HaloManager
 from jaxfluids.equation_manager import EquationManager
+from jaxfluids.levelset.mixing import ConservativeMixer, SolidsMixer
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.data_types.information import LevelsetPositivityInformation, LevelsetResidualInformation
 from jaxfluids.levelset.residual_computer import ResidualComputer
 from jaxfluids.data_types.information import LevelsetPositivityInformation
-from jaxfluids.levelset.mixing.conservative_mixer import ConservativeMixer
-from jaxfluids.data_types.case_setup import SolidPropertiesSetup
-from jaxfluids.levelset.quantity_extender import QuantityExtender
+from jaxfluids.levelset.fluid_solid.solid_properties_manager import SolidPropertiesManager
+from jaxfluids.levelset.extension.iterative_extender import IterativeExtender
+from jaxfluids.data_types.buffers import LevelsetSolidCellIndicesField, LevelsetSolidCellIndices
 from jaxfluids.config import precision
 
-class LevelsetHandler():
+Array = jax.Array
 
-    """ The LevelsetHandler class manages computations to perform two-phase
-    simulations using the levelset method.
-    The main functionality includes
-        - Transformation of the conservative states from volume-averages
-            to actual conserved quantities according to the volume fraction
-        - Weighting of the cell face fluxes according to the apertures
-        - Computation of the interface fluxes
-        - Computation of the levelset advection right-hand-side 
-        - LevelsetExtensionSetup of the primitive state from the real fluid cells to the ghost fluid cells
-        - Mixing of the integrated conservative states
-        - Computation of geometrical quantities, i.e., volume fraction,
-            apertures and real fluid/cut cell masks
-    """
+class LevelsetHandler():
     
     def __init__(
             self,
@@ -50,10 +41,8 @@ class LevelsetHandler():
             material_manager: MaterialManager,
             equation_manager: EquationManager,
             halo_manager: HaloManager,
-            solid_properties: SolidPropertiesSetup
+            solid_properties_manager: SolidPropertiesManager
             ) -> None:
-
-        self.eps = precision.get_eps()
 
         self.material_manager = material_manager
         self.equation_manager = equation_manager
@@ -61,83 +50,94 @@ class LevelsetHandler():
         self.domain_information = domain_information
         self.equation_information = equation_manager.equation_information
         self.levelset_setup = numerical_setup.levelset
+        
+        model = self.levelset_setup.model
 
         levelset_setup = numerical_setup.levelset
         self.geometry_calculator = GeometryCalculator(
-                domain_information=domain_information,
-                levelset_setup=levelset_setup)
-
-        self.interface_flux_computer = InterfaceFluxComputer(
             domain_information = domain_information,
-            material_manager = material_manager,
-            numerical_setup = numerical_setup,
-            solid_temperature_model = solid_properties.temperature.model)
+            geometry_setup = numerical_setup.levelset.geometry,
+            halo_cells_geometry = levelset_setup.halo_cells,
+            narrowband_computation = levelset_setup.narrowband.computation_width
+            )
         
         levelset_setup = numerical_setup.levelset
-        extender_interface = QuantityExtender(
-            domain_information = domain_information,
-            halo_manager = halo_manager,
-            extension_setup = levelset_setup.extension,
-            narrowband_setup = levelset_setup.narrowband,
-            extension_quantity = "interface")
 
-        extender_primes = QuantityExtender(
+        iterative_extension_setup = levelset_setup.extension.primitives.iterative
+        self.extender_primes = IterativeExtender(
             domain_information = domain_information,
             halo_manager = halo_manager,
-            extension_setup = levelset_setup.extension,
-            narrowband_setup = levelset_setup.narrowband,
-            extension_quantity = "primitives")
-        
-        nh_geometry = levelset_setup.halo_cells
+            is_jaxwhileloop = iterative_extension_setup.is_jaxwhileloop,
+            residual_threshold = iterative_extension_setup.residual_threshold,
+            extension_quantity = "primitives"
+            )
+    
         narrowband_setup = levelset_setup.narrowband
         reinitialization_setup = levelset_setup.reinitialization_runtime
         reinitializer = reinitialization_setup.type
-        self.reinitializer: LevelsetReinitializer = reinitializer(
+        self.reinitializer: PDEBasedReinitializer = reinitializer(
             domain_information = domain_information,
             halo_manager = halo_manager,
             reinitialization_setup = reinitialization_setup,
-            halo_cells = nh_geometry,
-            narrowband_setup = narrowband_setup)
-
-        self.ghost_cell_handler = GhostCellHandler(
+            narrowband_setup = narrowband_setup
+            )
+    
+        self.conservatives_mixer = ConservativeMixer(
             domain_information = domain_information,
-            halo_manager = halo_manager,
-            extender_primes = extender_primes,
-            equation_manager = equation_manager,
-            levelset_setup = levelset_setup)
-
-        self.interface_quantity_computer = InterfaceQuantityComputer(
-            domain_information = domain_information,
-            material_manager = material_manager,
-            solid_properties = solid_properties,
-            extender_interface = extender_interface,
-            numerical_setup = numerical_setup)
-        
-        self.residual_computer = ResidualComputer(
-            domain_information = domain_information,
-            levelset_reinitializer = self.reinitializer,
-            extender_primes = extender_primes,
-            extender_interface = extender_interface,
-            levelset_setup = levelset_setup)
-
-        mixer = levelset_setup.mixing.type
-        self.mixer: ConservativeMixer = mixer(
-            domain_information = domain_information,
-            equation_information = equation_manager.equation_information,
             levelset_setup = levelset_setup,
-            halo_manager = halo_manager,
             material_manager = material_manager,
-            equation_manager = equation_manager)
+            equation_manager = equation_manager,
+            halo_manager = halo_manager
+            )
 
         levelset_advection_stencil = levelset_setup.levelset_advection_stencil
         self.levelset_advection_stencil: SpatialDerivative = levelset_advection_stencil(
             nh = domain_information.nh_conservatives,
-            inactive_axes = domain_information.inactive_axes)
+            inactive_axes = domain_information.inactive_axes
+            )
 
-        # ACTIVE PHYSICAL FLUXES
-        self.is_viscous_flux = numerical_setup.active_physics.is_viscous_flux
-        self.is_surface_tension = numerical_setup.active_physics.is_surface_tension
-        self.is_convective_flux = numerical_setup.active_physics.is_convective_flux
+        if model == "FLUID-FLUID":
+            iterative_extension_setup = levelset_setup.extension.interface.iterative
+            extender_interface = IterativeExtender(
+                domain_information = domain_information,
+                halo_manager = halo_manager,
+                is_jaxwhileloop = iterative_extension_setup.is_jaxwhileloop,
+                residual_threshold = iterative_extension_setup.residual_threshold,
+                extension_quantity = "interface"
+                )
+            self.fluid_fluid_handler = FluidFluidLevelsetHandler(
+                domain_information = domain_information,
+                material_manager = material_manager,
+                geometry_calculator = self.geometry_calculator,
+                extender_interface = extender_interface,
+                levelset_setup = levelset_setup
+                )
+
+            self.fluid_solid_handler = None
+            extender_solids = None
+
+        elif "FLUID-SOLID" in model:
+            if levelset_setup.solid_coupling.thermal == "TWO-WAY":
+                raise NotImplementedError
+
+            else:
+                extender_solids = None
+
+            self.fluid_solid_handler = FluidSolidLevelsetHandler(
+                domain_information = domain_information,
+                material_manager = material_manager,
+                halo_manager = halo_manager,
+                geometry_calculator = self.geometry_calculator,
+                levelset_setup = levelset_setup,
+                solid_properties_manager = solid_properties_manager,
+                extender = extender_solids,
+                )
+            
+            self.fluid_fluid_handler = None
+            extender_interface = None
+
+        else:
+            raise NotImplementedError
 
         active_axes_indices = domain_information.active_axes_indices
         index_pairs = [(0,1), (0,2), (1,2)]
@@ -146,275 +146,25 @@ class LevelsetHandler():
             if pair[0] in active_axes_indices and pair[1] in active_axes_indices:
                 self.index_pairs_mixing.append(pair)
 
-    def compute_volume_fraction_and_apertures(
-            self,
-            levelset: Array
-            ) -> Tuple[Array, Tuple]:
-        """Wrapper function for the linear 
-        interface reconstruction performed by
-        the geometry calculator.
-
-        :param levelset: Levelset buffer
-        :type levelset: Array
-        :return: Tuple containing the volume fraction
-            buffer and the aperture buffers
-        :rtype: Tuple[Array, Tuple]
-        """
-        volume_fraction, apertures = \
-        self.geometry_calculator.interface_reconstruction(levelset)
-        return volume_fraction, apertures
-
-    def transform_to_conservatives(
-            self,
-            conservatives: Array,
-            volume_fraction: Array
-            ) -> Array:
-        """Transforms the volume-averaged conservatives
-        to actual conservatives that can be integrated.
-
-        :param conservatives: Buffer of conservative variables
-        :type conservatives: Array
-        :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: Array
-        :return: Buffer of actual conservative variables
-        :rtype: Array
-        """
-        nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
-        nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
-        levelset_model = self.levelset_setup.model
-        if levelset_model == "FLUID-FLUID":
-            volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
-        conservatives = conservatives.at[...,nhx,nhy,nhz].mul(volume_fraction[...,nhx_,nhy_,nhz_])
-        return conservatives
-
-    def weight_cell_face_flux_xi(
-            self,
-            flux_xi: Array,
-            apertures: Array
-            ) -> Array:
-        """Weights the cell face fluxes according to the apertures.
-
-        :param flux_xi: Cell face flux at xi
-        :type flux_xi: Array
-        :param apertures: Aperture buffer
-        :type apertures: Array
-        :return: Weighted cell face flux at xi
-        :rtype: Array
-        """
-
-        nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
-        levelset_model = self.levelset_setup.model
-        if levelset_model == "FLUID-FLUID": 
-            apertures = jnp.stack([apertures, 1.0 - apertures], axis=0)
-        flux_xi *= apertures[...,nhx_,nhy_,nhz_]
-        return flux_xi
-
-    def weight_volume_force(
-            self,
-            volume_force: Array,
-            volume_fraction: Array
-            ) -> Array:
-        """Weights the volume forces according to the volume fraction.
-
-        :param volume_force: Volume force buffer
-        :type volume_force: Array
-        :param volume_fraction: Volume fraction buffer
-        :type volume_fraction: Array
-        :return: Weighted volume force
-        :rtype: Array
-        """
-        nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
-        levelset_model = self.levelset_setup.model
-        if levelset_model == "FLUID-FLUID":
-            volume_fraction = jnp.stack([volume_fraction, 1.0 - volume_fraction], axis=0)
-        volume_force *= volume_fraction[...,nhx_,nhy_,nhz_]
-        return volume_force
-
-    def compute_solid_velocity(
-            self,
-            physical_simulation_time: float
-            ) -> Array:
-        """Wrapper to compute solid velocity.
-
-        :param physical_simulation_time: Current physical simulation time
-        :type physical_simulation_time: float
-        :return: Interface velocity buffer
-        :rtype: Array
-        """
-        solid_velocity = self.interface_quantity_computer.compute_solid_velocity(
-            physical_simulation_time)
-        return solid_velocity
-
-    def compute_solid_temperature(
-            self,
-            physical_simulation_time: float
-            ) -> Array:
-        """Wrapper to compute solid temperature.
-
-        :param physical_simulation_time: _description_
-        :type physical_simulation_time: float
-        :return: _description_
-        :rtype: Array
-        """
-        solid_temperature = \
-        self.interface_quantity_computer.compute_solid_temperature(
-            physical_simulation_time)
-        return solid_temperature
-
-    def compute_inviscid_solid_acceleration_xi(
-            self,
-            primitives: Array,
-            volume_fraction: Array,
-            apertures: Array,
-            axis: int,
-            gravity: Array = None
-            ) -> Array:
-        """Computes the rigid body acceleration vector for
-        FLUID-SOLID-DYNAMIC-COUPLED interface interaction.
-
-        :param primitives: Primitive variable buffer
-        :type primitives: Array
-        :param apertures: Aperture buffer
-        :type apertures: Tuple
-        :param physical_simulation_time: Current physical simulation time
-        :type physical_simulation_time: float
-        :return: Rigid body accerlation
-        :rtype: Array
-        """
-        rigid_body_acceleration_xi = \
-        self.interface_quantity_computer.compute_inviscid_solid_acceleration_xi(
-            primitives, volume_fraction, apertures,  axis, gravity)
-        return rigid_body_acceleration_xi
-
-
-    def compute_viscous_solid_acceleration(
-            self,
-            primitives: Array,
-            levelset: Array,
-            volume_fraction: Array,
-            apertures: Array,
-            friction: Array,
-            ) -> Array:
-        viscous_rigid_body_acceleration = \
-        self.interface_quantity_computer.compute_viscous_solid_acceleration(
-            primitives, levelset, volume_fraction, apertures, friction)
-        return viscous_rigid_body_acceleration
-
-    def compute_interface_quantities(
-            self,
-            primitives: Array,
-            levelset: Array,
-            volume_fraction: Array,
-            interface_velocity: Array = None,
-            interface_pressure: Array = None,
-            steps: int = None,
-            CFL: float = None,
-            ) -> Tuple[Array, Array, float]:
-        """Wrapper to compute interface quantities.
-
-        :param primitives: _description_
-        :type primitives: Array
-        :param levelset: _description_
-        :type levelset: Array
-        :param interface_velocity: _description_, defaults to None
-        :type interface_velocity: Array, optional
-        :param interface_pressure: _description_, defaults to None
-        :type interface_pressure: Array, optional
-        :param steps: _description_, defaults to None
-        :type steps: int, optional
-        :param CFL: _description_, defaults to None
-        :type CFL: float, optional
-        :return: _description_
-        :rtype: Tuple[Array, Array, float]
-        """
-        normal = self.geometry_calculator.compute_normal(levelset)
-        if self.is_surface_tension:
-            curvature = self.geometry_calculator.compute_curvature(levelset)
-        else:
-            curvature = None
-        interface_velocity, interface_pressure, step_count = \
-        self.interface_quantity_computer.compute_interface_quantities(
-            primitives, levelset, volume_fraction, normal, curvature, steps, CFL,
-            interface_velocity, interface_pressure)
-        
-        return interface_velocity, interface_pressure, step_count
-
-    def compute_viscous_solid_force(
-            self,
-            primitives: Array,
-            interface_velocity: Array,
-            levelset: Array,
-            apertures: Tuple[Array]
-            ) -> Array:
-        """Wrapper to compute the solid viscous
-        interface flux according to Meyer 2010
-
-        :param primitives: _description_
-        :type primitives: Array
-        :param levelset: _description_
-        :type levelset: Array
-        :param volume_fraction: _description_
-        :type volume_fraction: Array
-        :param apertures: _description_
-        :type apertures: Array
-        :return: _description_
-        :rtype: Array
-        """
-        normal = self.geometry_calculator.compute_normal(levelset)
-        interface_length = self.geometry_calculator.compute_interface_length(apertures)
-        interface_flux = self.interface_flux_computer.compute_viscous_solid_force(
-            primitives, interface_velocity, levelset, normal, interface_length)
-        return interface_flux
-
-    def compute_interface_flux_xi(
-            self,
-            primitives: Array,
-            levelset: Array,
-            interface_velocity: Array,
-            interface_pressure: Array,
-            volume_fraction: Array,
-            apertures: Array,
-            axis: int,
-            temperature: Array,
-            ) -> Array:
-        """Computes the interface flux depending on
-        the present interface interaction type.
-
-        :param primitives: _description_
-        :type primitives: Array
-        :param levelset: _description_
-        :type levelset: Array
-        :param interface_velocity: _description_
-        :type interface_velocity: Array
-        :param interface_pressure: _description_
-        :type interface_pressure: Array
-        :param volume_fraction: _description_
-        :type volume_fraction: Array
-        :param apertures: _description_
-        :type apertures: Array
-        :param axis: _description_
-        :type axis: int
-        :param temperature: _description_
-        :type temperature: Array
-        :return: _description_
-        :rtype: Array
-        """
-        normal = self.geometry_calculator.compute_normal(levelset)
-        interface_flux_xi = self.interface_flux_computer.compute_interface_flux_xi(
-            primitives, interface_velocity, interface_pressure,
-            volume_fraction, apertures, normal, axis,
-            temperature)
-        return interface_flux_xi
 
     def compute_levelset_advection_rhs_xi(
             self,
             levelset: Array,
             interface_velocity: Array,
-            axis: int
-            ) -> Array:
+            solid_velocity: Array,
+            axis: int,
+            physical_simulation_time: float,
+            ml_setup: MachineLearningSetup
+        ) -> Array:
         """Computes the right-hand-side of the
         levelset advection equation.
 
+        FLUID-FLUID
+            solid_velocity is None
+        FLUID-SOLID
+            interface_velocity is None
+            ONE-WAY: solid_velocity is None, 
+            
         :param levelset: Levelset buffer
         :type levelset: Array
         :param interface_velocity: Interface velocity buffer
@@ -428,82 +178,83 @@ class LevelsetHandler():
         nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
         nhx_, nhy_, nhz_ = self.domain_information.domain_slices_geometry
         smallest_cell_size = self.domain_information.smallest_cell_size
-        cell_size = self.domain_information.smallest_cell_size
+        cell_sizes = self.domain_information.get_device_cell_sizes()
 
         levelset_model = self.levelset_setup.model
         narrowband_computation = self.levelset_setup.narrowband.computation_width
+        solid_coupling = self.levelset_setup.solid_coupling
+        
+        if levelset_model == "FLUID-FLUID":
+            levelset_velocity = interface_velocity[...,nhx_,nhy_,nhz_]
+        elif levelset_model == "FLUID-SOLID":
+            if solid_coupling.dynamic == "ONE-WAY":
+                solid_properties_manager = self.fluid_solid_handler.solid_properties_manager
+                levelset_velocity = solid_properties_manager.compute_imposed_solid_velocity(
+                    physical_simulation_time,
+                    ml_setup
+                )
+            elif solid_coupling.dynamic == "TWO-WAY":
+                raise NotImplementedError
 
-        if levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            interface_velocity = interface_velocity[...,nhx,nhy,nhz]
-        elif levelset_model == "FLUID-FLUID":
-            interface_velocity = interface_velocity[...,nhx_,nhy_,nhz_]
+            else:
+                levelset_velocity = 0.0
+        else:
+            RuntimeError
 
         # GEOMETRICAL QUANTITIES
         normal = self.geometry_calculator.compute_normal(levelset)
         if levelset_model == "FLUID-FLUID":
-            normalized_levelset = jnp.abs(levelset[nhx,nhy,nhz])/smallest_cell_size
-            mask_narrowband = jnp.where(normalized_levelset <= narrowband_computation, 1, 0)
+            mask_narrowband = compute_narrowband_mask(levelset, smallest_cell_size, narrowband_computation)
+            mask_narrowband = mask_narrowband[nhx,nhy,nhz]
         else:
             mask_narrowband = jnp.ones_like(levelset[nhx,nhy,nhz])
 
         # DERIVATIVE
-        derivative_L = self.levelset_advection_stencil.derivative_xi(levelset, 1.0, axis, 0)
-        derivative_R = self.levelset_advection_stencil.derivative_xi(levelset, 1.0, axis, 1)
+        derivative_L = self.levelset_advection_stencil.derivative_xi(levelset, cell_sizes[axis], axis, 0)
+        derivative_R = self.levelset_advection_stencil.derivative_xi(levelset, cell_sizes[axis], axis, 1)
 
         # UPWINDING
         if levelset_model == "FLUID-FLUID":
-            velocity = interface_velocity * normal[axis,nhx_,nhy_,nhz_]
+            velocity = levelset_velocity * normal[axis,nhx_,nhy_,nhz_]
         else:
-            velocity = interface_velocity[axis]
-        mask_L = jnp.where(velocity >= 0.0, 1.0, 0.0)
-        mask_R = 1.0 - mask_L
-
+            velocity = levelset_velocity[axis]
+        derivative = jnp.where(velocity >= 0.0, derivative_L, derivative_R)
+    
         # SUM RHS
-        rhs_contribution  = - velocity * (mask_L * derivative_L + mask_R * derivative_R) / cell_size
+        rhs_contribution = - velocity * derivative
         rhs_contribution *= mask_narrowband
 
         return rhs_contribution
 
-    def compute_residuals(
+    def get_reinitialization_flag(
             self,
-            primitives: Array,
-            volume_fraction: Array,
-            levelset: Array = None,
-            interface_velocity: Array = None,
-            interface_pressure: Array = None,
-            reinitialization_step_count: int = None,
-            prime_extension_step_count: int = None,
-            interface_extension_step_count: int = None,
-            ) -> LevelsetResidualInformation:
-        """Wrapper function to compute
-        the residuals  of the reinitialization
-        and extension procedure.
+            simulation_step: int
+            ) -> bool:
+        """Decides whether to perform 
+        reinitialization for the current
+        simulation step based on the 
+        the reinitialization interval.
 
-        :param levelset: _description_
-        :type levelset: Array
-        :param primitives: _description_
-        :type primitives: Array
-        :param conservatives: _description_
-        :type conservatives: Array
+        :param simulation_step: _description_
+        :type simulation_step: jnp.int32
         :return: _description_
-        :rtype: Tuple[float]
+        :rtype: bool
         """
-
-        normal = self.geometry_calculator.compute_normal(levelset)
-        levelset_residuals_info = self.residual_computer.compute_residuals(
-            primitives, volume_fraction, levelset, normal,
-            interface_velocity, interface_pressure,
-            reinitialization_step_count, prime_extension_step_count,
-            interface_extension_step_count)
-    
-        return levelset_residuals_info
+        reinitialization_setup = self.levelset_setup.reinitialization_runtime
+        interval_reinitialization = reinitialization_setup.interval
+        if simulation_step % interval_reinitialization == 0:
+            perform_reinitialization = True
+        else:
+            perform_reinitialization = False
+        return perform_reinitialization
 
     def treat_integrated_levelset(
             self,
             levelset: Array,
             perform_reinitialization: bool,
             is_last_stage: bool
-            ) -> Tuple[Array, Array, Array, int]:
+            ) -> Tuple[Array, Array, Array,
+                       LevelsetProcedureInformation]:
         """Treats the integrated levelset field.
         1) Reinitialization (only for last stage)
         2) Halo update and interface recontruction
@@ -526,20 +277,20 @@ class LevelsetHandler():
         CFL = reinitialization_setup.CFL
         steps = reinitialization_setup.steps
 
-        levelset = self.halo_manager.perform_halo_update_levelset(
-            levelset, True, True)
-
         if perform_reinitialization and steps > 0 and is_last_stage:
+            levelset = self.halo_manager.perform_halo_update_levelset(
+                levelset, False, False)
             mask_reinitialize = self.reinitializer.compute_reinitialization_mask(levelset)
-            levelset, step_count = self.reinitializer.perform_reinitialization(
+            levelset, info = self.reinitializer.perform_reinitialization(
                 levelset, CFL, steps, mask_reinitialize)
             if perform_cutoff:
                 levelset = self.reinitializer.set_levelset_cutoff(levelset)
-            levelset = self.halo_manager.perform_halo_update_levelset(
-                levelset, True, True, False, False)
         else:
-            step_count = 0
+            info = None
 
+        levelset = self.halo_manager.perform_halo_update_levelset(
+            levelset, True, True)
+            
         volume_fraction, apertures = self.geometry_calculator.interface_reconstruction(
             levelset)
 
@@ -551,31 +302,9 @@ class LevelsetHandler():
             volume_fraction, apertures = self.geometry_calculator.interface_reconstruction(
                 levelset)
             
-        return levelset, volume_fraction, apertures, step_count
+        return levelset, volume_fraction, apertures, info
 
-    def get_reinitialization_flag(
-            self,
-            simulation_step: jnp.int32
-            ) -> bool:
-        """Decides whether to perform 
-        reinitialization for the current
-        simulation step based on the 
-        the reinitialization interval.
-
-        :param simulation_step: _description_
-        :type simulation_step: jnp.int32
-        :return: _description_
-        :rtype: bool
-        """
-        reinitialization_setup = self.levelset_setup.reinitialization_runtime
-        interval_reinitialization = reinitialization_setup.interval
-        if simulation_step % interval_reinitialization == 0:
-            perform_reinitialization = True
-        else:
-            perform_reinitialization = False
-        return perform_reinitialization
-
-    def treat_integrated_material_fields(
+    def mixing_material_fields(
             self,
             conservatives: Array,
             primitives: Array,
@@ -583,16 +312,10 @@ class LevelsetHandler():
             volume_fraction_new: Array,
             volume_fraction_old: Array,
             physical_simulation_time: Array,
-            solid_velocity: Array = None
-            ) -> Tuple[Array, Array,
-            LevelsetPositivityInformation]:
-        """Treats the integrated material fields.
-        1) Halo update for integrated conservatives
-        2) Mixing procedure on integrated conservatives
-        3) Compute primitives from conservatives
-            in real fluid
-        4) Halo update for primes in real fluid
-        5) Perform ghost cell treatment
+            solid_cell_indices: LevelsetSolidCellIndices = None,
+            ml_setup: MachineLearningSetup = None
+        ) -> Tuple[Array, Array, Array, int, Array]:
+        """ 
 
         :param conservatives: _description_
         :type conservatives: Array
@@ -606,53 +329,88 @@ class LevelsetHandler():
         :type volume_fraction_old: Array
         :param physical_simulation_time: _description_
         :type physical_simulation_time: Array
-        :param solid_velocity: _description_, defaults to None
-        :type solid_velocity: Array, optional
+        :param solid_cell_indices: _description_, defaults to None
+        :type solid_cell_indices: LevelsetSolidCellIndices, optional
         :return: _description_
-        :rtype: Tuple[Array]
+        :rtype: Tuple[Array, Array, Array, int]
         """
 
-
-        nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
-        levelset_model = self.equation_information.levelset_model
-
-        normal = self.geometry_calculator.compute_normal(levelset)
+        # NOTE halo update for mixing
         conservatives = self.halo_manager.perform_halo_update_conservatives_mixing(
             conservatives)
-        conservatives, invalid_cells, mixing_invalid_cell_count = self.mixer.perform_mixing(
+        normal = self.geometry_calculator.compute_normal(levelset)
+        conservatives, invalid_cells, mixing_invalid_cell_count = self.conservatives_mixer.perform_mixing(
             conservatives, levelset, normal, volume_fraction_new,
-            volume_fraction_old)
+            volume_fraction_old, solid_cell_indices=solid_cell_indices)
 
+        # NOTE primitives in real fluid
         primitives = self.compute_primitives_from_conservatives_in_real_fluid(
             conservatives, primitives, volume_fraction_new)
+        
+        # NOTE halo update for extension
+        # interpolation based extension requires all halo regions to be updated
+        extension_setup = self.levelset_setup.extension.primitives
+        is_use_interpolation = extension_setup.method == "INTERPOLATION"
         primitives = self.halo_manager.perform_halo_update_material(
-            primitives, physical_simulation_time, False, False)
+            primitives, physical_simulation_time, is_use_interpolation,
+            is_use_interpolation, ml_setup=ml_setup)
 
-        if levelset_model == "FLUID-SOLID-DYNAMIC":
-            solid_velocity = self.compute_solid_velocity(physical_simulation_time)
-        elif levelset_model == "FLUID-SOLID-DYNAMIC-COUPLED":
-            solid_velocity = solid_velocity[...,nhx,nhy,nhz]
-        else:
-            solid_velocity = None
-
-        conservatives, primitives, extension_invalid_cell_count, extension_step_count = \
-        self.ghost_cell_handler.perform_ghost_cell_treatment(
-            conservatives, primitives, levelset, volume_fraction_new,
-            physical_simulation_time, normal, solid_velocity,
-            invalid_cells)
-
-        levelset_positivity_info = LevelsetPositivityInformation(
+        return (
+            primitives,
+            conservatives,
+            invalid_cells,
             mixing_invalid_cell_count,
-            extension_invalid_cell_count)
+        )
 
-        return conservatives, primitives, levelset_positivity_info, extension_step_count
+    def extension_material_fields(
+            self,
+            conservatives: Array,
+            primitives: Array,
+            levelset: Array,
+            volume_fraction: Array,
+            physical_simulation_time: Array,
+            invalid_cells: Array,
+            solid_temperature: Array,
+            solid_velocity: Array,
+            interface_heat_flux: Array,
+            interface_temperature: Array,
+            cell_indices: LevelsetSolidCellIndicesField,
+            ml_setup: MachineLearningSetup = None
+        ) -> Tuple[Array, Array, LevelsetPositivityInformation,
+                   LevelsetProcedureInformation]:
+
+        if self.fluid_solid_handler is not None:
+            solid_properties_manager = self.fluid_solid_handler.solid_properties_manager
+        else:
+            solid_properties_manager = None
+
+        extension_setup = self.levelset_setup.extension.primitives
+        narrowband_setup = self.levelset_setup.narrowband
+
+        normal = self.geometry_calculator.compute_normal(levelset)
+        (
+            conservatives,
+            primitives,
+            extension_invalid_cell_count,
+            info_prime_extension
+        ) = ghost_cell_extension_material_fields(
+            conservatives, primitives, levelset, volume_fraction,
+            normal, solid_temperature, solid_velocity,
+            interface_heat_flux, interface_temperature,
+            invalid_cells, physical_simulation_time,
+            extension_setup, narrowband_setup, cell_indices,
+            self.extender_primes, self.equation_manager, solid_properties_manager,
+            ml_setup=ml_setup
+        )
+        
+        return conservatives, primitives, extension_invalid_cell_count, info_prime_extension
 
     def compute_primitives_from_conservatives_in_real_fluid(
             self,
             conservatives: Array,
             primitives: Array,
             volume_fraction: Array,
-            ) -> Array:
+            ) -> Tuple[Array]:
         """Computes the primitive variables from the
         integrated mixed conservatives within the real fluid.
 
@@ -678,7 +436,8 @@ class LevelsetHandler():
         mask_ghost = 1 - mask_real
 
         primes_in_real = self.equation_manager.get_primitives_from_conservatives(
-            conservatives[...,nhx,nhy,nhz]) 
+            conservatives[...,nhx,nhy,nhz],
+            fluid_mask=mask_real)
         primes_in_real *= mask_real 
 
         primitives = primitives.at[...,nhx,nhy,nhz].mul(mask_ghost)

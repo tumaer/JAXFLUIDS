@@ -1,6 +1,7 @@
 from typing import Tuple
+
+import jax
 import jax.numpy as jnp
-from jax import Array
 
 from jaxfluids.data_types.numerical_setup.diffuse_interface import DiffuseInterfaceSetup
 from jaxfluids.domain.domain_information import DomainInformation
@@ -12,9 +13,10 @@ from jaxfluids.time_integration.time_integrator import TimeIntegrator
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 from jaxfluids.diffuse_interface.diffuse_interface_geometry_calculator import DiffuseInterfaceGeometryCalculator
-from jaxfluids.diffuse_interface.helper_functions import smoothed_interface_function, \
-    heaviside
+from jaxfluids.diffuse_interface.helper_functions import smoothed_interface_function, heaviside
 from jaxfluids.config import precision
+
+Array = jax.Array
 
 class DiffuseInterfaceCompressionComputer:
     """The DiffuseInterfaceCompressionComputer class implements functionality
@@ -49,14 +51,14 @@ class DiffuseInterfaceCompressionComputer:
         
         equation_information = equation_manager.equation_information
         self.is_surface_tension = equation_information.active_physics.is_surface_tension
-        self.mass_ids = equation_information.mass_ids
-        self.mass_slices = equation_information.mass_slices
-        self.vel_ids = equation_information.velocity_ids
-        self.vel_slices = equation_information.velocity_slices
-        self.energy_ids = equation_information.energy_ids
-        self.energy_slices = equation_information.energy_slices
-        self.vf_ids = equation_information.vf_ids
-        self.vf_slices = equation_information.vf_slices
+        self.ids_mass = equation_information.ids_mass
+        self.s_mass = equation_information.s_mass
+        self.vel_ids = equation_information.ids_velocity
+        self.vel_slices = equation_information.s_velocity
+        self.ids_energy = equation_information.ids_energy
+        self.s_energy = equation_information.s_energy
+        self.ids_volume_fraction = equation_information.ids_volume_fraction
+        self.s_volume_fraction = equation_information.s_volume_fraction
         
         self.flux_slices = [ 
             [jnp.s_[...,1:,:,:], jnp.s_[...,:-1,:,:]],
@@ -91,6 +93,13 @@ class DiffuseInterfaceCompressionComputer:
             self.Gamma_g = self.material_manager.diffuse_5eqm_mixture.one_gamma_[1]
             self.Pi_l = self.material_manager.diffuse_5eqm_mixture.gamma_pb_[0]
             self.Pi_g = self.material_manager.diffuse_5eqm_mixture.gamma_pb_[1]
+        elif equation_type == "DIFFUSE-INTERFACE-4EQM":
+            self.gamma_l = self.material_manager.diffuse_4eqm_mixture.gamma_vec[0]
+            self.gamma_g = self.material_manager.diffuse_4eqm_mixture.gamma_vec[1]
+            self.Gamma_l = self.material_manager.diffuse_4eqm_mixture.Gamma_vec[0]
+            self.Gamma_g = self.material_manager.diffuse_4eqm_mixture.Gamma_vec[1]
+            self.Pi_l = self.material_manager.diffuse_4eqm_mixture.Pi_vec[0]
+            self.Pi_g = self.material_manager.diffuse_4eqm_mixture.Pi_vec[1]
     
         self.delta_gamma = self.gamma_l - self.gamma_l
         self.delta_Gamma = self.Gamma_l - self.Gamma_g
@@ -219,7 +228,7 @@ class DiffuseInterfaceCompressionComputer:
         conservatives = self.limit_volume_fraction(conservatives)
         primitives = self.equation_manager.get_primitives_from_conservatives(conservatives)
         
-        volume_fraction = conservatives[self.vf_ids[0]]
+        volume_fraction = conservatives[self.ids_volume_fraction[0]]
         fictitious_timestep_size = CFL * self.smallest_cell_size
         
         for i in range(steps):
@@ -297,12 +306,12 @@ class DiffuseInterfaceCompressionComputer:
             timestep: float
             ) -> Array:
         
-        alpha_l = primitives[self.vf_ids[0]]
-        alpha_g = 1.0 - primitives[self.vf_ids[0]]
-        rhoalpha_l = primitives[self.mass_ids[0]]
-        rhoalpha_g = primitives[self.mass_ids[1]]
+        alpha_l = primitives[self.ids_volume_fraction[0]]
+        alpha_g = 1.0 - primitives[self.ids_volume_fraction[0]]
+        rhoalpha_l = primitives[self.ids_mass[0]]
+        rhoalpha_g = primitives[self.ids_mass[1]]
         velocities = primitives[self.vel_slices][...,self.nhx,self.nhy,self.nhz]
-        pressure = primitives[self.energy_ids][self.nhx,self.nhy,self.nhz]
+        pressure = primitives[self.ids_energy][self.nhx,self.nhy,self.nhz]
         kappa_e = jnp.sum(velocities * velocities, axis=0)
                 
         print("CONSERVATIVES SHAPE = ", conservatives.shape)
@@ -331,8 +340,8 @@ class DiffuseInterfaceCompressionComputer:
         return rhs
 
     def limit_volume_fraction(self, conservatives: Array) -> Array:
-        volume_fraction = conservatives[self.vf_slices]
-        volume_fraction = jnp.minimum(jnp.maximum(volume_fraction, 0.0), 1.0)
-        conservatives = conservatives.at[self.vf_slices].set(volume_fraction)
+        volume_fraction = conservatives[self.s_volume_fraction]
+        volume_fraction = jnp.clip(volume_fraction, 0.0, 1.0)
+        conservatives = conservatives.at[self.s_volume_fraction].set(volume_fraction)
         return conservatives
     

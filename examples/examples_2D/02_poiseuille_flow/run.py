@@ -12,21 +12,24 @@ initialization_manager = InitializationManager(input_manager)
 sim_manager = SimulationManager(input_manager)
 
 # RUN SIMULATION
-simulation_buffers, time_control_variables, \
-forcing_parameters = initialization_manager.initialization()
-sim_manager.simulate(simulation_buffers, time_control_variables, forcing_parameters)
+jxf_buffers = initialization_manager.initialization()
+sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
 quantities = ["density", "velocity", "pressure"]
-cell_centers, cell_sizes, times, data_dict = load_data(path, quantities)
+jxf_data = load_data(path, quantities)
+
+cell_centers = jxf_data.cell_centers
+data = jxf_data.data
+times = jxf_data.times
 
 # PLOT
 nrows_ncols = (1,3)
 plot_dict = {
-    "density": data_dict["density"], 
-    "velocityX": data_dict["velocity"][:,0],
-    "pressure": data_dict["pressure"]
+    "density": data["density"], 
+    "velocityX": data["velocity"][:,0],
+    "pressure": data["pressure"]
 }
 x,y,z = cell_centers
 
@@ -42,7 +45,7 @@ create_1D_animation(
 def poiseuille_analytical(y, dm, rho, h):
     return 6 * dm / rho / h**3 * y * (h - y)
 
-mass_flow_target = input_manager.case_setup_dict["forcings"]["mass_flow_target"]
+mass_flow_target = input_manager.case_setup_dict["forcings"]["mass_flow"]["target_value"]
 rho0 = input_manager.case_setup_dict["initial_condition"]["rho"]
 domain_size_y = input_manager.case_setup_dict["domain"]["y"]["range"]
 h = domain_size_y[1] - domain_size_y[0]

@@ -2,13 +2,16 @@ from abc import ABC, abstractmethod
 from typing import Callable, List, Union
 import types
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 import numpy as np
 
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.material_properties import MaterialPropertiesSetup
 from jaxfluids.config import precision
+from jaxfluids.math.power_functions import power3_2
+
+Array = jax.Array
 
 class Material(ABC):
     """The Material class implements an abstract class
@@ -42,6 +45,7 @@ class Material(ABC):
 
     def _set_transport_properties(self) -> None:
         transport_properties_setup = self.material_setup.transport
+        set_champan_enskog = False
 
         dynamic_viscosity_setup = transport_properties_setup.dynamic_viscosity
         if dynamic_viscosity_setup is not None:
@@ -89,8 +93,7 @@ class Material(ABC):
 
         elif self.dynamic_viscosity_model == "SUTHERLAND":
             dynamic_viscosity = \
-                self.mu_ref * ((self.T_ref_mu + self.C_mu)/(T + self.C_mu)) \
-                * (T/self.T_ref_mu)**1.5
+                self.mu_ref * ((self.T_ref_mu + self.C_mu)/(T + self.C_mu)) * power3_2(T/self.T_ref_mu)
 
         else:
             raise NotImplementedError
@@ -114,8 +117,7 @@ class Material(ABC):
 
         elif self.thermal_conductivity_model == "SUTHERLAND":
             thermal_conductivity = \
-                self.kappa_ref * ((self.T_ref_kappa + self.C_kappa)/(T + self.C_kappa)) \
-                * (T/self.T_ref_kappa)**1.5
+                self.kappa_ref * ((self.T_ref_kappa + self.C_kappa)/(T + self.C_kappa)) * power3_2(T/self.T_ref_kappa)
 
         else:
             raise NotImplementedError
@@ -182,6 +184,11 @@ class Material(ABC):
         """
 
     @abstractmethod
+    def get_density_from_pressure_and_temperature(self, p: Array, T: Array) -> Array:
+        pass
+
+
+    @abstractmethod
     def get_specific_energy(self, p: Array, rho: Array) -> Array:
         """Computes specific internal energy
         e = e(p, rho)
@@ -199,9 +206,7 @@ class Material(ABC):
             self,
             p: Array,
             rho: Array,
-            u: Array,
-            v: Array,
-            w: Array
+            velocity_vec: Array,
         ) -> Array:
         """Computes total energy per unit volume from pressure, density, and velocities.
         E = E(p, rho, velX, velY, velZ)
@@ -210,12 +215,8 @@ class Material(ABC):
         :type p: Array
         :param rho: Density buffer
         :type rho: Array
-        :param u: Velocity in x direction
-        :type u: Array
-        :param v: Velocity in y direction
-        :type v: Array
-        :param w: Velocity in z direction
-        :type w: Array
+        :param velocity_vec: Velocity vector, shape = (N_vel,Nx,Ny,Nz)
+        :type velocity_vec: Array
         :return: Total energy per unit volume
         :rtype: Array
         """
@@ -225,9 +226,7 @@ class Material(ABC):
             self,
             p: Array,
             rho: Array,
-            u: Array,
-            v: Array,
-            w: Array
+            velocity_vec: Array,
         ) -> Array:
         """Computes total specific enthalpy from pressure, density, and velocities.
         H = H(p, rho, velX, velY, velZ)
@@ -236,12 +235,8 @@ class Material(ABC):
         :type p: Array
         :param rho: Density buffer
         :type rho: Array
-        :param u: Velocity in x direction
-        :type u: Array
-        :param v: Velocity in y direction
-        :type v: Array
-        :param w: Velocity in z direction
-        :type w: Array
+        :param velocity_vec: Velocity vector, shape = (N_vel,Nx,Ny,Nz)
+        :type velocity_vec: Array
         :return: Total specific enthalpy buffer
         :rtype: Array
         """
@@ -275,9 +270,7 @@ class Material(ABC):
             self,
             p:Array,
             rho:Array,
-            u:Array,
-            v:Array,
-            w:Array
+            velocity_vec: Array,
         ) -> Array:
         """Computes the stagnation temperature
 

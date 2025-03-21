@@ -1,14 +1,19 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, TYPE_CHECKING
 
+import jax
 import jax.numpy as jnp
-from jax import Array
 
-from jaxfluids.halos.halo_manager import HaloManager
-from jaxfluids.domain.domain_information import DomainInformation
-from jaxfluids.io_utils.logger import Logger
-from jaxfluids.io_utils.output_writer import OutputWriter
-from jaxfluids.materials.material_manager import MaterialManager
+from jaxfluids.data_types import JaxFluidsBuffers
+from jaxfluids.data_types.buffers import SimulationBuffers, TimeControlVariables, ForcingParameters
+from jaxfluids.data_types.information import StepInformation
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
+
+if TYPE_CHECKING:
+    from jaxfluids import SimulationManager
+
+Array = jax.Array
 
 class Callback(ABC):
     """Abstract base class for callbacks. Callbacks are passed to the 
@@ -17,37 +22,20 @@ class Callback(ABC):
     functions cannot have state and should be jit-compilable as well. 
     """
 
-    def init_callback(self,
-        domain_information: DomainInformation,
-        material_manager: MaterialManager,
-        halo_manager: HaloManager,
-        logger: Logger,
-        output_writer: OutputWriter
-        ) -> None:
-        """Initializes the callback. In particular,
-        this method sets the domain information, material manager, boundary condition,
-        logger, and output writer.
-
-        :param domain_information: Domain information
-        :type domain_information: DomainInformation
-        :param material_manager: Material manager
-        :type material_manager: MaterialManager
-        :param boundary_conditions: Boundary condition
-        :type boundary_conditions: BoundaryCondition
-        :param logger: JAX-FLUIDS logger
-        :type logger: Logger
-        :param output_writer: JAX-FLUIDS output writer
-        :type output_writer: OutputWriter
+    def init_callback(self, sim_manager: SimulationManager) -> None:
+        """Initializes the callback.
         """
 
-        self.domain_information = domain_information
-        self.material_manager   = material_manager
-        self.halo_manager = halo_manager
+        self.sim_manager = sim_manager
+        self.domain_information = sim_manager.domain_information
+        self.equation_information = sim_manager.equation_information
 
-        self.logger         = logger
-        self.output_writer  = output_writer
-
-    def on_simulation_start(self, buffer_dictionary: Dict) -> Dict:
+    def on_simulation_start(
+            self,
+            jxf_buffers: JaxFluidsBuffers,
+            callback_dict: Dict,
+            **kwargs
+        ) -> Tuple[JaxFluidsBuffers, Dict]:
         """Called on simulation start
 
         :param buffer_dictionary: Dictionary containing the material field buffers,
@@ -56,9 +44,14 @@ class Callback(ABC):
         :return: Updated buffer_dictionary
         :rtype: Dict
         """
-        return buffer_dictionary
+        return jxf_buffers, callback_dict
 
-    def on_simulation_end(self, buffer_dictionary: Dict) -> Dict:
+    def on_simulation_end(
+            self,
+            jxf_buffers: JaxFluidsBuffers,
+            callback_dict: Dict,
+            **kwargs
+        ) -> Tuple[JaxFluidsBuffers, Dict]:
         """Called on simulation end
 
         :param buffer_dictionary: Dictionary containing the material field buffers,
@@ -67,9 +60,14 @@ class Callback(ABC):
         :return: Updated buffer_dictionary
         :rtype: Dict
         """
-        return buffer_dictionary
+        return jxf_buffers, callback_dict
 
-    def on_step_start(self, buffer_dictionary: Dict) -> Dict:
+    def on_step_start(
+            self,
+            jxf_buffers: JaxFluidsBuffers,
+            callback_dict: Dict,
+            **kwargs
+        ) -> Tuple[JaxFluidsBuffers, Dict]:
         """Called on integration step start
 
         :param buffer_dictionary: Dictionary containing the material field buffers,
@@ -78,9 +76,14 @@ class Callback(ABC):
         :return: Updated buffer_dictionary
         :rtype: Dict
         """
-        return buffer_dictionary
+        return jxf_buffers, callback_dict
 
-    def on_step_end(self, buffer_dictionary: Dict) -> Dict:
+    def on_step_end(
+            self,
+            jxf_buffers: JaxFluidsBuffers,
+            callback_dict: Dict,
+            **kwargs
+        ) -> Tuple[JaxFluidsBuffers, Dict]:
         """Called on integration step end
 
         :param buffer_dictionary: Dictionary containing the material field buffers,
@@ -89,13 +92,54 @@ class Callback(ABC):
         :return: Updated buffer_dictionary
         :rtype: Dict
         """
-        return buffer_dictionary
+        return jxf_buffers, callback_dict
+    
+    def before_step_start(
+            self,
+            jxf_buffers: JaxFluidsBuffers,
+            callback_dict: Dict,
+            **kwargs
+        ) -> Tuple[JaxFluidsBuffers, Dict]:
+        """Called before integration step start. This callback can
+        have state as it is not called inside do_integration_step.
 
-    def on_stage_start(self, conservatives: Array, primitives: Array, 
-        physical_timestep_size: float, physical_simulation_time: float, levelset: Array = None,
-        volume_fraction: Array = None, apertures: Union[List, None] = None,
-        forcings: Union[Dict, None] = None, 
-        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None) -> Tuple[Array, Array]:
+        :param buffer_dictionary: Dictionary containing the material field buffers,
+        levelset quantitiy buffers, time control and mass flow forcing parameters
+        :type buffer_dictionary: Dict
+        :return: Updated buffer_dictionary
+        :rtype: Dict
+        """
+        return jxf_buffers, callback_dict
+
+    def after_step_end(
+            self,
+            jxf_buffers: JaxFluidsBuffers,
+            callback_dict: Dict,
+            **kwargs
+        ) -> Tuple[JaxFluidsBuffers, Dict]:
+        """Called after integration step end. This callback can
+        have state as it is not called inside do_integration_step.
+
+        :param buffer_dictionary: Dictionary containing the material field buffers,
+        levelset quantitiy buffers, time control and mass flow forcing parameters
+        :type buffer_dictionary: Dict
+        :return: Updated buffer_dictionary
+        :rtype: Dict
+        """
+        return jxf_buffers, callback_dict
+
+    def on_stage_start(
+            self, 
+            conservatives: Array, 
+            primitives: Array, 
+            physical_timestep_size: float, 
+            physical_simulation_time: float, 
+            levelset: Array = None,
+            volume_fraction: Array = None, 
+            apertures: Union[List, None] = None,
+            forcings: Union[Dict, None] = None, 
+            ml_setup: MachineLearningSetup = None, 
+        ) -> Tuple[Array, Array]:
         """Called on integrator stage start
 
         :param conservatives: Buffer of conservative variables
@@ -114,21 +158,26 @@ class Callback(ABC):
         :type apertures: Union[List, None], optional
         :param forcings: Dictionary containing forcing buffers, defaults to None
         :type forcings: Union[Dict, None], optional
-        :param ml_parameters_dict: Dictionary containing NN weights, defaults to None
-        :type ml_parameters_dict: Union[Dict, None], optional
-        :param ml_networks_dict: Dictionary containing NN architectures, defaults to None
-        :type ml_networks_dict: Union[Dict, None], optional
+        :param ml_setup: Dictionary containing NN weights, defaults to None
+        :type ml_setup: Union[Dict, None], optional
         :return: Tuple of conservative and primitive variable buffers
         :rtype: Tuple[Array, Array]
         """
 
         return conservatives, primitives
 
-    def on_stage_end(self, conservatives: Array, primitives: Array, 
-        physical_timestep_size: float, physical_simulation_time: float, levelset: Array = None,
-        volume_fraction: Array = None, apertures: Union[List, None] = None,
-        forcings: Union[Dict, None] = None, 
-        ml_parameters_dict: Union[Dict, None] = None, ml_networks_dict: Union[Dict, None] = None) -> Tuple[Array, Array]:
+    def on_stage_end(
+            self, 
+            conservatives: Array, 
+            primitives: Array, 
+            physical_timestep_size: float, 
+            physical_simulation_time: float, 
+            levelset: Array = None,
+            volume_fraction: Array = None, 
+            apertures: Union[List, None] = None,
+            forcings: Union[Dict, None] = None, 
+            ml_setup: MachineLearningSetup = None
+        ) -> Tuple[Array, Array]:
         """Called on integrator stage end
 
         :param conservatives: Buffer of conservative variables
@@ -147,10 +196,8 @@ class Callback(ABC):
         :type apertures: Union[List, None], optional
         :param forcings: Dictionary containing forcing buffers, defaults to None
         :type forcings: Union[Dict, None], optional
-        :param ml_parameters_dict: Dictionary containing NN weights, defaults to None
-        :type ml_parameters_dict: Union[Dict, None], optional
-        :param ml_networks_dict: Dictionary containing NN architectures, defaults to None
-        :type ml_networks_dict: Union[Dict, None], optional
+        :param ml_setup: Dictionary containing NN weights, defaults to None
+        :type ml_setup: Union[Dict, None], optional
         :return: Tuple of conservative and primitive variable buffers
         :rtype: Tuple[Array, Array]
         """

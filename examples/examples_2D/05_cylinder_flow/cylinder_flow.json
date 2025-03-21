@@ -5,10 +5,6 @@
         "save_path": "./results",
         "save_dt": 5.0
     },
-    "restart": {
-        "flag": false,
-        "file_path": "./results/cylinderflow_Re200/domain/data_100.0023022051.h5"
-    },
     "domain": {
         "x": {
             "cells": 500,
@@ -76,6 +72,11 @@
                 0.0,
                 1.0
             ]
+        },
+        "decomposition": {
+            "split_x": 1,
+            "split_y": 1,
+            "split_z": 1
         }
     },
     "boundary_conditions": {
@@ -134,7 +135,7 @@
         }
     },
     "forcings": {
-        "temperature_target": 1.0
+        "temperature": {"target_value": 1.0}
     },
     "nondimensionalization_parameters": {
         "density_reference": 1.0,

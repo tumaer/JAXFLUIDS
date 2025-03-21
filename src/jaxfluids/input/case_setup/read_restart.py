@@ -32,9 +32,9 @@ def read_restart_setup(
         restart_dict, "use_time", path,
         bool, is_optional=True, default_value=False)
     
-    path = get_path_to_key(basepath, "is_equal_decomposition")
-    is_equal_decomposition = get_setup_value(
-        restart_dict, "is_equal_decomposition", path,
+    path = get_path_to_key(basepath, "is_equal_decomposition_multihost")
+    is_equal_decomposition_multihost = get_setup_value(
+        restart_dict, "is_equal_decomposition_multihost", path,
         bool, is_optional=True, default_value=False)
 
     is_optional = not use_time
@@ -45,11 +45,32 @@ def read_restart_setup(
         numerical_value_condition=(">=", 0.0))
     time = unit_handler.non_dimensionalize(time, "time")
 
+    path = get_path_to_key(basepath, "is_interpolate")
+    is_interpolate = get_setup_value(
+        restart_dict, "is_interpolate", path,
+        bool, is_optional=True, default_value=False)
+
+    is_optional = not (flag and is_interpolate)
+    path = get_path_to_key(basepath, "numerical_setup_path")
+    numerical_setup_path = get_setup_value(
+        restart_dict, "numerical_setup_path", path,
+        str, is_optional=is_optional, default_value="")
+    
+    path = get_path_to_key(basepath, "case_setup_path")
+    case_setup_path = get_setup_value(
+        restart_dict, "case_setup_path", path,
+        str, is_optional=is_optional, default_value="")
+    
+
     restart_setup = RestartSetup(
         flag,
         file_path,
         use_time,
         time,
-        is_equal_decomposition)
+        is_equal_decomposition_multihost,
+        is_interpolate,
+        numerical_setup_path,
+        case_setup_path
+        )
 
     return restart_setup

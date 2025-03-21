@@ -6,10 +6,6 @@
         "save_dt": 1e-1
 
     },
-    "restart": {
-        "flag": false,
-        "file_path": "results/risingbubble-5/domain/data_1.96011555.h5"
-    },
     "domain": {
         "x": {
             "cells": 50,
