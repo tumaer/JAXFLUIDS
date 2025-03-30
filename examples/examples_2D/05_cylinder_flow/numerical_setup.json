@@ -36,11 +36,12 @@
         },
         "extension": {
             "primitives": {
-                "CFL": 0.5,
-                "steps": 20,
-                "residual_threshold": 1e-5,
-                "is_use_interpolation": false,
-                "is_use_iterative_procedure": true
+                "method": "ITERATIVE",
+                "iterative": {
+                    "CFL": 0.5,
+                    "steps": 20,
+                    "residual_threshold": 1e-5
+                }
             }
         },
         "mixing": {

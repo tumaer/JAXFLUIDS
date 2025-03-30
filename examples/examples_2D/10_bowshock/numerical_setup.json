@@ -35,7 +35,7 @@
         },
         "extension": {
             "primitives": {
-                "method": "ITERATIVE",
+                "method": "INTERPOLATION",
                 "iterative": {
                     "CFL": 0.5,
                     "steps": 5,
