@@ -7,7 +7,6 @@ class ActivePhysicsSetup(NamedTuple):
     is_convective_flux: bool
     is_viscous_flux: bool = False
     is_heat_flux: bool = False
-    is_species_diffusion_flux: bool = False
     is_volume_force: bool = False
     is_surface_tension: bool = False
     is_geometric_source: bool = False

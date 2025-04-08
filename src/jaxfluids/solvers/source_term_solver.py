@@ -51,7 +51,6 @@ class SourceTermSolver:
         self.is_volume_force = active_physics.is_volume_force
         self.is_geometric_source = active_physics.is_geometric_source
         self.is_surface_tension = active_physics.is_surface_tension
-        self.is_species_diffusion_flux = active_physics.is_species_diffusion_flux
         self.is_viscous_heat_production = active_physics.is_viscous_heat_production
 
         global_cell_sizes_halos = domain_information.get_global_cell_sizes_halos()
@@ -101,7 +100,7 @@ class SourceTermSolver:
             derivative_stencil_center = None
             reconstruct_stencil_duidxi = None
         
-        if any((self.is_viscous_flux, self.is_heat_flux, self.is_species_diffusion_flux)):
+        if any((self.is_viscous_flux, self.is_heat_flux)):
             dissipative_fluxes_setup = numerical_setup.conservatives.dissipative_fluxes
             derivative_stencil_face = dissipative_fluxes_setup.derivative_stencil_face
             self.derivative_stencil_face: SpatialDerivative = derivative_stencil_face(
@@ -624,9 +623,6 @@ class SourceTermSolver:
             if self.is_surface_tension:
                 raise NotImplementedError
 
-            if self.is_species_diffusion_flux:
-                raise NotImplementedError
-
         elif self.symmetry_type == "CYLINDRICAL":
             # TODO symmetry
             # TODO u_theta as function of (r,z)
@@ -642,9 +638,6 @@ class SourceTermSolver:
             if self.is_surface_tension:
                 raise NotImplementedError
 
-            if self.is_species_diffusion_flux:
-                raise NotImplementedError
-
         elif self.symmetry_type == "SPHERICAL":
             # TODO symmetry
             if self.is_convective_flux:
@@ -657,9 +650,6 @@ class SourceTermSolver:
                 raise NotImplementedError
 
             if self.is_surface_tension:
-                raise NotImplementedError
-
-            if self.is_species_diffusion_flux:
                 raise NotImplementedError
 
         else:

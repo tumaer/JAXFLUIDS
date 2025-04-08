@@ -209,7 +209,6 @@ class SpaceSolver:
         is_convective_flux = self.numerical_setup.active_physics.is_convective_flux
         is_viscous_flux = self.numerical_setup.active_physics.is_viscous_flux
         is_heat_flux = self.numerical_setup.active_physics.is_heat_flux
-        is_species_diffusion_flux = self.numerical_setup.active_physics.is_species_diffusion_flux
         is_volume_force = self.numerical_setup.active_physics.is_volume_force
         is_geometric_source = self.numerical_setup.active_physics.is_geometric_source
         is_surface_tension = self.numerical_setup.active_physics.is_surface_tension
@@ -476,7 +475,6 @@ class SpaceSolver:
         is_convective_flux = self.numerical_setup.active_physics.is_convective_flux
         is_viscous_flux = self.numerical_setup.active_physics.is_viscous_flux
         is_heat_flux = self.numerical_setup.active_physics.is_heat_flux
-        is_species_diffusion_flux = self.numerical_setup.active_physics.is_species_diffusion_flux
         is_volume_force = self.numerical_setup.active_physics.is_volume_force
         is_geometric_source = self.numerical_setup.active_physics.is_geometric_source
         is_surface_tension = self.numerical_setup.active_physics.is_surface_tension
@@ -596,8 +594,7 @@ class SpaceSolver:
 
 
         # SUM RIGHT HAND SIDE
-        if any((is_convective_flux, is_viscous_flux,
-                is_heat_flux, is_species_diffusion_flux)):
+        if any((is_convective_flux, is_viscous_flux, is_heat_flux)):
             rhs_conservatives_xi += one_cell_size_xi * (
                 flux_xi[self.flux_slices[axis][1]] - flux_xi[self.flux_slices[axis][0]])
 

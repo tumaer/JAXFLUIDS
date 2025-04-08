@@ -207,15 +207,13 @@ def read_transport_properties(
         ) -> TransportPropertiesSetup:
     is_viscous_flux = numerical_setup.active_physics.is_viscous_flux
     is_heat_flux = numerical_setup.active_physics.is_heat_flux
-    is_species_diffusion_flux = numerical_setup.active_physics.is_species_diffusion_flux
 
     is_viscosity_optional = not (is_viscous_flux or is_heat_flux)
     is_thermal_conductivity_optional = not is_heat_flux
-    is_mass_diffusivity_optional = not is_species_diffusion_flux
     is_transport_properties_optional = all(
         (is_viscosity_optional,
         is_thermal_conductivity_optional,
-        is_mass_diffusivity_optional))
+    ))
 
     transport_properties_path = get_path_to_key(basepath, "transport")
     transport_properties_setup = get_setup_value(

@@ -121,14 +121,12 @@ class HaloManager:
 
         is_viscous_flux = active_physics.is_viscous_flux
         is_heat_flux = active_physics.is_heat_flux
-        is_species_diffusion_flux = active_physics.is_species_diffusion_flux
 
         # NOTE dissipative cell face fluxes require edge halos
         self.fill_edge_halos_material = any((
             is_viscous_flux,
             is_heat_flux,
-            is_species_diffusion_flux
-            ))
+        ))
 
         if equation_information.is_solid_levelset:
             # NOTE dissipative fluid-solid interface fluxes require vertex halos
