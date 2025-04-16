@@ -27,6 +27,7 @@ from jaxfluids.data_types.case_setup.initial_conditions import InitialConditionS
 from jaxfluids.data_types.case_setup.restart import RestartSetup
 from jaxfluids.data_types.case_setup import CaseSetup
 from jaxfluids.data_types.numerical_setup import NumericalSetup
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 
 Array = jax.Array
 
@@ -76,8 +77,9 @@ class MaterialFieldsInitializer:
     def initialize(
             self,
             user_prime_init: Union[np.ndarray, Array] = None,
-            user_time_init: float = None
-            ) -> Tuple[MaterialFieldBuffers, TimeControlVariables]:
+            user_time_init: float = None,
+            ml_setup: MachineLearningSetup = None
+        ) -> Tuple[MaterialFieldBuffers, TimeControlVariables]:
         """Initializes the material field buffers.
 
         :param user_prime_init: _description_, defaults to None
@@ -94,11 +96,14 @@ class MaterialFieldsInitializer:
         simulation_step = 0
 
         if is_restart:
-            material_fields, physical_simulation_time = self.from_restart_file()
+            material_fields, physical_simulation_time = self.from_restart_file(ml_setup)
 
         elif user_prime_init is not None:
-            material_fields, physical_simulation_time \
-                = self.from_user_specified_buffer(user_prime_init, user_time_init)
+            material_fields, physical_simulation_time = self.from_user_specified_buffer(
+                user_prime_init,
+                user_time_init,
+                ml_setup
+            )
             
         elif self.is_turbulence_init:
             if is_parallel:
@@ -121,10 +126,12 @@ class MaterialFieldsInitializer:
             if is_parallel:
                 material_fields = jax.pmap(
                     self.from_primitive_initial_condition,
-                    axis_name="i")(cell_centers)
+                    axis_name="i"
+                )(cell_centers, ml_setup)
             else:
                 material_fields = self.from_primitive_initial_condition(
-                    cell_centers)
+                    cell_centers, ml_setup
+                )
 
         time_control_variables = TimeControlVariables(
             physical_simulation_time, simulation_step
@@ -135,8 +142,9 @@ class MaterialFieldsInitializer:
     def create_material_fields(
             self,
             primitives_np: Array,
-            physical_simulation_time: float
-            ) -> MaterialFieldBuffers:
+            physical_simulation_time: float,
+            ml_setup: MachineLearningSetup
+        ) -> MaterialFieldBuffers:
         """Prepares the material fields given a
         numpy primitive buffer, i.e.,
         creates the corresponding jax.numpy buffer,
@@ -178,7 +186,7 @@ class MaterialFieldsInitializer:
         conservatives = self.equation_manager.get_conservatives_from_primitives(primitives)
         primitives, conservatives = self.halo_manager.perform_halo_update_material(
             primitives, physical_simulation_time, fill_edge_halos,
-            fill_vertex_halos, conservatives)
+            fill_vertex_halos, conservatives, ml_setup=ml_setup)
         
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
@@ -192,7 +200,7 @@ class MaterialFieldsInitializer:
         
         return material_fields
     
-    def from_restart_file(self) -> MaterialFieldBuffers:
+    def from_restart_file(self, ml_setup: MachineLearningSetup) -> MaterialFieldBuffers:
         """Initializes the material field buffers
         from a restart .h5 file.
 
@@ -272,7 +280,7 @@ class MaterialFieldsInitializer:
         assert_string = (f"Diffuse interface model of restart file {restart_file_path} "
                          "does not match numerical setup file.")
         assert diffuse_interface_model_restart == diffuse_interface_model, assert_string
-        
+
         load_function = get_load_function(is_parallel, is_parallel_restart,
                                           split_factors, split_factors_restart)
 
@@ -364,8 +372,15 @@ class MaterialFieldsInitializer:
                                         input_manager_restart.halo_manager,
                                         dtype)
 
-            material_fields = jax.pmap(self.create_material_fields, axis_name="i", in_axes=(0,None))(
-                primitives, physical_simulation_time)
+            material_fields = jax.pmap(
+                self.create_material_fields,
+                axis_name="i",
+                in_axes=(0, None, None)
+            )(
+                primitives,
+                physical_simulation_time,
+                ml_setup
+            )
         else:
             if is_interpolate:
                 primitives = interpolate("MATERIAL",
@@ -375,7 +390,11 @@ class MaterialFieldsInitializer:
                                          input_manager_restart.equation_information,
                                          input_manager_restart.halo_manager,
                                          dtype)
-            material_fields = self.create_material_fields(primitives, physical_simulation_time)
+            material_fields = self.create_material_fields(
+                primitives,
+                physical_simulation_time,
+                ml_setup
+            )
 
 
         return material_fields, physical_simulation_time
@@ -383,8 +402,9 @@ class MaterialFieldsInitializer:
     def from_user_specified_buffer(
             self,
             user_prime_init: Array,
-            user_time_init: float
-            ) -> MaterialFieldBuffers:
+            user_time_init: float,
+            ml_setup: MachineLearningSetup
+        ) -> MaterialFieldBuffers:
         """Initializes the simulations from buffers provided by the user.
 
         :param user_prime_init: _description_
@@ -431,10 +451,21 @@ class MaterialFieldsInitializer:
             if is_multihost:
                 s_ = jnp.s_[process_id*local_device_count:(process_id+1)*local_device_count]
                 primitives = primitives[s_]
-            material_fields = jax.pmap(self.create_material_fields, axis_name="i", in_axes=(0,None))(
-                primitives, physical_simulation_time)
+            material_fields = jax.pmap(
+                self.create_material_fields,
+                axis_name="i",
+                in_axes=(0, None, None)
+            )(
+                primitives,
+                physical_simulation_time,
+                ml_setup
+            )
         else:
-            material_fields = self.create_material_fields(user_prime_init, physical_simulation_time)
+            material_fields = self.create_material_fields(
+                user_prime_init,
+                physical_simulation_time,
+                ml_setup
+            )
 
         
         return material_fields, physical_simulation_time        
@@ -532,8 +563,9 @@ class MaterialFieldsInitializer:
 
     def from_primitive_initial_condition(
             self,
-            cell_centers: List
-            ) -> MaterialFieldBuffers:
+            cell_centers: List,
+            ml_setup: MachineLearningSetup = None
+        ) -> MaterialFieldBuffers:
         """Computes the conservative and primitive
         variable buffers from the primitive initial
         condition provided in the case setup .json
@@ -613,10 +645,11 @@ class MaterialFieldsInitializer:
         fill_edge_halos = self.halo_manager.fill_edge_halos_material
         fill_vertex_halos = self.halo_manager.fill_vertex_halos_material
 
-        primitives, conservatives = \
-        self.halo_manager.perform_halo_update_material(
+        primitives, conservatives = self.halo_manager.perform_halo_update_material(
             primitives, 0.0, fill_edge_halos,
-            fill_vertex_halos, conservatives)
+            fill_vertex_halos, conservatives,
+            ml_setup=ml_setup
+        )
         
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)

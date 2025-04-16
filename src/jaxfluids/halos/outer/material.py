@@ -140,6 +140,27 @@ class BoundaryConditionMaterial(BoundaryCondition):
                             primitives, face_location, wall_velocity_callable,
                             wall_mass_transfer, physical_simulation_time)
                     
+                    elif boundary_type == "MASSTRANSFERWALL_PARAMETERIZED":
+                        wall_velocity_callable = boundary_conditions_face.wall_velocity_callable
+                        bounding_domain_callable = boundary_conditions_face.wall_mass_transfer.bounding_domain_callable
+
+                        wall_mass_transfer_callable = getattr(
+                            ml_setup.callables.boundary_conditions.primitives,
+                            face_location)[bc_id].wall_mass_transfer
+                        
+                        wall_mass_transfer_parameters = getattr(
+                            ml_setup.parameters.boundary_conditions.primitives,
+                            face_location)[bc_id].wall_mass_transfer
+                                                    
+                        halos_primes = self.masstransferwall_parameterized(
+                            primitives, face_location,
+                            wall_velocity_callable,
+                            wall_mass_transfer_callable,
+                            wall_mass_transfer_parameters,
+                            bounding_domain_callable,
+                            physical_simulation_time
+                        )
+
                     elif boundary_type == "DIRICHLET":
                         primitives_callable = boundary_conditions_face.primitives_callable
                         primitives_table = boundary_conditions_face.primitives_table
@@ -566,6 +587,105 @@ class BoundaryConditionMaterial(BoundaryCondition):
         for axis in axes_to_expand:
             mask = jnp.expand_dims(mask, axis)
         halos_primes = halos_primes * mask + (1 - mask) * halos_primes_wall
+        return halos_primes
+
+    def masstransferwall_parameterized(
+            self, 
+            primitives: Array,
+            face_location: str, 
+            wall_velocity_callable: VelocityCallable,
+            wall_mass_transfer_callable: Callable,
+            wall_mass_transfer_parameters: Callable,
+            bounding_domain_callable: Callable,
+            physical_simulation_time: float, 
+        ) -> Array:
+        """Computes the primitive halos for 
+        wall boundaries with mass transfer.
+        Within the mass transfer region,
+        density and velocity is specified
+        at the wall boundary while
+        pressure is constantly extrapolated
+        from the domain.
+
+        :param primitives: _description_
+        :type primitives: Array
+        :param face_location: _description_
+        :type face_location: str
+        :param velocity_functions: _description_
+        :type velocity_functions: Dict
+        :param mass_transfer_functions: _description_
+        :type mass_transfer_functions: Dict
+        :param physical_simulation_time: _description_
+        :type physical_simulation_time: float
+        :return: _description_
+        :rtype: Array
+        """
+
+        levelset_model = self.equation_information.levelset_model
+        diffuse_interface_model = self.equation_information.diffuse_interface_model
+
+        # NOTE compute halo cells for section of the wall
+        # where no mass transfer occurs
+        halos_primes_wall = self.wall(
+            primitives, face_location, wall_velocity_callable,
+            physical_simulation_time)
+        
+        # NOTE compute halo cells for section of the wall
+        # where mass transfer occurs
+        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(
+            face_location)
+
+        halos_primes_list = []
+        primes_tuple = self.equation_information.primes_tuple
+        primes_tuple = [state for state in primes_tuple if state != "p"]
+        for prime_state in primes_tuple:
+            prime_state_callable = getattr(wall_mass_transfer_callable, prime_state)
+            prime_state_parameters = getattr(wall_mass_transfer_parameters, prime_state)
+            halos = prime_state_callable(*meshgrid, physical_simulation_time, prime_state_parameters)
+            for axis in axes_to_expand:
+                halos = jnp.expand_dims(halos, axis)
+            halos_primes_list.append(halos)
+        halos_primes = jnp.stack(halos_primes_list, axis=0) 
+
+        if levelset_model == "FLUID-FLUID":
+            halos_primes = jnp.stack([ # TODO INTRODUCE MASS TRANSFER WALL FOR BOTH NEGATIVE AND POSITIVE
+                halos_primes, halos_primes], axis=1)
+
+        face_location_to_axis_index = self.domain_information.face_location_to_axis_index
+        axis_index = face_location_to_axis_index[face_location]
+        nh = self.domain_information.nh_conservatives
+        no_fluids = self.equation_information.no_fluids
+
+        slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
+
+        s_energy = self.equation_information.s_energy
+        s_mass = self.equation_information.s_mass
+        vel_slices = self.equation_information.s_velocity
+        s_vel = (vel_slices,) + slices_retrieve
+
+        halos_mass = halos_primes[s_mass]
+        halos_mass = jnp.repeat(halos_mass, nh, axis=-3+axis_index)
+        halos_velocity = halos_primes[vel_slices]
+        halos_velocity = 2 * halos_velocity - primitives[s_vel]
+        if diffuse_interface_model:
+            halos_vf = halos_primes[-no_fluids+1:]
+            halos_vf = jnp.repeat(halos_vf, nh, axis=-3+axis_index)
+        slices_retrieve = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
+        halos_pressure = primitives[(s_energy,)+slices_retrieve]
+        halos_pressure = jnp.repeat(halos_pressure, nh, axis=-3+axis_index)
+        
+        halos_primes = [halos_mass, halos_velocity, halos_pressure]   
+        if diffuse_interface_model:
+            halos_primes += halos_vf
+        halos_primes = jnp.concatenate(halos_primes, axis=0)
+        
+        # NOTE combine halo cells w/o mass transfer with halo cells
+        # w/ mass transfer
+        mask = bounding_domain_callable(*meshgrid)
+        for axis in axes_to_expand:
+            mask = jnp.expand_dims(mask, axis)
+        halos_primes = halos_primes * mask + (1 - mask) * halos_primes_wall
+
         return halos_primes
 
     def dirichlet(

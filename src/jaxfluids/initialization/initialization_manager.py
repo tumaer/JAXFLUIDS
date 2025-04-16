@@ -152,8 +152,12 @@ class InitializationManager:
         ml_setup = combine_callables_and_params(ml_callables, ml_parameters)
 
         # MATERIAL FIELDS
-        material_fields, time_control_variables = self.material_fields_initializer.initialize(
-            user_prime_init, user_time_init)
+        (
+            material_fields,
+            time_control_variables
+        ) = self.material_fields_initializer.initialize(
+            user_prime_init, user_time_init, ml_setup
+        )
 
         # LEVELSET
         if self.equation_information.levelset_model:
