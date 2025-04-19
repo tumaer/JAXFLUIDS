@@ -107,6 +107,9 @@ class InputManager:
 
         if self.halo_manager.boundary_condition_material.is_linear_extrapolation:
             self.halo_manager.boundary_condition_material.set_stencils_linear_extrapolation()
+        if self.halo_manager.boundary_condition_levelset.is_linear_extrapolation:
+            self.halo_manager.boundary_condition_levelset.set_stencils_linear_extrapolation()
+
 
         self.sanity_check()
 

@@ -10,6 +10,8 @@ from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace
 from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS
 from jaxfluids.halos.outer import EDGE_TYPES, VERTEX_TYPES
+from jaxfluids.stencils.spatial_derivative import SpatialDerivative
+from jaxfluids.halos.outer.helper_function import get_derivative_stencils_linear_extrapolation
 
 Array = jax.Array
 
@@ -30,6 +32,20 @@ class BoundaryConditionLevelset(BoundaryCondition):
             ) -> None:
 
         super().__init__(domain_information, boundary_conditions)
+
+        self.is_linear_extrapolation = False
+        active_face_locations = self.domain_information.active_face_locations
+        for face_location in active_face_locations:
+            boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] \
+                = getattr(boundary_conditions, face_location)
+            for i, boundary_conditions_face in enumerate(boundary_conditions_face_tuple):
+                boundary_type = boundary_conditions_face.boundary_type
+                if boundary_type == "LINEAREXTRAPOLATION":
+                    self.is_linear_extrapolation = True
+        
+        if self.is_linear_extrapolation:
+            self.derivative_upwind: SpatialDerivative = None
+            self.derivative_downwind: SpatialDerivative = None
 
     def face_halo_update(
             self,
@@ -75,6 +91,11 @@ class BoundaryConditionLevelset(BoundaryCondition):
                 elif boundary_type in ["ZEROGRADIENT", "SYMMETRY", "PERIODIC"]:
                     slice_retrieve = face_slices_retrieve[boundary_type][face_location]
                     halos = levelset[slice_retrieve]
+
+                elif boundary_type == "LINEAREXTRAPOLATION":
+                    halos = self.linear_extrapolation(
+                        levelset, boundary_type, face_location)
+
                 else:
                     raise NotImplementedError
 
@@ -234,6 +255,34 @@ class BoundaryConditionLevelset(BoundaryCondition):
             halos = jnp.expand_dims(halos, axis)
         return halos
     
+
+    def linear_extrapolation(
+            self,
+            levelset: Array,
+            boundary_type: str,
+            face_location: str,
+            ) -> Array:
+        
+        axis = self.domain_information.face_location_to_axis_index[face_location]
+        cell_sizes = self.domain_information.get_device_cell_sizes()
+        cell_centers_halos = self.domain_information.get_device_cell_centers_halos()[axis]
+
+        slices_retrieve, slices_retrieve_deriv, slice_cc, slice_cc_halos \
+            = self.face_slices_retrieve_conservatives[boundary_type][face_location]
+
+        if face_location in ("east", "north", "top"):
+            dW_dx = self.derivative_upwind.derivative_xi(levelset, cell_sizes[axis], axis)
+        elif face_location in ("west", "south", "bottom"):
+            dW_dx = self.derivative_downwind.derivative_xi(levelset, cell_sizes[axis], axis)
+        else:
+            raise NotImplementedError
+
+        dW_dx = dW_dx[slices_retrieve_deriv]
+        dx = cell_centers_halos[slice_cc_halos] - cell_centers_halos[slice_cc]
+        halos = levelset[slices_retrieve] + dx * dW_dx
+        return halos
+    
+
     def get_halo_mask(self, levelset: Array):
         """Generates a mask for the halo cells that require reinitialization
 
@@ -249,4 +298,6 @@ class BoundaryConditionLevelset(BoundaryCondition):
             mask = mask.at[slice_objects].set(1)
         return mask
 
-
+    def set_stencils_linear_extrapolation(self) -> None:
+        self.derivative_upwind, self.derivative_downwind \
+            = get_derivative_stencils_linear_extrapolation(self.domain_information)
