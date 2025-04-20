@@ -1,7 +1,7 @@
 {
     "general": {
         "case_name": "heatequation",
-        "end_time": 5.0,
+        "end_time": 15.0,
         "save_path": "./results",
         "save_dt": 0.1
     },
@@ -71,12 +71,6 @@
                 "sutherland_parameters": [0.1, 1.0, 1.0]
             }
         }        
-    },
-    "nondimensionalization_parameters": {
-        "density_reference": 1.0,
-        "length_reference": 1.0,
-        "velocity_reference": 1.0,
-        "temperature_reference": 1.0
     },
     "output": {
         "primitives": ["density", "velocity", "pressure", "temperature"]

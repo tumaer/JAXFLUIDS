@@ -3,7 +3,7 @@
         "case_name": "linearadvection",
         "save_path": "./results",
         "end_time": 2.0,
-        "save_dt": 1.0
+        "save_dt": 0.1
     },
     "domain": {
         "x": {

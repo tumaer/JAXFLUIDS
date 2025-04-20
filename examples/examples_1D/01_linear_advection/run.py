@@ -31,7 +31,7 @@ create_1D_animation(
     cell_centers,
     times,
     nrows_ncols=nrows_ncols,
-    interval=50)
+    interval=200)
 
 # CREATE FIGURE
 create_1D_figure(

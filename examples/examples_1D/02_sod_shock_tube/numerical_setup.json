@@ -13,11 +13,6 @@
                 "reconstruction_stencil": "WENO5-Z",
                 "reconstruction_variable": "CHAR-PRIMITIVE"
             }
-        },
-        "dissipative_fluxes": {
-            "reconstruction_stencil": "CENTRAL4",
-            "derivative_stencil_center": "CENTRAL4",
-            "derivative_stencil_face": "CENTRAL4"
         }
     },
     "active_physics": {
