@@ -231,14 +231,14 @@ class DiffuseInterfaceHandler():
 
     def get_compression_flag(
             self,
-            simulation_step: jnp.int32
+            simulation_step: int
             ) -> bool:
         """Decides whether to perform interface compression 
         for the current simulation step based on the 
         the interface compression interval.
 
         :param simulation_step: _description_
-        :type simulation_step: jnp.int32
+        :type simulation_step: int
         :return: _description_
         :rtype: bool
         """

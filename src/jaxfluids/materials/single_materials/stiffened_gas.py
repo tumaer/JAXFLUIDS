@@ -45,7 +45,7 @@ class StiffenedGas(Material):
         return jnp.sqrt( self.gamma * ( p + self.pb ) / rho )
 
     def get_pressure(self, e: Array, rho: Array) -> Array:
-        return ( self.gamma - 1 ) * e * rho - self.gamma * self.pb
+        return ( self.gamma - 1 ) * e  * rho - self.gamma * self.pb
     
     def get_temperature(self, p: Array, rho: Array) -> Array:
         # TODO

@@ -35,7 +35,7 @@ class DiffuseInterfacePDERegularizationComputer:
         diffusion_sharpening_setup = diffuse_interface_setup.diffusion_sharpening        
         self.diffusion_sharpening_model = diffusion_sharpening_setup.model
         self.density_model = diffusion_sharpening_setup.density_model
-        self.incompressible_density = diffusion_sharpening_setup.incompressible_density.reshape(-1,1,1,1)
+        self.incompressible_density = jnp.array(diffusion_sharpening_setup.incompressible_density).reshape(-1,1,1,1)
         self.interface_thickness_parameter = diffusion_sharpening_setup.interface_thickness_parameter
         self.interface_velocity_parameter = diffusion_sharpening_setup.interface_velocity_parameter
         self.mobility_model = diffusion_sharpening_setup.mobility_model
