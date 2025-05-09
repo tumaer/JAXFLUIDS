@@ -42,8 +42,9 @@ class ForcingsInitializer:
 
     def initialize(
             self,
-            material_fields: MaterialFieldBuffers
-            ) -> ForcingParameters:
+            material_fields: MaterialFieldBuffers,
+            user_restart_file_path: str = None
+        ) -> ForcingParameters:
         """Wrapper function that initializes the forcing either
         1) from a restart file
         2) from the initial condition
@@ -55,7 +56,7 @@ class ForcingsInitializer:
         """
 
         if self.is_restart:
-            forcings = self.from_restart_file(material_fields)
+            forcings = self.from_restart_file(material_fields, user_restart_file_path)
         else:
             forcings = self.from_initial_condition(material_fields)
 
@@ -63,11 +64,14 @@ class ForcingsInitializer:
 
     def from_restart_file(
             self,
-            material_fields: MaterialFieldBuffers
-            ) -> ForcingParameters:
+            material_fields: MaterialFieldBuffers,
+            user_restart_file_path: str | None
+        ) -> ForcingParameters:
         
+        restart_file_path = self.restart_file_path if user_restart_file_path is None else user_restart_file_path
+
         # LOAD H5FILE
-        h5file = h5py.File(self.restart_file_path, "r")
+        h5file = h5py.File(restart_file_path, "r")
         available_quantities = h5file["metadata"]["available_quantities"].keys()
 
         hit_ek_ref = None
@@ -78,7 +82,7 @@ class ForcingsInitializer:
             
         # DEFAULT FORCINGS
         if "forcings" not in available_quantities:
-            warning_string = (f"Restart file {self.restart_file_path} does not "
+            warning_string = (f"Restart file {restart_file_path} does not "
             "contain forcings, however, there are active forcings. "
             "Using default values")
             warnings.warn(warning_string, RuntimeWarning)
@@ -98,7 +102,7 @@ class ForcingsInitializer:
             if self.is_mass_flow_forcing:
                 if "mass_flow" not in forcings_restart.keys():
                     warning_string = (
-                        f"Restart file {self.restart_file_path} does not "
+                        f"Restart file {restart_file_path} does not "
                         "contain mass flow forcing, however, "
                         "mass flow forcing is active. "
                         "Defaulting PID controller parameters to 0.0.")
@@ -113,7 +117,7 @@ class ForcingsInitializer:
             if self.is_turb_hit_forcing:
                 if "turb_hit" not in forcings_restart.keys():
                     warning_string = (
-                        f"Restart file {self.restart_file_path} does not "
+                        f"Restart file {restart_file_path} does not "
                         "contain hit forcing, however, hit forcing is active. "
                         "Computing reference energy spectrum from restart velocity "
                         "field.")

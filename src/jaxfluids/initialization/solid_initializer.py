@@ -68,6 +68,7 @@ class SolidsInitializer:
             levelset_fields: LevelsetFieldBuffers,
             user_solid_velocity_init: Union[np.ndarray, Array] = None,
             user_solid_temperature_init: Union[np.ndarray, Array] = None,
+            user_restart_file_path: str = None
             ) -> Tuple[SolidFieldBuffers,
                        LevelsetPositivityInformation,
                        LevelsetProcedureInformation]:
@@ -87,7 +88,7 @@ class SolidsInitializer:
         cell_centers = self.domain_information.get_local_cell_centers()
 
         if is_restart:
-            solid_fields = self.from_restart_file()
+            solid_fields = self.from_restart_file(user_restart_file_path)
             
         elif user_solid_velocity_init is not None or user_solid_temperature_init is not None:
             raise NotImplementedError
@@ -136,9 +137,9 @@ class SolidsInitializer:
         return solid_fields
     
 
-    def from_restart_file(self) -> SolidFieldBuffers:
+    def from_restart_file(self, user_restart_file_path: str | None) -> SolidFieldBuffers:
 
-        restart_file_path = self.restart_setup.file_path
+        restart_file_path = self.restart_setup.file_path if user_restart_file_path is None else user_restart_file_path
         restart_time = self.restart_setup.time
         use_restart_time = self.restart_setup.use_time
         is_interpolate = self.restart_setup.is_interpolate
@@ -148,7 +149,6 @@ class SolidsInitializer:
         is_multihost = self.domain_information.is_multihost
         local_device_count = self.domain_information.local_device_count
         process_id = self.domain_information.process_id
-        restart_file_path = self.restart_setup.file_path
         is_equal_decomposition_multihost = self.restart_setup.is_equal_decomposition_multihost
 
         restart_file_path = parse_restart_files(restart_file_path)

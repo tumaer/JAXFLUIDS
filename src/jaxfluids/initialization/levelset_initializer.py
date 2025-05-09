@@ -109,7 +109,8 @@ class LevelsetInitializer:
             self,
             user_levelset_init: Union[np.ndarray, Array] = None,
             user_solid_interface_velocity_init: Union[np.ndarray, Array] = None,
-            ) -> LevelsetFieldBuffers:
+            user_restart_file_path: str | None = None
+        ) -> LevelsetFieldBuffers:
         """Initializes the levelset related field buffers. Peforms ghost cell
         treatment on the material fields.
 
@@ -136,7 +137,7 @@ class LevelsetInitializer:
             warnings.warn(warning_string, RuntimeWarning)
 
         if is_restart:
-            levelset_fields = self.from_restart_file()
+            levelset_fields = self.from_restart_file(user_restart_file_path)
 
         elif is_h5_file:
             levelset_fields = self.from_h5_file()
@@ -215,7 +216,7 @@ class LevelsetInitializer:
         
         return levelset_fields
 
-    def from_restart_file(self) -> LevelsetFieldBuffers:
+    def from_restart_file(self, user_restart_file_path: str | None) -> LevelsetFieldBuffers:
         """Creates the initial levelset related field
         buffers from a restart file.
 
@@ -230,7 +231,7 @@ class LevelsetInitializer:
         local_device_count = self.domain_information.local_device_count
         process_id = self.domain_information.process_id
         levelset_model = self.equation_information.levelset_model
-        restart_file_path = self.restart_setup.file_path
+        restart_file_path = self.restart_setup.file_path if user_restart_file_path is None else user_restart_file_path
         is_equal_decomposition_multihost = self.restart_setup.is_equal_decomposition_multihost
 
         restart_file_path = parse_restart_files(restart_file_path)

@@ -132,6 +132,7 @@ class InitializationManager:
             user_time_init: float = None,
             user_levelset_init: Union[np.ndarray, Array] = None,
             user_solid_interface_velocity_init: Union[np.ndarray, Array] = None,
+            user_restart_file_path: str = None,
             ml_parameters: ParametersSetup = ParametersSetup(),
             ml_callables: CallablesSetup = CallablesSetup()
         ) -> JaxFluidsBuffers:
@@ -156,13 +157,15 @@ class InitializationManager:
             material_fields,
             time_control_variables
         ) = self.material_fields_initializer.initialize(
-            user_prime_init, user_time_init, ml_setup
+            user_prime_init, user_time_init, user_restart_file_path, ml_setup
         )
 
         # LEVELSET
         if self.equation_information.levelset_model:
             levelset_fields = self.levelset_initializer.initialize(
-                user_levelset_init, user_solid_interface_velocity_init)
+                user_levelset_init, user_solid_interface_velocity_init,
+                user_restart_file_path
+            )
         else:
             levelset_fields = LevelsetFieldBuffers()
 
@@ -171,7 +174,10 @@ class InitializationManager:
         if solid_coupling.thermal == "TWO-WAY":
             raise NotImplementedError
         if any((solid_coupling.dynamic == "TWO-WAY",)):
-            solid_fields = self.solids_initializer.initialize(levelset_fields)
+            solid_fields = self.solids_initializer.initialize(
+                levelset_fields,
+                user_restart_file_path=user_restart_file_path
+            )
         else:
             solid_fields = SolidFieldBuffers()
 
@@ -209,7 +215,10 @@ class InitializationManager:
         # FORCINGS
         active_forcings = self.numerical_setup.active_forcings
         if any(active_forcings._asdict().values()):
-            forcing_parameters = self.forcings_initializer.initialize(material_fields)
+            forcing_parameters = self.forcings_initializer.initialize(
+                material_fields,
+                user_restart_file_path=user_restart_file_path
+            )
         else:
             forcing_parameters = ForcingParameters()
 

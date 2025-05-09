@@ -78,6 +78,7 @@ class MaterialFieldsInitializer:
             self,
             user_prime_init: Union[np.ndarray, Array] = None,
             user_time_init: float = None,
+            user_restart_file_path: str = None,
             ml_setup: MachineLearningSetup = None
         ) -> Tuple[MaterialFieldBuffers, TimeControlVariables]:
         """Initializes the material field buffers.
@@ -96,7 +97,8 @@ class MaterialFieldsInitializer:
         simulation_step = 0
 
         if is_restart:
-            material_fields, physical_simulation_time = self.from_restart_file(ml_setup)
+            material_fields, physical_simulation_time = self.from_restart_file(
+                user_restart_file_path, ml_setup)
 
         elif user_prime_init is not None:
             material_fields, physical_simulation_time = self.from_user_specified_buffer(
@@ -200,7 +202,11 @@ class MaterialFieldsInitializer:
         
         return material_fields
     
-    def from_restart_file(self, ml_setup: MachineLearningSetup) -> MaterialFieldBuffers:
+    def from_restart_file(
+            self,
+            user_restart_file_path: str | None,
+            ml_setup: MachineLearningSetup
+        ) -> MaterialFieldBuffers:
         """Initializes the material field buffers
         from a restart .h5 file.
 
@@ -208,7 +214,7 @@ class MaterialFieldsInitializer:
         :rtype: _type_
         """
         restart_setup = self.case_setup.restart_setup
-        restart_file_path = restart_setup.file_path
+        restart_file_path = restart_setup.file_path if user_restart_file_path is None else user_restart_file_path
         restart_time = restart_setup.time
         use_restart_time = restart_setup.use_time
         is_interpolate = restart_setup.is_interpolate
