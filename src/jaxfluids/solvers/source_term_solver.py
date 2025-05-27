@@ -13,6 +13,7 @@ from jaxfluids.stencils.spatial_derivative import SpatialDerivative
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.data_types.case_setup.forcings import GeometricSourceSetup
+from jaxfluids.config import precision
 
 Array = jax.Array
 
@@ -207,6 +208,10 @@ class SourceTermSolver:
         equation_type = self.equation_information.equation_type
 
         temperature_at_cf = self.reconstruct_stencil_ui.reconstruct_xi(temperature, axis)
+        # ghost cell faces located at the edge of the extension band may be negative for higher order reconstruction
+        # because cut-off values are being used for the reconstruction
+        # we set negative values to eps
+        temperature_at_cf = jnp.where(temperature_at_cf <= 0.0, precision.get_eps(), temperature_at_cf)
         volume_fraction_at_cf = None
         mass_fraction_at_cf = None
 
@@ -262,6 +267,10 @@ class SourceTermSolver:
         no_fluids = self.equation_information.no_fluids
 
         temperature_at_cf = self.reconstruct_stencil_ui.reconstruct_xi(temperature, axis)
+        # ghost cell faces located at the edge of the extension band may be negative for higher order reconstruction
+        # because cut-off values are being used for the reconstruction
+        # we set negative values to eps
+        temperature_at_cf = jnp.where(temperature_at_cf <= 0.0, precision.get_eps(), temperature_at_cf)
         volume_fraction_at_cf = None
         mass_fraction_at_cf = None
 

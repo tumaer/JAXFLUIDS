@@ -123,8 +123,7 @@ class HaloCommunicationMaterial(HaloCommunication):
         active_face_locations = self.domain_information.active_face_locations
         active_edge_locations = self.domain_information.active_edge_locations
 
-        # TODO dont loop over edges multiple times
-        for face_location in edge_slices_retrieve.keys():
+        for face_location in active_face_locations:
 
             axis_index = face_locations_to_axis_index[face_location]
             split_xi = split_factors[axis_index]
@@ -134,6 +133,8 @@ class HaloCommunicationMaterial(HaloCommunication):
             # ARANGE RETRIEVE BUFFER
             buffer_halos_retrieve_dict = {}
             for edge_location, slice_retrieve in edge_slices_retrieve[face_location].items():
+                if edge_location not in active_edge_locations:
+                    continue
                 buffer_halos_retrieve_dict[edge_location] = buffer[slice_retrieve]
 
             # SEND RETRIEVE BUFFER
@@ -143,6 +144,8 @@ class HaloCommunicationMaterial(HaloCommunication):
                 axis_name="i")
 
             for edge_location in edge_slices_retrieve[face_location].keys():
+                if edge_location not in active_edge_locations:
+                    continue
                 
                 # RESET AND FILL BUFFER
                 slice_fill = edge_slices_fill[edge_location]

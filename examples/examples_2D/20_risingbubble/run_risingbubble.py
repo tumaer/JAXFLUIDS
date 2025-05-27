@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +17,7 @@ jxf_buffers = initialization_manager.initialization()
 sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
+# path = "./results/risingbubble-15"
 path = sim_manager.output_writer.save_path_domain
 quantities = [
     "real_pressure", "real_density", "real_velocity",
@@ -24,6 +25,7 @@ quantities = [
 jxf_data = load_data(path, quantities)
 
 cell_centers = jxf_data.cell_centers
+cell_sizes = jxf_data.cell_sizes
 data = jxf_data.data
 times = jxf_data.times
 
@@ -51,6 +53,7 @@ create_2D_figure(
     nrows_ncols,
     cell_centers=cell_centers,
     plane="xy", plane_value=0.0,
+    dpi=500,
     save_fig="rising_bubble.png")
 
 # MASS

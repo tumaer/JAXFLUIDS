@@ -455,7 +455,8 @@ class SimulationManager:
 
         wall_clock_times = WallClockTimes(
             wall_clock_step, wall_clock_step_cell,
-            mean_wall_clock_step, mean_wall_clock_step_cell)
+            mean_wall_clock_step, mean_wall_clock_step_cell
+            )
             
         return wall_clock_times
 
