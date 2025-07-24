@@ -6,7 +6,10 @@ import jax
 import jax.numpy as jnp
 
 from jaxfluids.data_types import JaxFluidsBuffers
-from jaxfluids.data_types.buffers import SimulationBuffers, TimeControlVariables, ForcingParameters
+from jaxfluids.data_types.buffers import (
+    SimulationBuffers, TimeControlVariables, ForcingParameters, IntegrationBuffers,
+    MaterialFieldBuffers, LevelsetFieldBuffers, SolidFieldBuffers, ForcingBuffers
+)
 from jaxfluids.data_types.information import StepInformation
 from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 
@@ -206,3 +209,14 @@ class Callback(ABC):
     def on_rhs_axis(self) -> None:
         """Called on cell face reconstruction start"""
         # TODO has to be passed deeper into the solver
+
+    def after_compute_rhs(
+            self,
+            rhs_buffers: IntegrationBuffers,
+            material_fields: MaterialFieldBuffers,
+            levelset_fields: LevelsetFieldBuffers,
+            solid_fields: SolidFieldBuffers,
+            forcing_buffers: ForcingBuffers
+        ) -> IntegrationBuffers:
+
+        return rhs_buffers

@@ -800,6 +800,17 @@ class SimulationManager:
                 is_feed_forward
             )
 
+            # CALLBACK RHS BUFFERS
+            rhs_buffers = self._callback(
+                "after_compute_rhs",
+                material_fields=material_fields,
+                levelset_fields=levelset_fields,
+                solid_fields=solid_fields,
+                forcing_buffers=forcing_buffers,
+                rhs_buffers=rhs_buffers,
+                ml_setup=ml_setup
+            )
+
             # PERFORM STAGE INTEGRATION
             integration_buffers = self.time_integrator.perform_stage_integration(
                 integration_buffers,
@@ -1047,7 +1058,13 @@ class SimulationManager:
             self,
             hook_name: str,
             jxf_buffers: JaxFluidsBuffers = None,
+            rhs_buffers: IntegrationBuffers = None,
+            material_fields: MaterialFieldBuffers = None,
+            levelset_fields: LevelsetFieldBuffers = None,
+            solid_fields: SolidFieldBuffers = None,
+            forcing_buffers: ForcingBuffers = None,
             callback_dict: Dict = None,
+            ml_setup: MachineLearningSetup = None,
             **kwargs
         ) -> Tuple[JaxFluidsBuffers, Dict]:
         """Executes the hook_name method of all callbacks. 
@@ -1097,6 +1114,20 @@ class SimulationManager:
                 _, callback_dict = fn(**kwargs)
 
             return None, None
+
+        elif hook_name == "after_compute_rhs":
+            for cb in self.callbacks:
+                fn = getattr(cb, hook_name)
+                rhs_buffers = fn(
+                    rhs_buffers=rhs_buffers,
+                    material_fields=material_fields,
+                    levelset_fields=levelset_fields,
+                    solid_fields=solid_fields,
+                    forcing_buffers=forcing_buffers,
+                    ml_setup=ml_setup
+                )
+            
+            return rhs_buffers
 
         else:
             raise NotImplementedError

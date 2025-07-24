@@ -8,7 +8,7 @@ def read_restart_setup(
         case_setup_dict: Dict,
         numerical_setup: NumericalSetup,
         unit_handler: UnitHandler
-        ) -> RestartSetup:
+    ) -> RestartSetup:
     
     basepath = "restart"
     restart_dict: Dict = get_setup_value(

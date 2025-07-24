@@ -35,6 +35,7 @@ class BaseSetup(NamedTuple):
     convective_fluxes: ConvectiveFluxesSetup = None
     levelset: LevelSetSetup = None
     boundary_conditions: BoundaryConditionSetup = None
+    callbacks: Any = None
 
 class ParametersSetup(BaseSetup):
     pass
