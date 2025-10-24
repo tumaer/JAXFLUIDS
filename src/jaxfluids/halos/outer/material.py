@@ -36,6 +36,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         self.equation_manager = equation_manager
         self.equation_information = equation_manager.equation_information
+        self.material_manager = self.equation_manager.material_manager
 
         # UPWIND DIRECTION FOR NEUMANN DERIVATIVE STENCIL
         self.upwind_difference_sign = {
@@ -69,6 +70,28 @@ class BoundaryConditionMaterial(BoundaryCondition):
             self.derivative_downwind: SpatialDerivative = None
             
  
+        # INITIALIZE OPPOSITION CONTROL
+        self.opposition_control_data = {}
+        for face_location in active_face_locations:
+            boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] \
+                = getattr(boundary_conditions, face_location)
+            for i, boundary_conditions_face in enumerate(boundary_conditions_face_tuple):            
+                boundary_type = boundary_conditions_face.boundary_type
+                if boundary_type == "OPPOSITIONCONTROLWALL":
+                    assert len(boundary_conditions_face_tuple) == 1
+                    assert face_location in ("south", "north")
+
+                    opposition_control_setup = boundary_conditions_face.opposition_control
+                    distance_sensing_plane = opposition_control_setup.distance_sensing_plane
+                    amplitude = opposition_control_setup.amplitude
+
+                    y_cc = np.squeeze(self.domain_information.get_global_cell_centers()[1])
+                    wall_location = self.domain_information.domain_size[1][0 if face_location == "south" else 1]
+                    wall_normal_distance = y_cc - wall_location
+                    sign = -1 if face_location == "south" else 1
+                    index_sensing_plane = np.argmin(np.abs(wall_normal_distance + sign * distance_sensing_plane), axis=-1)
+                    self.opposition_control_data[face_location] = {"idx": index_sensing_plane, "A": amplitude}
+
     def face_halo_update(
             self,
             primitives: Array,
@@ -198,6 +221,11 @@ class BoundaryConditionMaterial(BoundaryCondition):
                         halos_primes = self.simple_outflow(
                             primitives, face_location, primitives_callable,
                             physical_simulation_time)
+
+                    elif boundary_type in ("OPPOSITIONCONTROLWALL", "ISOTHERMALOPPOSITIONCONTROLWALL"):
+                        halos_primes = self.opposition_control(
+                            primitives, conservatives, face_location
+                        )
 
                     else:
                         raise NotImplementedError
@@ -853,6 +881,60 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         if boundary_type == "SYMMETRY":
             halos_primes *= self.face_signs_symmetry[face_location]
+
+        return halos_primes
+
+    def opposition_control(
+            self,
+            primitives: Array,
+            conservatives: Array,
+            face_location: str, 
+        ):
+
+        vel_slices = self.equation_information.s_velocity
+        s_mass = self.equation_information.s_mass
+        s_energy = self.equation_information.s_energy
+        ids_velocity = self.equation_information.ids_velocity
+
+        slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
+        wall_normal_index = self.domain_information.face_location_to_axis_index[face_location]
+        nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
+
+        idx_sensing_plane = self.opposition_control_data[face_location]["idx"]
+        amplitude = self.opposition_control_data[face_location]["A"]
+
+        conservatives = conservatives[..., nhx, nhy, nhz]
+        mass_flux = conservatives[ids_velocity[wall_normal_index], :, idx_sensing_plane:idx_sensing_plane+1, :]
+        mass_flux = -amplitude * mass_flux
+        mean_mass_flux = jnp.mean(mass_flux, axis=(-1,-3), keepdims=True)
+        if self.domain_information.is_parallel:
+            mean_mass_flux = jax.lax.pmean(mean_mass_flux, axis_name="i")
+
+        slices_wall_adjacent = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
+        density_wall = self.material_manager.get_density(primitives[slices_wall_adjacent])
+        wall_normal_velocity = (mass_flux - mean_mass_flux) / density_wall
+
+        slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
+        velocity = primitives[vel_slices]
+        u_halo = - velocity[(jnp.s_[0:1],) + slices_retrieve]
+        v_halo = 2 * wall_normal_velocity - velocity[(jnp.s_[1:2],) + slices_retrieve]
+        w_halo = - velocity[(jnp.s_[2:3],) + slices_retrieve]
+
+        halos_primes = jnp.concatenate([
+            primitives[(s_mass,) + slices_retrieve],
+            u_halo,
+            v_halo,
+            w_halo,
+            primitives[(s_energy,) + slices_retrieve]
+        ], axis=0)
+
+        diffuse_interface_model = self.equation_information.diffuse_interface_model
+        if diffuse_interface_model:
+            s_volume_fraction = self.equation_information.s_volume_fraction
+            halos_primes = jnp.concatenate([
+                halos_primes,
+                primitives[(s_volume_fraction,) + slices_retrieve]
+            ], axis=0)
 
         return halos_primes
 

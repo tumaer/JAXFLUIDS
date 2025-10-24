@@ -30,6 +30,10 @@ class VelocityTuple(NamedTuple):
     v: float
     w: float
 
+class OppositionControlSetup(NamedTuple):
+    amplitude: float
+    distance_sensing_plane: float
+
 class BoundaryConditionsFace(NamedTuple):
     boundary_type: str = None
     bounding_domain_callable: Callable = None
@@ -42,6 +46,7 @@ class BoundaryConditionsFace(NamedTuple):
     simple_inflow: SimpleInflowSetup = None
     simple_outflow: SimpleOutflowSetup = None
     temperature_callable: Callable = None # NOTE for coupled solids
+    opposition_control: OppositionControlSetup = None
 
 class BoundaryConditionsField(NamedTuple):
     east: Tuple[BoundaryConditionsFace] = None

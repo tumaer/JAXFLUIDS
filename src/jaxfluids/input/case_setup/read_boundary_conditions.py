@@ -149,6 +149,7 @@ def read_boundary_condition_face(
     simple_inflow = None
     simple_outflow = None
     temperature_callable = None
+    opposition_control = None
 
     active_axes_at_face = get_active_axes_at_face(domain_setup, face_location)
     dim = domain_setup.dim
@@ -231,22 +232,46 @@ def read_boundary_condition_face(
                 perform_nondim=True, unit_handler=unit_handler)
 
     elif "WALL" in boundary_type:
-        path_callable = get_path_to_key(basepath, "wall_velocity_callable")
-        wall_velocity_case_setup = get_setup_value(
-            boundary_conditions_face_case_setup, "wall_velocity_callable",
-            path_callable, dict, is_optional=False)
-        wall_velocity_callables_dict = {}
-        for velocity_xi in ["u","v","w"]:
-            path = get_path_to_key(path_callable, velocity_xi)
-            wall_velocity_xi_case_setup = get_setup_value(
-                wall_velocity_case_setup, velocity_xi, path, (float, str),
-                is_optional=False)
-            velocity_wrapper = create_wrapper_for_callable(
-                wall_velocity_xi_case_setup, input_argument_units,
-                input_argument_labels, "velocity", path,
-                perform_nondim=True, unit_handler=unit_handler)
-            wall_velocity_callables_dict[velocity_xi] = velocity_wrapper
-        wall_velocity_callable = VelocityCallable(**wall_velocity_callables_dict)
+        if "OPPOSITIONCONTROL" in boundary_type:
+            assert face_location in ("south", "north")
+            
+            path_opposition_control = get_path_to_key(basepath, "opposition_control")
+            opposition_control_setup = get_setup_value(
+                boundary_conditions_face_case_setup, "opposition_control", 
+                path_opposition_control, dict, is_optional=False)
+            path = get_path_to_key(path_opposition_control, "amplitude")
+            amplitude = get_setup_value(
+                opposition_control_setup, "amplitude", 
+                path, float, is_optional=False,
+                numerical_value_condition=(">", 0.0)
+            )
+            path = get_path_to_key(path_opposition_control, "distance_sensing_plane")
+            distance_sensing_plane = get_setup_value(
+                opposition_control_setup, "distance_sensing_plane", 
+                path, float, is_optional=False,
+                numerical_value_condition=(">", 0.0)
+            )
+            distance_sensing_plane = unit_handler.non_dimensionalize(distance_sensing_plane, "length")
+            opposition_control = OppositionControlSetup(amplitude, distance_sensing_plane)
+
+        else:
+
+            path_callable = get_path_to_key(basepath, "wall_velocity_callable")
+            wall_velocity_case_setup = get_setup_value(
+                boundary_conditions_face_case_setup, "wall_velocity_callable",
+                path_callable, dict, is_optional=False)
+            wall_velocity_callables_dict = {}
+            for velocity_xi in ["u","v","w"]:
+                path = get_path_to_key(path_callable, velocity_xi)
+                wall_velocity_xi_case_setup = get_setup_value(
+                    wall_velocity_case_setup, velocity_xi, path, (float, str),
+                    is_optional=False)
+                velocity_wrapper = create_wrapper_for_callable(
+                    wall_velocity_xi_case_setup, input_argument_units,
+                    input_argument_labels, "velocity", path,
+                    perform_nondim=True, unit_handler=unit_handler)
+                wall_velocity_callables_dict[velocity_xi] = velocity_wrapper
+            wall_velocity_callable = VelocityCallable(**wall_velocity_callables_dict)
 
         if "ISOTHERMAL" in boundary_type:
             path_callable = get_path_to_key(basepath, "wall_temperature_callable")
@@ -368,7 +393,7 @@ def read_boundary_condition_face(
         levelset_callable, wall_velocity_callable,
         wall_temperature_callable, wall_mass_transfer,
         primitives_table, simple_inflow, simple_outflow,
-        temperature_callable)
+        temperature_callable, opposition_control)
 
     return boundary_conditions_face
 
