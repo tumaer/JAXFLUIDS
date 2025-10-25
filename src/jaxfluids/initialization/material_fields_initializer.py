@@ -113,7 +113,10 @@ class MaterialFieldsInitializer:
                     self.from_turbulent_initial_condition,
                     axis_name="i")(cell_centers)
             else:
-                material_fields = self.from_turbulent_initial_condition(cell_centers)
+                material_fields = self.from_turbulent_initial_condition(
+                    cell_centers,
+                    ml_setup
+                )
 
         elif self.is_cavitation_init:
             if is_parallel:
@@ -476,7 +479,11 @@ class MaterialFieldsInitializer:
         
         return material_fields, physical_simulation_time        
 
-    def from_turbulent_initial_condition(self, cell_centers: Array) -> MaterialFieldBuffers:
+    def from_turbulent_initial_condition(
+            self,
+            cell_centers: Array,
+            ml_setup: MachineLearningSetup
+        ) -> MaterialFieldBuffers:
         """Initializes the material field
         buffers from turbulent initial conditions.
 
@@ -506,7 +513,8 @@ class MaterialFieldsInitializer:
         conservatives = self.equation_manager.get_conservatives_from_primitives(primitives)
         primitives, conservatives = self.halo_manager.perform_halo_update_material(
             primitives, 0.0, fill_edge_halos, 
-            fill_vertex_halos, conservatives)
+            fill_vertex_halos, conservatives,
+            ml_setup=ml_setup)
 
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
