@@ -769,12 +769,19 @@ class SimulationManager:
                 if stage != self.time_integrator.no_stages - 1:
                     is_logging_stage = False
 
-            # TODO
-            # # CALLBACK on_stage_start
-            # conservatives, primitives = self._callback("on_stage_start", conservatives=conservatives, primitives=primitives,
-            #     physical_timestep_size=physical_timestep_size, physical_simulation_time=physical_simulation_time, levelset=levelset,
-            #     volume_fraction=volume_fraction, apertures=apertures, forcings=forcing_parameters, 
-            #     ml_setup=ml_setup)
+            # CALLBACK on_stage_start
+            conservatives, primitives = self._callback(
+                "on_stage_start",
+                conservatives=conservatives,
+                primitives=primitives,
+                physical_timestep_size=physical_timestep_size,
+                physical_simulation_time=physical_simulation_time,
+                levelset=levelset,
+                volume_fraction=volume_fraction,
+                apertures=apertures,
+                forcings=forcing_buffers, 
+                ml_setup=ml_setup
+            )
 
             # RIGHT HAND SIDE
             (
@@ -1001,6 +1008,22 @@ class SimulationManager:
                     self.domain_information)
                 positivity_state_info_list.append(positivity_state_info)
 
+
+            # CALLBACK on_stage_end
+            conservatives, primitives = self._callback(
+                "on_stage_end",
+                conservatives=conservatives,
+                primitives=primitives,
+                physical_timestep_size=physical_timestep_size,
+                physical_simulation_time=current_time_stage,
+                levelset=levelset,
+                volume_fraction=volume_fraction,
+                apertures=apertures,
+                forcing_buffers=forcing_buffers, 
+                ml_setup=ml_setup
+            )
+
+
             # NOTE CREATE INTEGRATION FOR NEXT STAGE            
             if stage < self.time_integrator.no_stages - 1:
                 integration_buffers = get_integration_buffers(
@@ -1013,12 +1036,6 @@ class SimulationManager:
                     self.equation_information
                 )
 
-            # TODO
-            # # CALLBACK on_stage_end
-            # conservatives, primitives = self._callback("on_stage_end", conservatives=conservatives, primitives=primitives,
-            #     physical_timestep_size=physical_timestep_size, physical_simulation_time=current_time_stage, levelset=levelset,
-            #     volume_fraction=volume_fraction, apertures=apertures, forcings=forcings, 
-            #     ml_setup=ml_setup)
 
         # INCREMENT PHYSICAL SIMULATION TIME
         physical_simulation_time += physical_timestep_size
@@ -1065,8 +1082,15 @@ class SimulationManager:
             forcing_buffers: ForcingBuffers = None,
             callback_dict: Dict = None,
             ml_setup: MachineLearningSetup = None,
+            conservatives: Array = None, 
+            primitives: Array = None, 
+            physical_timestep_size: float = None, 
+            physical_simulation_time: float = None, 
+            levelset: Array = None,
+            volume_fraction: Array = None, 
+            apertures: Union[List, None] = None,
             **kwargs
-        ) -> Tuple[JaxFluidsBuffers, Dict]:
+        ) -> Tuple[JaxFluidsBuffers, Dict] | Tuple[Array, Array] | IntegrationBuffers:
         """Executes the hook_name method of all callbacks. 
 
         :param hook_name: _description_
@@ -1111,9 +1135,20 @@ class SimulationManager:
         elif hook_name in ("on_stage_start", "on_stage_end"):
             for cb in self.callbacks:
                 fn = getattr(cb, hook_name)
-                _, callback_dict = fn(**kwargs)
+                conservatives, primitives = fn(
+                    conservatives=conservatives, 
+                    primitives=primitives, 
+                    physical_timestep_size=physical_timestep_size, 
+                    physical_simulation_time=physical_simulation_time, 
+                    levelset=levelset,
+                    volume_fraction=volume_fraction, 
+                    apertures=apertures,
+                    forcing_buffers=forcing_buffers,
+                    ml_setup=ml_setup,
+                    **kwargs
+                )
 
-            return None, None
+            return conservatives, primitives
 
         elif hook_name == "after_compute_rhs":
             for cb in self.callbacks:
@@ -1124,7 +1159,8 @@ class SimulationManager:
                     levelset_fields=levelset_fields,
                     solid_fields=solid_fields,
                     forcing_buffers=forcing_buffers,
-                    ml_setup=ml_setup
+                    ml_setup=ml_setup,
+                    **kwargs
                 )
             
             return rhs_buffers

@@ -140,10 +140,12 @@ class Callback(ABC):
             levelset: Array = None,
             volume_fraction: Array = None, 
             apertures: Union[List, None] = None,
-            forcings: Union[Dict, None] = None, 
-            ml_setup: MachineLearningSetup = None, 
+            forcing_buffers: ForcingBuffers = None,
+            ml_setup: MachineLearningSetup = None,
+            **kwargs
         ) -> Tuple[Array, Array]:
-        """Called on integrator stage start
+        """Called on integrator stage start before
+        the call to the right-hand side calculation. 
 
         :param conservatives: Buffer of conservative variables
         :type conservatives: Array
@@ -178,10 +180,12 @@ class Callback(ABC):
             levelset: Array = None,
             volume_fraction: Array = None, 
             apertures: Union[List, None] = None,
-            forcings: Union[Dict, None] = None, 
-            ml_setup: MachineLearningSetup = None
+            forcing_buffers: ForcingBuffers = None,
+            ml_setup: MachineLearningSetup = None,
+            **kwargs
         ) -> Tuple[Array, Array]:
-        """Called on integrator stage end
+        """Called on integrator stage end before integration
+        buffers are created for the next integration stage.
 
         :param conservatives: Buffer of conservative variables
         :type conservatives: Array
@@ -216,7 +220,29 @@ class Callback(ABC):
             material_fields: MaterialFieldBuffers,
             levelset_fields: LevelsetFieldBuffers,
             solid_fields: SolidFieldBuffers,
-            forcing_buffers: ForcingBuffers
+            forcing_buffers: ForcingBuffers,
+            ml_setup: MachineLearningSetup,
+            **kwargs
         ) -> IntegrationBuffers:
+        """Called inside the do_runge_kutta_stages after 
+        the right-hand side (RHS) terms are computed. 
+        This callback is designed to add user-defined terms to
+        or modify the RHS.
+
+        :param rhs_buffers: Right-hand side buffer computed by space solver
+        :type rhs_buffers: IntegrationBuffers
+        :param material_fields: Material fields
+        :type material_fields: MaterialFieldBuffers
+        :param levelset_fields: Level-set related fields
+        :type levelset_fields: LevelsetFieldBuffers
+        :param solid_fields: Solid fields
+        :type solid_fields: SolidFieldBuffers
+        :param forcing_buffers: Forcing buffers
+        :type forcing_buffers: ForcingBuffers
+        :param ml_setup: ML-setup with callables and parameters
+        :type ml_setup: MachineLearningSetup
+        :return: Right-hand side buffer
+        :rtype: IntegrationBuffers
+        """
 
         return rhs_buffers
