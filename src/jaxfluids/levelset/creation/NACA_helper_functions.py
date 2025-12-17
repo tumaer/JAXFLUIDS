@@ -84,6 +84,7 @@ def five_digit_airfoil(digit_code: str, chord_line: Array) -> Array:
 def four_digit_airfoil(digit_code: str, chord_line: Array) -> Array:
 
     m, p = int(digit_code[0])/100., int(digit_code[1])/10.
+    p += 1e-100
     camber_line = m/p**2 * (2*p*chord_line - chord_line**2) * ((chord_line >= 0) & (chord_line < p)) \
         + m/(1-p)**2 * ((1-2*p) + 2*p*chord_line - chord_line**2) * ((chord_line >= p) & (chord_line <= 1))
     dy_dx = 2*m/p**2 * (p-chord_line) * ((chord_line >= 0) & (chord_line < p)) \

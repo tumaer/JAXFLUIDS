@@ -212,7 +212,7 @@ def get_positvity_state_info(
 
     if equation_information.is_solid_levelset:
         mask_real = compute_fluid_masks(volume_fraction, levelset_model)
-        mask_real = mask_real[...,nhx_,nhy_,nhz_]
+        mask_real = mask_real[...,nhx_,nhy_,nhz_].astype(bool)
         initial_min = 1e+10
         initial_max = -1.0
     else:

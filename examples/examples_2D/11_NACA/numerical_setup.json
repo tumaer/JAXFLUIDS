@@ -49,8 +49,8 @@
         },
         "mixing": {
             "conservatives": {
-                "volume_fraction_threshold": 5e-2,
-                "mixing_targets": 2,
+                "volume_fraction_threshold": 2e-1,
+                "mixing_targets": 1,
                 "is_cell_based_computation": true
             }
         }

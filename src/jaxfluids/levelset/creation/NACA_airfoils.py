@@ -275,32 +275,16 @@ class NACA_airfoils:
         chord_line_estimate, distance_estimate = self.compute_distance_estimate(
             airfoil, mesh_grid, resolution_for_estimate, batch_size)
         
-        eps = 1e-8 if self.is_double_precision else 1e-6
-        learning_rate = 1e-8 if self.is_double_precision else 1e-6
-        steps = 5000
-        distance = self.optimize_distance_estimate(
-            airfoil, chord_line_estimate, distance_estimate,
-            mesh_grid, eps, learning_rate, steps)
+        # TODO NOTE commenting optimization out for now, needs checking
+        # eps = 1e-8 if self.is_double_precision else 1e-6
+        # learning_rate = 1e-8 if self.is_double_precision else 1e-6
+        # steps = 5000
+        # distance = self.optimize_distance_estimate(
+        #     airfoil, chord_line_estimate, distance_estimate,
+        #     mesh_grid, eps, learning_rate, steps)
 
+        distance = distance_estimate
         resolution_for_sign = int(12.0 * scaling_factor / smallest_cell_size) 
         levelset = self.apply_sign(airfoil, distance, mesh_grid, resolution_for_sign)
-
-        # import matplotlib.pyplot as plt
-        # import matplotlib
-        # from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-        # deviation = jnp.clip(jnp.abs(distance_estimate - distance), 1e-16, 1e16)
-        # norm = matplotlib.colors.LogNorm(vmin=jnp.min(deviation), vmax=jnp.max(deviation))
-        # X,Y = jnp.squeeze(mesh_grid[0]),jnp.squeeze(mesh_grid[1])
-        # fig, ax = plt.subplots(2,2)
-        # ax[0,0].pcolormesh(X, Y, jnp.clip(jnp.squeeze(distance_estimate/smallest_cell_size), -10, 10), cmap="jet")
-        # ax[0,1].pcolormesh(X, Y, jnp.clip(jnp.squeeze(distance/smallest_cell_size), -10, 10), cmap="jet")
-        # ax[1,0].pcolormesh(X, Y, jnp.squeeze(deviation), cmap="jet", norm=norm)
-        # ax[1,1].pcolormesh(X, Y, jnp.clip(jnp.squeeze(levelset/smallest_cell_size), -10, 10), cmap="jet")
-        # for axi in ax.flatten():
-        #     axi.set_aspect("equal")
-        # plt.show()
-        # plt.savefig("test.png")
-        # plt.close()
 
         return levelset
