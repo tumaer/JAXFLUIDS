@@ -55,7 +55,7 @@ from jaxfluids.input.input_manager import InputManager
 from jaxfluids.initialization.initialization_manager import InitializationManager
 from jaxfluids.simulation_manager import SimulationManager
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Deniz Bezgin, Aaron Buhendwa"
 
 
