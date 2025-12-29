@@ -17,7 +17,7 @@ AVAILABLE_QUANTITIES = {
     "miscellaneous": ("mach_number", "schlieren", "absolute_velocity",
                         "vorticity", "absolute_vorticity", "qcriterion", "dilatation",
                         "volume_fraction"),
-    "forcings": ("mass_flow")
+    "forcings": ("mass_flow", "turb_hit")
     }
 
 def get_reduced_primes_tuple_for_diffuse_interface(primes_tuple: Tuple) -> Tuple:

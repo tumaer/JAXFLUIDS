@@ -112,7 +112,8 @@ class ForcingsInitializer:
                     mass_flow_params_default = False
                     mass_flow_controller_params = MassFlowControllerParameters(
                         forcings_restart["mass_flow"]["PID_e_new"][()],
-                        forcings_restart["mass_flow"]["PID_e_int"][()])
+                        forcings_restart["mass_flow"]["PID_e_int"][()]
+                    )
 
             if self.is_turb_hit_forcing:
                 if "turb_hit" not in forcings_restart.keys():

@@ -5,6 +5,10 @@
         "save_path": "./results",
         "save_dt": 0.05
     },
+    "restart": {
+        "flag": false,
+        "file_path": ""
+    },
     "domain": {
         "x": {
             "cells": 4,
@@ -78,7 +82,8 @@
         "temperature_reference": 1.0
     },
     "output": {
-        "primitives": ["density", "velocity", "pressure", "temperature"]
+        "primitives": ["density", "velocity", "pressure", "temperature"],
+        "forcings": ["mass_flow"]
     },
     "forcings": {
         "mass_flow": {

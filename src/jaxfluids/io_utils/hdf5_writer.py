@@ -12,13 +12,14 @@ from jaxfluids.levelset.levelset_handler import LevelsetHandler
 from jaxfluids.materials.material_manager import MaterialManager
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
-from jaxfluids.data_types.buffers import ForcingParameters, SimulationBuffers, \
-    MaterialFieldBuffers, LevelsetFieldBuffers, TimeControlVariables, \
-    SolidFieldBuffers
+from jaxfluids.data_types.buffers import (
+    ForcingParameters, SimulationBuffers,
+    MaterialFieldBuffers, LevelsetFieldBuffers,
+    TimeControlVariables, SolidFieldBuffers
+)
 from jaxfluids.data_types.information import WallClockTimes
 from jaxfluids.data_types.case_setup.output import OutputQuantitiesSetup
 from jaxfluids.data_types.numerical_setup.output import OutputSetup
-from jaxfluids.data_types.numerical_setup import ActiveForcingsSetup
 from jaxfluids.materials.single_materials.barotropic_cavitation_fluid \
     import BarotropicCavitationFluid
 
@@ -253,13 +254,13 @@ class HDF5Writer():
             # FORCINGS
             if getattr(self.quantities_setup, "forcings") != None:
                 h5file.create_group(name="forcings")
-                if self.is_mass_flow_forcing:
+                if "mass_flow" in self.quantities_setup.forcings and self.is_mass_flow_forcing:
                     h5file["forcings"].create_group(name="mass_flow")
                     PID_e_int = forcing_parameters.mass_flow_controller_params.integral_error
                     PID_e_new = forcing_parameters.mass_flow_controller_params.current_error
                     h5file["forcings/mass_flow"].create_dataset(name="PID_e_int", data=PID_e_int, dtype=dtype)
                     h5file["forcings/mass_flow"].create_dataset(name="PID_e_new", data=PID_e_new, dtype=dtype)
-                if self.is_turb_hit_forcing:
+                if "turb_hit" in self.quantities_setup.forcings and self.is_turb_hit_forcing:
                     h5file["forcings"].create_group(name="turb_hit")
                     ek_ref = forcing_parameters.hit_ek_ref
                     h5file["forcings/turb_hit"].create_dataset(name="ek_ref", data=ek_ref, dtype=dtype)

@@ -76,6 +76,10 @@ def sanity_check(
     for field in output_quantities_setup._fields:
         quantities = getattr(output_quantities_setup, field)
         if quantities != None:
+            cond = len(quantities) > 0
+            assert_str = f"Output field '{field:s}' is empty."
+            assert_case(cond, assert_str)
+
             cond = len(quantities) == len(set(quantities))
             assert_str = f"Output field '{field:s}' contains duplicates."
             assert_case(cond, assert_str)
