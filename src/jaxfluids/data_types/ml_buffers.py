@@ -17,6 +17,7 @@ class BoundaryConditionsFace(NamedTuple):
     wall_velocity: Any = None
     wall_temperature: Any = None
     wall_mass_transfer: Any = None
+    opposition_control: Any = None
 
 class BoundaryConditionsField(NamedTuple):
     east: Tuple[BoundaryConditionsFace] = None

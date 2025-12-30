@@ -1,6 +1,4 @@
-import types
-from typing import Callable, Union, Dict, List, Tuple, NamedTuple
-from functools import partial
+from typing import Any, Callable, Tuple, NamedTuple
 
 import jax
 import jax.numpy as jnp
@@ -8,17 +6,18 @@ import numpy as np
 
 from jaxfluids.halos.outer.boundary_condition import BoundaryCondition, get_signs_symmetry
 from jaxfluids.domain.domain_information import DomainInformation
-from jaxfluids.materials.material_manager import MaterialManager
-from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.equation_manager import EquationManager
-from jaxfluids.data_types.case_setup.boundary_conditions import BoundaryConditionsField, BoundaryConditionsFace, \
+from jaxfluids.data_types.case_setup.boundary_conditions import (
+    BoundaryConditionsField, BoundaryConditionsFace,
     VelocityCallable, WallMassTransferSetup, PrimitivesTable
+)
 from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 from jaxfluids.stencils.spatial_derivative import SpatialDerivative
 from jaxfluids.halos.outer.helper_function import get_derivative_stencils_linear_extrapolation
 from jaxfluids.domain import EDGE_LOCATIONS, VERTEX_LOCATIONS, AXES, FACE_LOCATIONS
 
 Array = jax.Array
+
 
 class BoundaryConditionMaterial(BoundaryCondition):
     """ The BoundaryConditionMaterial class implements functionality
@@ -222,9 +221,25 @@ class BoundaryConditionMaterial(BoundaryCondition):
                             primitives, face_location, primitives_callable,
                             physical_simulation_time)
 
-                    elif boundary_type in ("OPPOSITIONCONTROLWALL", "ISOTHERMALOPPOSITIONCONTROLWALL"):
+                    elif "OPPOSITIONCONTROLWALL" in boundary_type:
+
+                        if "PARAMETERIZED" in boundary_type:
+                            oc_callable = None
+                        
+                            oc_parameters = getattr(
+                                ml_setup.parameters.boundary_conditions.primitives,
+                                face_location)[bc_id].opposition_control
+                            
+                        else:
+                            oc_callable = oc_parameters = None
+
                         halos_primes = self.opposition_control(
-                            primitives, conservatives, face_location
+                            primitives,
+                            conservatives,
+                            face_location,
+                            boundary_type,
+                            oc_callable,
+                            oc_parameters
                         )
 
                     else:
@@ -477,9 +492,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
         :rtype: Array
         """
 
-        meshgrid, axes_to_expand = \
-        self.get_boundary_coordinates_at_location(
-            face_location)
+        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(face_location)
 
         wall_velocity_list = []
         for i, velocity in enumerate(wall_velocity_callable._fields):
@@ -794,9 +807,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         levelset_model = self.equation_information.levelset_model
 
-        meshgrid, axes_to_expand = \
-        self.get_boundary_coordinates_at_location(
-            face_location)
+        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(face_location)
         halos_primes_list = []
         for prime_state in primitives_callable._fields:
             prime_callable: Callable = getattr(primitives_callable, prime_state)
@@ -817,7 +828,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
             face_location: str,
             primitives_callable: NamedTuple,
             physical_simulation_time: float
-            ) -> Array:
+        ) -> Array:
         """Computes primitive halos for NEUMANN
         boundary conditions. 
 
@@ -835,9 +846,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
         :rtype: Array
         """
         
-        meshgrid, axes_to_expand = \
-        self.get_boundary_coordinates_at_location(
-            face_location)
+        meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(face_location)
 
         slices_retrieve = self.face_slices_retrieve_conservatives["NEUMANN"][face_location]
         dx = self.get_cell_size_at_face(face_location)
@@ -861,7 +870,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
             primitives: Array,
             boundary_type: str,
             face_location: str,
-            )-> Array:
+        )-> Array:
         """Computes the primitive halo cells
         for PERIODIC, ZEROGRADIENT or 
         SYMMETRY boundary conditions
@@ -888,31 +897,46 @@ class BoundaryConditionMaterial(BoundaryCondition):
             self,
             primitives: Array,
             conservatives: Array,
-            face_location: str, 
+            face_location: str,
+            boundary_type: str,
+            oc_callable: Any,
+            oc_parameters: Any
+        ) -> Array:
+
+        if boundary_type in (
+            "OPPOSITIONCONTROLWALL",
+            "ISOTHERMALOPPOSITIONCONTROLWALL"
         ):
+            wall_normal_index = self.domain_information.face_location_to_axis_index[face_location]
+            ids_velocity = self.equation_information.ids_velocity
+            nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
+
+            idx_sensing_plane = self.opposition_control_data[face_location]["idx"]
+            amplitude = self.opposition_control_data[face_location]["A"]
+
+            conservatives = conservatives[..., nhx, nhy, nhz]
+            mass_flux = conservatives[ids_velocity[wall_normal_index], :, idx_sensing_plane:idx_sensing_plane+1, :]
+            mass_flux = -amplitude * mass_flux
+            mean_mass_flux = jnp.mean(mass_flux, axis=(-1,-3), keepdims=True)
+            if self.domain_information.is_parallel:
+                mean_mass_flux = jax.lax.pmean(mean_mass_flux, axis_name="i")
+
+            slices_wall_adjacent = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
+            density_wall = self.material_manager.get_density(primitives[slices_wall_adjacent])
+            wall_normal_velocity = (mass_flux - mean_mass_flux) / density_wall
+
+        elif boundary_type in (
+            "OPPOSITIONCONTROLWALL_PARAMETERIZED",
+            "ISOTHERMALOPPOSITIONCONTROLWALL_PARAMETERIZED"
+        ):
+            wall_normal_velocity = oc_parameters
+            
+        else:
+            raise NotImplementedError
 
         vel_slices = self.equation_information.s_velocity
         s_mass = self.equation_information.s_mass
         s_energy = self.equation_information.s_energy
-        ids_velocity = self.equation_information.ids_velocity
-
-        slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
-        wall_normal_index = self.domain_information.face_location_to_axis_index[face_location]
-        nhx, nhy, nhz = self.domain_information.domain_slices_conservatives
-
-        idx_sensing_plane = self.opposition_control_data[face_location]["idx"]
-        amplitude = self.opposition_control_data[face_location]["A"]
-
-        conservatives = conservatives[..., nhx, nhy, nhz]
-        mass_flux = conservatives[ids_velocity[wall_normal_index], :, idx_sensing_plane:idx_sensing_plane+1, :]
-        mass_flux = -amplitude * mass_flux
-        mean_mass_flux = jnp.mean(mass_flux, axis=(-1,-3), keepdims=True)
-        if self.domain_information.is_parallel:
-            mean_mass_flux = jax.lax.pmean(mean_mass_flux, axis_name="i")
-
-        slices_wall_adjacent = self.face_slices_retrieve_conservatives["ZEROGRADIENT"][face_location]
-        density_wall = self.material_manager.get_density(primitives[slices_wall_adjacent])
-        wall_normal_velocity = (mass_flux - mean_mass_flux) / density_wall
 
         slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
         velocity = primitives[vel_slices]
