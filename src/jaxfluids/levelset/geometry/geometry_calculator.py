@@ -31,7 +31,8 @@ class GeometryCalculator:
             domain_information: DomainInformation,
             geometry_setup: LevelsetGeometryComputationSetup,
             halo_cells_geometry: int,
-            narrowband_computation: int
+            narrowband_computation: int,
+            is_surface_tension: bool
             ) -> None:
 
         self.eps = precision.get_eps()
@@ -55,14 +56,18 @@ class GeometryCalculator:
             offset=halo_cells_geometry)
 
         nh_stencil = derivative_stencil_curvature.required_halos
-        self.derivative_stencil_curvature_1: SpatialDerivative = derivative_stencil_curvature(
-            nh=domain_information.nh_conservatives,
-            inactive_axes=domain_information.inactive_axes,
-            offset=halo_cells_geometry + nh_stencil)
-        self.derivative_stencil_curvature_2: SpatialDerivative = derivative_stencil_curvature(
-            nh=halo_cells_geometry + nh_stencil,
-            inactive_axes=domain_information.inactive_axes,
-            offset=halo_cells_geometry)
+        if is_surface_tension:
+            self.derivative_stencil_curvature_1: SpatialDerivative = derivative_stencil_curvature(
+                nh=domain_information.nh_conservatives,
+                inactive_axes=domain_information.inactive_axes,
+                offset=halo_cells_geometry + nh_stencil)
+            self.derivative_stencil_curvature_2: SpatialDerivative = derivative_stencil_curvature(
+                nh=halo_cells_geometry + nh_stencil,
+                inactive_axes=domain_information.inactive_axes,
+                offset=halo_cells_geometry)
+        else:
+            self.derivative_stencil_curvature_1 = None
+            self.derivative_stencil_curvature_2 = None
 
         self.subcell_reconstruction = geometry_setup.subcell_reconstruction
 
@@ -98,7 +103,7 @@ class GeometryCalculator:
         if "".join(domain_information.active_axes) == "x":
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.n-1:-self.n, self.nhy__, self.nhz__],
-                jnp.s_[self.n:-self.n+1, self.nhy__, self.nhz__],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhy__, self.nhz__],
             ]
             self.levelset_center_value_slices = [
                 jnp.s_[:-1,:,:], jnp.s_[1:,:,:]
@@ -106,7 +111,7 @@ class GeometryCalculator:
         elif "".join(domain_information.active_axes) == "y":
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.nhx__, self.n-1:-self.n, self.nhz__],
-                jnp.s_[self.nhx__, self.n:-self.n+1, self.nhz__],
+                jnp.s_[self.nhx__, self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhz__],
             ]
             self.levelset_center_value_slices = [
                 jnp.s_[:,:-1,:], jnp.s_[:,1:,:]
@@ -114,7 +119,7 @@ class GeometryCalculator:
         elif "".join(domain_information.active_axes) == "z":
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.nhx__, self.nhy__, self.n-1:-self.n],
-                jnp.s_[self.nhx__, self.nhy__, self.n:-self.n+1],
+                jnp.s_[self.nhx__, self.nhy__, self.n:-self.n+1 if -self.n+1 != 0 else None],
             ]
             self.levelset_center_value_slices = [
                 jnp.s_[:,:,:-1], jnp.s_[:,:,1:]
@@ -124,13 +129,13 @@ class GeometryCalculator:
         elif "".join(domain_information.active_axes) == "xy":
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.n-1:-self.n, self.n-1:-self.n, self.nhz__],
-                jnp.s_[self.n:-self.n+1, self.n-1:-self.n, self.nhz__],
-                jnp.s_[self.n-1:-self.n, self.n:-self.n+1, self.nhz__],
-                jnp.s_[self.n:-self.n+1, self.n:-self.n+1, self.nhz__],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.n-1:-self.n, self.nhz__],
+                jnp.s_[self.n-1:-self.n, self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhz__],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhz__],
             ]
             self.subcell_interpolation_slices = [
-                [jnp.s_[self.n-1:-self.n, self.nhy__, self.nhz__], jnp.s_[self.n:-self.n+1, self.nhy__, self.nhz__]],
-                [jnp.s_[self.nhx__, self.n-1:-self.n, self.nhz__], jnp.s_[self.nhx__, self.n:-self.n+1, self.nhz__]]
+                [jnp.s_[self.n-1:-self.n, self.nhy__, self.nhz__], jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhy__, self.nhz__]],
+                [jnp.s_[self.nhx__, self.n-1:-self.n, self.nhz__], jnp.s_[self.nhx__, self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhz__]]
             ]
             self.set_subcell_buffer_slices = [ jnp.s_[::2,1::2,:], jnp.s_[1::2,::2,:], jnp.s_[::2,::2,:], jnp.s_[1::2,1::2,:] ]
             self.levelset_center_value_slices = [ jnp.s_[:-1,:-1,:], jnp.s_[1:,:-1,:], jnp.s_[:-1,1:,:], jnp.s_[1:,1:,:] ]    
@@ -148,13 +153,13 @@ class GeometryCalculator:
         elif "".join(domain_information.active_axes) == "xz":
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.n-1:-self.n, self.nhy__, self.n-1:-self.n],
-                jnp.s_[self.n:-self.n+1, self.nhy__, self.n-1:-self.n],
-                jnp.s_[self.n-1:-self.n, self.nhy__, self.n:-self.n+1],
-                jnp.s_[self.n:-self.n+1, self.nhy__, self.n:-self.n+1],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhy__, self.n-1:-self.n],
+                jnp.s_[self.n-1:-self.n, self.nhy__, self.n:-self.n+1 if -self.n+1 != 0 else None],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhy__, self.n:-self.n+1 if -self.n+1 != 0 else None],
             ]
             self.subcell_interpolation_slices = [
-                [jnp.s_[self.n-1:-self.n, self.nhy__, self.nhz__], jnp.s_[self.n:-self.n+1, self.nhy__, self.nhz__]],
-                [jnp.s_[self.nhx__, self.nhy__, self.n-1:-self.n], jnp.s_[self.nhx__, self.nhy__, self.n:-self.n+1]]
+                [jnp.s_[self.n-1:-self.n, self.nhy__, self.nhz__], jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhy__, self.nhz__]],
+                [jnp.s_[self.nhx__, self.nhy__, self.n-1:-self.n], jnp.s_[self.nhx__, self.nhy__, self.n:-self.n+1 if -self.n+1 != 0 else None]]
             ]
             self.set_subcell_buffer_slices = [ jnp.s_[::2,:,1::2], jnp.s_[1::2,:,::2], jnp.s_[::2,:,::2], jnp.s_[1::2,:,1::2] ]
             self.levelset_center_value_slices = [ jnp.s_[:-1,:,:-1], jnp.s_[1:,:,:-1], jnp.s_[:-1,:,1:], jnp.s_[1:,:,1:] ]    
@@ -172,13 +177,13 @@ class GeometryCalculator:
         elif "".join(domain_information.active_axes) == "yz":
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.nhx__, self.n-1:-self.n, self.n-1:-self.n],
-                jnp.s_[self.nhx__, self.n:-self.n+1, self.n-1:-self.n],
-                jnp.s_[self.nhx__, self.n-1:-self.n, self.n:-self.n+1],
-                jnp.s_[self.nhx__, self.n:-self.n+1, self.n:-self.n+1],
+                jnp.s_[self.nhx__, self.n:-self.n+1 if -self.n+1 != 0 else None, self.n-1:-self.n],
+                jnp.s_[self.nhx__, self.n-1:-self.n, self.n:-self.n+1 if -self.n+1 != 0 else None],
+                jnp.s_[self.nhx__, self.n:-self.n+1 if -self.n+1 != 0 else None, self.n:-self.n+1 if -self.n+1 != 0 else None],
             ]
             self.subcell_interpolation_slices = [
-                [jnp.s_[self.nhx__, self.n-1:-self.n, self.nhz__], jnp.s_[self.nhx__, self.n:-self.n+1, self.nhz__]],
-                [jnp.s_[self.nhx__, self.nhy__, self.n-1:-self.n], jnp.s_[self.nhx__, self.nhy__, self.n:-self.n+1]]
+                [jnp.s_[self.nhx__, self.n-1:-self.n, self.nhz__], jnp.s_[self.nhx__, self.n:-self.n+1 if -self.n+1 != 0 else None, self.nhz__]],
+                [jnp.s_[self.nhx__, self.nhy__, self.n-1:-self.n], jnp.s_[self.nhx__, self.nhy__, self.n:-self.n+1 if -self.n+1 != 0 else None]]
             ]
             self.set_subcell_buffer_slices = [ jnp.s_[:,::2,1::2], jnp.s_[:,1::2,::2], jnp.s_[:,::2,::2], jnp.s_[:,1::2,1::2] ]
             self.levelset_center_value_slices = [ jnp.s_[:,:-1,:-1], jnp.s_[:,1:,:-1], jnp.s_[:,:-1,1:], jnp.s_[:,1:,1:] ]    
@@ -201,27 +206,27 @@ class GeometryCalculator:
             # VALUES OF THE SINGLE CELL
             self.single_cell_interpolation_slices = [
                 jnp.s_[self.n-1:-self.n, self.n-1:-self.n, self.n-1:-self.n],
-                jnp.s_[self.n:-self.n+1, self.n-1:-self.n, self.n-1:-self.n],
-                jnp.s_[self.n-1:-self.n, self.n:-self.n+1, self.n-1:-self.n],
-                jnp.s_[self.n:-self.n+1, self.n:-self.n+1, self.n-1:-self.n],
-                jnp.s_[self.n-1:-self.n, self.n-1:-self.n, self.n:-self.n+1],
-                jnp.s_[self.n:-self.n+1, self.n-1:-self.n, self.n:-self.n+1],
-                jnp.s_[self.n-1:-self.n, self.n:-self.n+1, self.n:-self.n+1],
-                jnp.s_[self.n:-self.n+1, self.n:-self.n+1, self.n:-self.n+1],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.n-1:-self.n, self.n-1:-self.n],
+                jnp.s_[self.n-1:-self.n, self.n:-self.n+1 if -self.n+1 != 0 else None, self.n-1:-self.n],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.n:-self.n+1 if -self.n+1 != 0 else None, self.n-1:-self.n],
+                jnp.s_[self.n-1:-self.n, self.n-1:-self.n, self.n:-self.n+1 if -self.n+1 != 0 else None],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.n-1:-self.n, self.n:-self.n+1 if -self.n+1 != 0 else None],
+                jnp.s_[self.n-1:-self.n, self.n:-self.n+1 if -self.n+1 != 0 else None, self.n:-self.n+1 if -self.n+1 != 0 else None],
+                jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None, self.n:-self.n+1 if -self.n+1 != 0 else None, self.n:-self.n+1 if -self.n+1 != 0 else None],
             ]
 
             # SLICES TO COMPUTE THE CORNER VALUES
             # OF THE SUBCELL AND SET THEM IN THE BUFFER 
             self.subcell_interpolation_slices = [
-                [   jnp.s_[self.n-1:-self.n,self.nhy__,self.nhz__],          jnp.s_[self.n:-self.n+1,self.nhy__,self.nhz__]       ],
-                [   jnp.s_[self.nhx__,self.n-1:-self.n,self.nhz__],          jnp.s_[self.nhx__,self.n:-self.n+1,self.nhz__]       ],
-                [   jnp.s_[self.nhx__,self.nhy__,self.n-1:-self.n],          jnp.s_[self.nhx__,self.nhy__,self.n:-self.n+1]       ],
-                [   jnp.s_[self.n-1:-self.n,self.n-1:-self.n,self.nhz__],    jnp.s_[self.n:-self.n+1,self.n-1:-self.n,self.nhz__], 
-                    jnp.s_[self.n-1:-self.n,self.n:-self.n+1,self.nhz__],    jnp.s_[self.n:-self.n+1,self.n:-self.n+1,self.nhz__] ],
-                [   jnp.s_[self.n-1:-self.n,self.nhy__,self.n-1:-self.n],    jnp.s_[self.n:-self.n+1,self.nhy__,self.n-1:-self.n],
-                    jnp.s_[self.n-1:-self.n,self.nhy__,self.n:-self.n+1],    jnp.s_[self.n:-self.n+1,self.nhy__,self.n:-self.n+1] ],
-                [   jnp.s_[self.nhx__,self.n-1:-self.n,self.n-1:-self.n],    jnp.s_[self.nhx__,self.n:-self.n+1,self.n-1:-self.n],
-                    jnp.s_[self.nhx__,self.n-1:-self.n,self.n:-self.n+1],    jnp.s_[self.nhx__,self.n:-self.n+1,self.n:-self.n+1] ]
+                [   jnp.s_[self.n-1:-self.n,self.nhy__,self.nhz__],          jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None,self.nhy__,self.nhz__]       ],
+                [   jnp.s_[self.nhx__,self.n-1:-self.n,self.nhz__],          jnp.s_[self.nhx__,self.n:-self.n+1 if -self.n+1 != 0 else None,self.nhz__]       ],
+                [   jnp.s_[self.nhx__,self.nhy__,self.n-1:-self.n],          jnp.s_[self.nhx__,self.nhy__,self.n:-self.n+1 if -self.n+1 != 0 else None]       ],
+                [   jnp.s_[self.n-1:-self.n,self.n-1:-self.n,self.nhz__],    jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None,self.n-1:-self.n,self.nhz__], 
+                    jnp.s_[self.n-1:-self.n,self.n:-self.n+1 if -self.n+1 != 0 else None,self.nhz__],    jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None,self.n:-self.n+1 if -self.n+1 != 0 else None,self.nhz__] ],
+                [   jnp.s_[self.n-1:-self.n,self.nhy__,self.n-1:-self.n],    jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None,self.nhy__,self.n-1:-self.n],
+                    jnp.s_[self.n-1:-self.n,self.nhy__,self.n:-self.n+1 if -self.n+1 != 0 else None],    jnp.s_[self.n:-self.n+1 if -self.n+1 != 0 else None,self.nhy__,self.n:-self.n+1 if -self.n+1 != 0 else None] ],
+                [   jnp.s_[self.nhx__,self.n-1:-self.n,self.n-1:-self.n],    jnp.s_[self.nhx__,self.n:-self.n+1 if -self.n+1 != 0 else None,self.n-1:-self.n],
+                    jnp.s_[self.nhx__,self.n-1:-self.n,self.n:-self.n+1 if -self.n+1 != 0 else None],    jnp.s_[self.nhx__,self.n:-self.n+1 if -self.n+1 != 0 else None,self.n:-self.n+1 if -self.n+1 != 0 else None] ]
             ]   
             self.set_subcell_buffer_slices = [
                 jnp.s_[::2,1::2,1::2], jnp.s_[1::2, ::2,1::2], jnp.s_[1::2,1::2,::2],

@@ -1,6 +1,7 @@
 from typing import Dict, Any
 
 from jaxfluids.data_types.numerical_setup.conservatives import ConservativesSetup
+from jaxfluids.data_types.numerical_setup.active_physics import ActivePhysicsSetup
 from jaxfluids.data_types.numerical_setup.levelset import *
 from jaxfluids.unit_handler import UnitHandler
 from jaxfluids.solvers.convective_fluxes import ALDM, HighOrderGodunov, FluxSplittingScheme, CentralScheme
@@ -21,7 +22,8 @@ from jaxfluids.input.setup_reader import assert_numerical
 def read_levelset_setup(
         numerical_setup_dict: Dict,
         unit_handler: UnitHandler,
-        conservatives_setup: ConservativesSetup
+        conservatives_setup: ConservativesSetup,
+        active_physics_setup: ActivePhysicsSetup
         ) -> LevelsetSetup:
 
     halos_conservatives = conservatives_setup.halo_cells
@@ -96,7 +98,7 @@ def read_levelset_setup(
         interface_flux_setup, solid_heat_flux_setup)
 
     if model:
-        sanity_check(levelset_setup, conservatives_setup)
+        sanity_check(levelset_setup, conservatives_setup, active_physics_setup)
 
     return levelset_setup
 
@@ -607,7 +609,8 @@ def read_solid_heat_flux(levelset_dict: Dict) -> SolidHeatFluxSetup:
 
 def sanity_check(
         levelset_setup: LevelsetSetup,
-        conservatives_setup: ConservativesSetup
+        conservatives_setup: ConservativesSetup,
+        active_physics_setup: ActivePhysicsSetup
         ) -> None:
     """Performs sanity checks for the halo cells
     and narrowband widths. The narrowband computation
@@ -667,9 +670,6 @@ def sanity_check(
     elif convective_solver == ALDM:
         required_halos = 3
 
-    elif convective_solver == SGSNN:
-        required_halos = 3
-
     elif convective_solver == CentralScheme:
         required_halos = convective_fluxes_setup.central.reconstruction_stencil.required_halos
 
@@ -714,20 +714,22 @@ def sanity_check(
     nh_geometry = levelset_setup.halo_cells
     nh_offset = nh_conservatives - nh_geometry
 
-    # NOTE diffusive fluid-fluid interface flux needs gradients on real fluid buffer which as nh geometry
-    interface_flux = levelset_setup.interface_flux
-    nh_interface_flux = interface_flux.derivative_stencil.required_halos
-    required_halos = max(1, nh_interface_flux)
+    if active_physics_setup.is_viscous_flux:
+        # NOTE diffusive fluid-fluid interface flux needs gradients on real fluid buffer which as nh geometry
+        interface_flux = levelset_setup.interface_flux
+        nh_interface_flux = interface_flux.derivative_stencil.required_halos
+        required_halos = max(1, nh_interface_flux)
 
-    assert_string = (
-        f"Consistency error in numerical setup file. "
-        f"Geometry halos is {nh_geometry:d} but provided "
-        f"stencil setup requires at least {required_halos:d}.")
-    assert nh_geometry >= required_halos, assert_string
+        assert_string = (
+            f"Consistency error in numerical setup file. "
+            f"Geometry halos is {nh_geometry:d} but provided "
+            f"stencil setup requires at least {required_halos:d}.")
+        assert nh_geometry >= required_halos, assert_string
 
     # NOTE normal and curvature need to have nh geometry
     required_halos = geometry_setup.derivative_stencil_normal.required_halos
-    required_halos = max(required_halos, 2*geometry_setup.derivative_stencil_curvature.required_halos)
+    if active_physics_setup.is_surface_tension:
+        required_halos = max(required_halos, 2*geometry_setup.derivative_stencil_curvature.required_halos)
 
     assert_string = (
         f"Consistency error in numerical setup file. "

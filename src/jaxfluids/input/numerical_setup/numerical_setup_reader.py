@@ -41,7 +41,8 @@ class NumericalSetupReader(SetupReader):
                                                        self.unit_handler)
         levelset_setup = read_levelset_setup(numerical_setup_dict,
                                              self.unit_handler,
-                                             conservatives_setup)
+                                             conservatives_setup,
+                                             active_physics_setup)
         diffuse_interface_setup = read_diffuse_interface_setup(numerical_setup_dict,
                                                                conservatives_setup,
                                                                self.unit_handler)

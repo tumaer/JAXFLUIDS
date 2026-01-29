@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import numpy as np
 
@@ -17,8 +17,9 @@ sim_manager.simulate(jxf_buffers)
 
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
+# path = "results/bowshock-3"
 quantities = [
-    "density", "schlieren", "mach_number", 
+    "density", "schlieren", "mach_number", "velocity",
     "levelset", "volume_fraction", "pressure"
 ]
 jxf_data = load_data(path, quantities)
@@ -32,10 +33,10 @@ mask_real = data["volume_fraction"] > 0.0
 # PLOT
 nrows_ncols = (1,4)
 plot_dict = {
-    "density"       : data["density"]* mask_real,
-    "pressure"      : data["pressure"]* mask_real,
-    "mach_number"   : np.clip(data["mach_number"] * mask_real, 0.0, 3.0),
-    "schlieren"     : np.clip(data["schlieren"] * mask_real, 1e0, 5e2)
+    "density" : np.ma.masked_where(mask_real==0,data["density"]),
+    "pressure" : np.ma.masked_where(mask_real==0,data["pressure"]),
+    "velocityX" : np.ma.masked_where(mask_real==0,data["velocity"][:,0]),
+    "velocityY" : np.ma.masked_where(mask_real==0,data["velocity"][:,1])
 }
 
 # CREATE ANIMATION
@@ -43,14 +44,18 @@ create_2D_animation(
     plot_dict, 
     cell_centers, 
     times, 
+    cmap="Spectral_r",
     nrows_ncols=nrows_ncols, 
     plane="xy", plane_value=0.0,
-    interval=100)
+    interval=100,
+    )
 
 # CREATE FIGURE
 create_2D_figure(
     plot_dict,
     nrows_ncols=nrows_ncols,
-    cell_centers=cell_centers, 
-    plane="xy", plane_value=0.0, 
+    cell_centers=cell_centers,
+    cmap="Spectral_r",
+    plane="xy", plane_value=0.0,
+    dpi=300,
     save_fig="bowshock.png")

@@ -66,6 +66,17 @@
             "model": "IdealGas",
             "specific_heat_ratio": 1.4,
             "specific_gas_constant": 1.0
+        },
+        "transport": {
+            "dynamic_viscosity": {
+                "model": "CUSTOM",
+                "value": 5e-4
+            },
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": {
+                "model": "PRANDTL",
+                "prandtl_number": 0.72
+            }
         }
     },
     "nondimensionalization_parameters": {

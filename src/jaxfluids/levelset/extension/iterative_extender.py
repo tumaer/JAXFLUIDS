@@ -67,28 +67,7 @@ class IterativeExtender:
         self.first_derivative_stencil = FirstDerivativeFirstOrderCenter(
             nh = halos,
             inactive_axes = self.domain_information.inactive_axes)
-        
-        halos_directional_derivative = 1 # TODO should be 2 for second order extrapolation
-        assert_string = """Not enough halos for linear extrapolation."""
-        assert nh_conservatives - halos_directional_derivative > 2, assert_string
-        self.directional_derivative_stencil = FirstDerivativeSecondOrder(
-            nh=halos, inactive_axes=self.domain_information.inactive_axes,
-            offset=halos_directional_derivative)
 
-        active_axes_indices = domain_information.active_axes_indices
-        offset = nh_geometry - halos_directional_derivative
-        self.s_0 = (...,) + tuple(
-            [jnp.s_[offset:-offset] if
-            i in active_axes_indices else
-            jnp.s_[:] for i in range(3)]
-            )
-        
-        offset = nh_conservatives - halos_directional_derivative
-        self.s_1 = (...,) + tuple(
-            [jnp.s_[offset:-offset] if
-            i in active_axes_indices else
-            jnp.s_[:] for i in range(3)]
-            )
 
     def extend(
             self,
@@ -98,7 +77,6 @@ class IterativeExtender:
             physical_simulation_time: float,
             CFL: float,
             steps: int,
-            linear_extension: bool = False,
             debug: bool = False,
             ml_setup: MachineLearningSetup = None
         ) -> Tuple[Array, LevelsetProcedureInformation]:
@@ -132,7 +110,7 @@ class IterativeExtender:
         if not self.is_jaxwhileloop:
 
             def _body_func(index, args: Tuple[Array]) -> Tuple[Array]:
-                quantity, directional_derivative, mean_residual = args
+                quantity, mean_residual = args
 
                 if debug:
                     quantity_in = quantity[index]
@@ -141,7 +119,7 @@ class IterativeExtender:
 
                 quantity_out, rhs = self.do_integration_step(
                     quantity_in, normal, mask, physical_simulation_time,
-                    fictitious_timestep_size, directional_derivative,
+                    fictitious_timestep_size,
                     ml_setup=ml_setup
                 )
                 
@@ -158,33 +136,19 @@ class IterativeExtender:
                 else:
                     quantity = quantity_out
 
-                args = (quantity, directional_derivative, mean_residual)
+                args = (quantity, mean_residual)
 
                 return args
             
-            if linear_extension:
-                directional_derivative = self.compute_directional_derivative(quantity, normal)
-                buffer = jnp.zeros_like(quantity)
-                directional_derivative = buffer.at[self.s_1].set(directional_derivative)
-                if debug:
-                    quantity_buffer = jnp.zeros((steps+1,)+directional_derivative.shape)
-                    directional_derivative = quantity_buffer.at[0].set(directional_derivative)
-                args = (directional_derivative, None)
-                args = jax.lax.fori_loop(0, steps, _body_func, args)
-                directional_derivative = args[0]
-            else:
-                directional_derivative = None
-
             if debug:
                 quantity_buffer = jnp.zeros((steps+1,)+quantity.shape)
                 quantity = quantity_buffer.at[0].set(quantity)
-                directional_derivative = directional_derivative[-1] if linear_extension else None
 
-            args = (quantity, directional_derivative, 1e10)
+            args = (quantity, 1e10)
             args = jax.lax.fori_loop(0, steps, _body_func, args)
 
             quantity = args[0]
-            residual = args[2]
+            residual = args[1]
             step_count = steps
 
         else:
@@ -196,7 +160,7 @@ class IterativeExtender:
                     quantity_in = quantity
                 quantity_out, rhs = self.do_integration_step(
                     quantity_in, normal, mask, physical_simulation_time,
-                    fictitious_timestep_size, directional_derivative,
+                    fictitious_timestep_size,
                     ml_setup=ml_setup
                 )
                 
@@ -213,7 +177,7 @@ class IterativeExtender:
                 else:
                     quantity = quantity_out
 
-                args = (quantity, index+1, mean_residual, directional_derivative)
+                args = (quantity, index+1, mean_residual)
                 return args
             
             def _cond_fun(args: Tuple[int, Array, float]) -> bool:
@@ -222,24 +186,11 @@ class IterativeExtender:
                 condition2 = index < steps
                 return jnp.logical_and(condition1, condition2)
 
-            if linear_extension:
-                directional_derivative = self.compute_directional_derivative(quantity, normal)
-                buffer = jnp.zeros_like(quantity)
-                directional_derivative = buffer.at[self.s_1].set(directional_derivative)
-                if debug:
-                    quantity_buffer = jnp.zeros((steps+1,)+directional_derivative.shape)
-                    directional_derivative = quantity_buffer.at[0].set(directional_derivative)
-                args = (directional_derivative, 0, 1e10, None)
-                args = jax.lax.fori_loop(0, steps, _body_func, args)
-                directional_derivative = args[0]
-            else:
-                directional_derivative = None
-
             if debug:
                 quantity_buffer = jnp.zeros((steps+1,)+quantity.shape)
                 quantity = quantity_buffer.at[0].set(quantity)
-                directional_derivative = directional_derivative[-1] if linear_extension else None
-            args = (quantity, 0, 1e10, directional_derivative) # NOTE initial value for mean residual for while condition is hard coded to 1e10
+
+            args = (quantity, 0, 1e10) # NOTE initial value for mean residual for while condition is hard coded to 1e10
             args = jax.lax.while_loop(_cond_fun, _body_func, args)
             quantity = args[0]
             step_count = args[1]
@@ -280,35 +231,6 @@ class IterativeExtender:
         return mean_residual, max_residual, rhs
 
 
-    def compute_directional_derivative(
-            self,
-            quantity: Array,
-            normal: Array,
-            ) -> Array:
-        """Computes the directional derivative 
-        required for linear extrapolation.
-
-        :param quantity: _description_
-        :type quantity: Array
-        :param normal: _description_
-        :type normal: Array
-        :return: _description_
-        :rtype: Array
-        """
-        cell_size = self.domain_information.smallest_cell_size
-        active_axes_indices = self.domain_information.active_axes_indices
-        directional_derivative = 0.0
-        for axis in active_axes_indices:
-            normal_xi = normal[axis][self.s_0]
-            deriv_xi_L = self.directional_derivative_stencil.derivative_xi(quantity, cell_size, axis, 0)
-            deriv_xi_R = self.directional_derivative_stencil.derivative_xi(quantity, cell_size, axis, 1)
-            mask_L = jnp.where(normal_xi >= 0.0, 1, 0)
-            mask_R = 1 - mask_L
-            derv_xi = deriv_xi_L * mask_L + deriv_xi_R * mask_R
-            directional_derivative += derv_xi * normal_xi
-        return directional_derivative
-
-
     def do_integration_step(
             self,
             quantity: Array,
@@ -316,7 +238,6 @@ class IterativeExtender:
             mask: Array,
             physical_simulation_time: float,
             fictitious_timestep_size: float,
-            directional_derivative: Array = None,
             ml_setup: MachineLearningSetup = None
         ) -> Array:
         """Performs an integration step of the extension equation.
@@ -336,7 +257,7 @@ class IterativeExtender:
         if self.time_integrator.no_stages > 1:
             init = jnp.array(quantity, copy=True)
         for stage in range( self.time_integrator.no_stages ):
-            rhs = self.compute_rhs(quantity, normal, mask, directional_derivative)
+            rhs = self.compute_rhs(quantity, normal, mask)
             if stage > 0:
                 quantity = self.time_integrator.prepare_buffer_for_integration(quantity, init, stage)
             quantity = self.time_integrator.integrate(quantity, rhs, fictitious_timestep_size, stage)
@@ -357,7 +278,6 @@ class IterativeExtender:
             quantity: Array,
             normal: Array,
             mask: Array,
-            directional_derivative: Array = None
             ) -> Array:
         """Computes the right-hand-side of the exension equation.
 
@@ -387,9 +307,6 @@ class IterativeExtender:
             mask_R = 1.0 - mask_L
 
             rhs -= normal[axis,...,nhx_,nhy_,nhz_] * (mask_L * deriv_L + mask_R * deriv_R)
-
-        if directional_derivative != None:
-            rhs += directional_derivative[...,nhx,nhy,nhz]
 
         rhs *= mask
 

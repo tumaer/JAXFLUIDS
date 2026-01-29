@@ -30,12 +30,12 @@
             "derivative_stencil_normal": "CENTRAL2"
         },
         "interface_flux": {
-            "interpolation_dh": 0.7,
+            "interpolation_dh": 0.5,
             "is_cell_based_computation": true
         },
         "extension": {
             "primitives": {
-                "method": "INTERPOLATION",
+                "method": "ITERATIVE",
                 "iterative": {
                     "CFL": 0.5,
                     "steps": 5,
@@ -49,7 +49,7 @@
         },
         "mixing": {
             "conservatives": {
-                "volume_fraction_threshold": 5e-2,
+                "volume_fraction_threshold": 1e-1,
                 "mixing_targets": 2,
                 "is_cell_based_computation": true
             }
@@ -57,8 +57,8 @@
     },
     "active_physics": {
         "is_convective_flux": true,
-        "is_viscous_flux": false,
-        "is_heat_flux": false,
+        "is_viscous_flux": true,
+        "is_heat_flux": true,
         "is_volume_force": false,
         "is_surface_tension": false
     },

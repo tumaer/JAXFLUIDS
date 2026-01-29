@@ -72,7 +72,8 @@ class LevelsetInitializer:
             domain_information = domain_information,
             geometry_setup = numerical_setup.levelset.geometry,
             halo_cells_geometry = levelset_setup.halo_cells,
-            narrowband_computation = levelset_setup.narrowband.computation_width
+            narrowband_computation = levelset_setup.narrowband.computation_width,
+            is_surface_tension = numerical_setup.active_physics.is_surface_tension
             )
 
         self.extender_primes = IterativeExtender(
