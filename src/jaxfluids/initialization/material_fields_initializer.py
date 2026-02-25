@@ -89,7 +89,7 @@ class MaterialFieldsInitializer:
         :rtype: Dict[str, Array]
         """
         restart_setup = self.case_setup.restart_setup
-        is_restart = restart_setup.flag
+        is_restart = restart_setup.is_restart
         is_parallel = self.domain_information.is_parallel
         cell_centers = self.domain_information.get_local_cell_centers()
 
@@ -216,7 +216,6 @@ class MaterialFieldsInitializer:
         restart_setup = self.case_setup.restart_setup
         restart_file_path = restart_setup.file_path if user_restart_file_path is None else user_restart_file_path
         restart_time = restart_setup.time
-        use_restart_time = restart_setup.use_time
         is_interpolate = restart_setup.is_interpolate
         is_equal_decomposition_multihost = restart_setup.is_equal_decomposition_multihost
 
@@ -240,7 +239,7 @@ class MaterialFieldsInitializer:
                                       is_equal_decomposition_multihost)
         h5file = h5file_list[0]
         
-        if use_restart_time:
+        if restart_setup.is_reset_time:
             physical_simulation_time = restart_time
         else:
             physical_simulation_time = h5file["time"][()]

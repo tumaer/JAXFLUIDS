@@ -83,7 +83,7 @@ class SolidsInitializer:
         :rtype: Tuple[SolidFieldBuffers]
         """
 
-        is_restart = self.restart_setup.flag
+        is_restart = self.restart_setup.is_restart
         is_parallel = self.domain_information.is_parallel
         cell_centers = self.domain_information.get_local_cell_centers()
 
@@ -141,7 +141,6 @@ class SolidsInitializer:
 
         restart_file_path = self.restart_setup.file_path if user_restart_file_path is None else user_restart_file_path
         restart_time = self.restart_setup.time
-        use_restart_time = self.restart_setup.use_time
         is_interpolate = self.restart_setup.is_interpolate
 
         split_factors = self.domain_information.split_factors
@@ -156,7 +155,7 @@ class SolidsInitializer:
                                       is_equal_decomposition_multihost)
         h5file = h5file_list[0]
 
-        if use_restart_time:
+        if self.restart_setup.is_reset_time:
             physical_simulation_time = restart_time
         else:
             physical_simulation_time = h5file["time"][()]

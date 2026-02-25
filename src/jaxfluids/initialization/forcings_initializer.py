@@ -37,7 +37,7 @@ class ForcingsInitializer:
         self.is_mass_flow_forcing = numerical_setup.active_forcings.is_mass_flow_forcing
         self.is_double_precision = numerical_setup.precision.is_double_precision_compute
 
-        self.is_restart = restart_setup.flag
+        self.is_restart = restart_setup.is_restart
         self.restart_file_path = restart_setup.file_path
 
     def initialize(

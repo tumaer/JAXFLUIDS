@@ -121,7 +121,7 @@ class LevelsetInitializer:
         :rtype: Dict[str, Array]
         """
 
-        is_restart = self.restart_setup.flag
+        is_restart = self.restart_setup.is_restart
         is_interpolate = self.restart_setup.is_interpolate
         is_parallel = self.domain_information.is_parallel
         is_h5_file = self.initial_condition_levelset.is_h5_file

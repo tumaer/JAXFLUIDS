@@ -16,20 +16,20 @@ def read_restart_setup(
         dict, is_optional=True, default_value={})
     is_optional = not "restart" in case_setup_dict
 
-    path = get_path_to_key(basepath, "flag")
-    flag = get_setup_value(
-        restart_dict, "flag", path,
+    path = get_path_to_key(basepath, "is_restart")
+    is_restart = get_setup_value(
+        restart_dict, "is_restart", path,
         bool, is_optional=is_optional, default_value=False)
 
-    is_optional = not flag
+    is_optional = not is_restart
     path = get_path_to_key(basepath, "file_path")
     file_path = get_setup_value(
         restart_dict, "file_path", path,
         str, is_optional=is_optional, default_value="")
 
-    path = get_path_to_key(basepath, "use_time")
-    use_time = get_setup_value(
-        restart_dict, "use_time", path,
+    path = get_path_to_key(basepath, "is_reset_time")
+    is_reset_time = get_setup_value(
+        restart_dict, "is_reset_time", path,
         bool, is_optional=True, default_value=False)
     
     path = get_path_to_key(basepath, "is_equal_decomposition_multihost")
@@ -37,7 +37,7 @@ def read_restart_setup(
         restart_dict, "is_equal_decomposition_multihost", path,
         bool, is_optional=True, default_value=False)
 
-    is_optional = not use_time
+    is_optional = not is_reset_time
     path = get_path_to_key(basepath, "time")
     time = get_setup_value(
         restart_dict, "time", path, float,
@@ -50,7 +50,7 @@ def read_restart_setup(
         restart_dict, "is_interpolate", path,
         bool, is_optional=True, default_value=False)
 
-    is_optional = not (flag and is_interpolate)
+    is_optional = not (is_restart and is_interpolate)
     path = get_path_to_key(basepath, "numerical_setup_path")
     numerical_setup_path = get_setup_value(
         restart_dict, "numerical_setup_path", path,
@@ -60,17 +60,14 @@ def read_restart_setup(
     case_setup_path = get_setup_value(
         restart_dict, "case_setup_path", path,
         str, is_optional=is_optional, default_value="")
-    
 
-    restart_setup = RestartSetup(
-        flag,
+    return RestartSetup(
+        is_restart,
         file_path,
-        use_time,
+        is_reset_time,
         time,
         is_equal_decomposition_multihost,
         is_interpolate,
         numerical_setup_path,
         case_setup_path
-        )
-
-    return restart_setup
+    )

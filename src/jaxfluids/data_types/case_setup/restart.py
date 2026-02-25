@@ -1,9 +1,9 @@
 from typing import NamedTuple
 
 class RestartSetup(NamedTuple):
-    flag: bool
+    is_restart: bool
     file_path: str
-    use_time: bool
+    is_reset_time: bool
     time: float
     is_equal_decomposition_multihost: bool
     is_interpolate: bool
