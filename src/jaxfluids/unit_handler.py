@@ -120,6 +120,25 @@ class UnitHandler:
             "qcriterion": self.velocity_gradient_reference**2,
             "dilatation": 1.0/self.time_reference,
 
+
+            # STATISTICS
+            "machNumber": 1.0,
+            "kineticEnergy": self.velocity_reference**2,
+            "velX_velX": self.velocity_reference**2,
+            "velY_velY": self.velocity_reference**2,
+            "velZ_velZ": self.velocity_reference**2,
+            "velX_velY": self.velocity_reference**2,
+            "velX_velZ": self.velocity_reference**2,
+            "velY_velZ": self.velocity_reference**2,
+            "velX_temperature": self.velocity_reference*self.temperature_reference,
+            "velY_temperature": self.velocity_reference*self.temperature_reference,
+            "velZ_temperature": self.velocity_reference*self.temperature_reference,
+            "density_density": self.density_reference**2,
+            "pressure_pressure": self.pressure_reference**2,
+            "temperature_temperature": self.temperature_reference**2,
+            "density_density": self.density_reference**2,
+            "machNumber_machNumber": 1.0,
+
             "none": 1.0,
             "None": 1.0
         }
@@ -235,7 +254,7 @@ class UnitHandler:
         """
         if quantity == "rho":
             quantity = "density"
-        elif quantity in ("u", "v", "w",):
+        elif quantity in ("u", "v", "w", "velX", "velY", "velZ", "speedOfSound"):
             quantity = "velocity"
         elif quantity in ("rhou", "rhov", "rhow",):
             quantity = "momentum"
@@ -252,5 +271,7 @@ class UnitHandler:
         elif quantity.startswith("Y_"):
             quantity = "mass_fraction"
         elif quantity.startswith("X_"):
-            quantity = "mole_fraction"            
+            quantity = "mole_fraction"
+        elif quantity == "mu":
+            quantity = "dynamic_viscosity"    
         return quantity

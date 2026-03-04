@@ -113,6 +113,29 @@ class StatisticsWriter:
 
             # STATISTICS
             grp_meta.create_dataset(name="turbulence_case", data=self.turbulence_case)
+
+            # METRICS
+            metrics = turbulence_statistics_cumulative.metrics
+            grp_cumulative = h5file.create_group(name="cumulative")
+            datasets = [
+                ("sampling_dt", self.unit_handler.dimensionalize(metrics.sampling_dt, "time"), dtype),
+                ("next_sampling_time", self.unit_handler.dimensionalize(metrics.next_sampling_time, "time"), dtype),
+                ("sample_steps", metrics.sample_steps, "i8"),
+                ("total_sample_points", metrics.total_sample_points, "i8"),
+                ("total_sample_weights", self.unit_handler.dimensionalize(metrics.total_sample_weights, "density"), dtype)
+            ]
+
+            for name, data, dtype in datasets:
+                grp_cumulative.create_dataset(name=name, data=data, dtype=dtype)
+
+            for key in ("reynolds_means", "favre_means", "reynolds_covs", "favre_covs"):
+                statistics_dict = getattr(metrics, key)
+                for subkey, subvalue in statistics_dict.items():
+                    subvalue = self.unit_handler.dimensionalize(subvalue, subkey)
+                    grp_cumulative.create_dataset(name=f"{key}/{subkey}", data=subvalue, dtype=dtype)
+
+
+            # CASE
             if self.turbulence_case == "CHANNEL":
                 case_statistics = turbulence_statistics_cumulative.channel
             elif self.turbulence_case == "HIT":
@@ -122,7 +145,8 @@ class StatisticsWriter:
             else:
                 raise NotImplementedError
             
-            self._write_turbulence_statistics(h5file, case_statistics, dtype)
+            if case_statistics is not None:
+                self._write_turbulence_statistics(h5file, case_statistics, dtype)
 
     def _write_turbulence_statistics(
             self, 

@@ -241,7 +241,7 @@ class TurbulenceStatisticsComputer(ABC):
                 favre_means_new[k], N_new
             )
 
-        metrics = Metrics(
+        return Metrics(
             sampling_dt=sampling_dt,
             next_sampling_time=next_sampling_time,
             sample_steps=sample_steps,
@@ -250,9 +250,8 @@ class TurbulenceStatisticsComputer(ABC):
             reynolds_means=reynolds_means,
             favre_means=favre_means,
             reynolds_covs=reynolds_covs,
-            favre_covs=favre_covs)
-
-        return metrics
+            favre_covs=favre_covs
+        )
     
 
     def compute_means(
@@ -318,7 +317,7 @@ class TurbulenceStatisticsComputer(ABC):
                 axis=self.s_axes, keepdims=True)
         
         if self.is_parallel:
-            reynolds_sum_products = jax.lax.pmean(reynolds_sum_products, axis_name="i")
-            favre_sum_products = jax.lax.pmean(favre_sum_products, axis_name="i")
+            reynolds_sum_products = jax.lax.psum(reynolds_sum_products, axis_name="i")
+            favre_sum_products = jax.lax.psum(favre_sum_products, axis_name="i")
         
         return reynolds_sum_products, favre_sum_products
