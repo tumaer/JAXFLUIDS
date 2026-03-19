@@ -27,7 +27,8 @@ def convective_interface_flux(
         is_interpolate_pressure: bool,
         material_manager: MaterialManager,
         domain_information: DomainInformation,
-        ) -> Tuple[Array, Array]:
+        ml_setup: MachineLearningSetup | None = None
+    ) -> Tuple[Array, Array]:
 
 
     equation_information = material_manager.equation_information
@@ -42,42 +43,52 @@ def convective_interface_flux(
     dim = domain_information.dim
     nx,ny,nz = domain_information.device_number_of_cells
 
-    if is_interpolate_pressure:
+    mass_flux = 0.0
 
-        s_ = jnp.s_[active_axes_indices,...]
-        ip_fluid = mesh_grid + normal[s_] * (-levelset + dh)
-        if not is_cell_based_computation:
-            ip_fluid = ip_fluid.reshape(dim,-1)
-        pressure_ip = linear_interpolation_scattered(
-            jnp.swapaxes(ip_fluid, -1, 0), primitives[s_energy],
-            cell_centers_halos)
-        if not is_cell_based_computation:
-            pressure_ip = pressure_ip.reshape(1,nx,ny,nz)
-
-        y2 = pressure_ip
-        y1 = pressure
-        n2 = dh
-        n1 = levelset
-
-        # NOTE second order poly
-        # pressure_interface = y1 - (y2 - y1)/(n2**2 - n1**2)*n1**2
-        # pressure_interface = pressure_ip
-
-        # NOTE linear poly
-        pressure_interface = y2 - (y2-y1)/(n2-n1) * n2
-
+    fluid_solid_ml_setup = getattr(ml_setup.callables.levelset, "fluid_solid", None)
+    interface_flux_fn = getattr(fluid_solid_ml_setup, "convective_interface_flux_fn", None)
+    if interface_flux_fn is not None:
+        actuator = ml_setup.parameters.levelset.fluid_solid.actuator
+        mass_flux, momentum_flux, energy_flux = interface_flux_fn(
+            primitives, interface_length, normal,
+            mesh_grid, actuator
+        )
+    
     else:
+        if is_interpolate_pressure:
+            s_ = jnp.s_[active_axes_indices,...]
+            ip_fluid = mesh_grid + normal[s_] * (-levelset + dh)
+            if not is_cell_based_computation:
+                ip_fluid = ip_fluid.reshape(dim,-1)
+            pressure_ip = linear_interpolation_scattered(
+                jnp.swapaxes(ip_fluid, -1, 0), primitives[s_energy],
+                cell_centers_halos)
+            if not is_cell_based_computation:
+                pressure_ip = pressure_ip.reshape(1,nx,ny,nz)
 
-        pressure_interface = pressure
+            y2 = pressure_ip
+            y1 = pressure
+            n2 = dh
+            n1 = levelset
 
-    momentum_flux = pressure_interface * normal * interface_length
+            # NOTE second order poly
+            # pressure_interface = y1 - (y2 - y1)/(n2**2 - n1**2)*n1**2
+            # pressure_interface = pressure_ip
 
-    if is_moving_levelset:
-        energy_flux = jnp.sum(momentum_flux * solid_velocity, axis=0)
-    else:
-        energy_flux = 0.0
+            # NOTE linear poly
+            pressure_interface = y2 - (y2-y1)/(n2-n1) * n2
 
-    return momentum_flux, energy_flux
+        else:
+            pressure_interface = pressure
+
+        momentum_flux = pressure_interface * normal * interface_length
+
+        if is_moving_levelset:
+            energy_flux = jnp.sum(momentum_flux * solid_velocity, axis=0)
+        else:
+            energy_flux = 0.0
+
+    return mass_flux, momentum_flux, energy_flux
 
 
 def viscous_interface_flux(

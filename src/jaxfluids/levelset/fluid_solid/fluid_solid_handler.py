@@ -297,24 +297,28 @@ class FluidSolidLevelsetHandler:
             solid_temperature_cc = solid_temperature
 
         if is_convective_flux:
-
-            momentum_flux, energy_flux = convective_interface_flux(
+            
+            mass_flux, momentum_flux, energy_flux = convective_interface_flux(
                 primitives_cc, levelset_cc, normal_aperture_based_cc,
                 interface_length_cc, solid_velocity_cc, mesh_grid_cc, dh,
                 is_cell_based_computation, is_interpolate_pressure,
-                self.material_manager, self.domain_information)
+                self.material_manager, self.domain_information,
+                ml_setup=ml_setup
+            )
             
             if is_cell_based_computation:
                 if is_parallel:
+                    interface_flux = interface_flux.at[(ids_mass,)+s_if].add(mass_flux*interface_cells_mask)
                     interface_flux = interface_flux.at[(s_velocity,)+s_if].add(momentum_flux*interface_cells_mask)
                     interface_flux = interface_flux.at[(ids_energy,)+s_if].add(energy_flux*interface_cells_mask)
                 else:
+                    interface_flux = interface_flux.at[(ids_mass,)+s_if].add(mass_flux)
                     interface_flux = interface_flux.at[(s_velocity,)+s_if].add(momentum_flux)
                     interface_flux = interface_flux.at[(ids_energy,)+s_if].add(energy_flux)
             else:
+                interface_flux = interface_flux.at[ids_mass].add(mass_flux)
                 interface_flux = interface_flux.at[s_velocity].add(momentum_flux)
                 interface_flux = interface_flux.at[ids_energy].add(energy_flux)
-
 
         # NOTE compute interpolated state
         if is_viscous_flux or is_heat_flux:
