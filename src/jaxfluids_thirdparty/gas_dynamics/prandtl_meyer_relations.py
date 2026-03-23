@@ -19,7 +19,7 @@ def mach_angle(M: Array) -> Array:
 def prandtl_meyer_function(
         M: float | Array, 
         gamma: float | Array
-        ) -> float | Array:
+    ) -> float | Array:
     tmp = (gamma + 1) / (gamma - 1)
     return jnp.sqrt(tmp) * jnp.arctan(jnp.sqrt((M**2 - 1) / tmp)) \
         - jnp.arctan(jnp.sqrt(M**2 - 1))
