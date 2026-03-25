@@ -236,8 +236,11 @@ class LevelsetInitializer:
         is_equal_decomposition_multihost = self.restart_setup.is_equal_decomposition_multihost
 
         restart_file_path = parse_restart_files(restart_file_path)
-        h5file_list = get_h5file_list(restart_file_path, process_id,
-                                      is_equal_decomposition_multihost)
+        h5file_list = get_h5file_list(
+            restart_file_path,
+            process_id,
+            is_equal_decomposition_multihost
+        )
         h5file = h5file_list[0]
 
         is_parallel_restart = h5file["metadata"]["is_parallel"][()]
@@ -247,8 +250,12 @@ class LevelsetInitializer:
         levelset_keys = h5file["metadata"]["available_quantities"]["levelset"][:].astype("U")
         assert "levelset" in levelset_keys, "Levelset not in restart file %s." % restart_file_path
 
-        load_function = get_load_function(is_parallel, is_parallel_restart,
-                                          split_factors, split_factors_restart)
+        load_function = get_load_function(
+            is_parallel,
+            is_parallel_restart,
+            split_factors,
+            split_factors_restart
+        )
 
         load_function_inputs = {
             "h5file": h5file_list,

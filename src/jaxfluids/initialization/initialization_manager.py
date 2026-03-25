@@ -1,5 +1,6 @@
+from pathlib import Path
 import types
-from typing import Union, Dict, List, Tuple
+from typing import Union, Tuple
 
 import jax
 import jax.numpy as jnp
@@ -14,24 +15,40 @@ from jaxfluids.initialization.turbulence_statistics_initializer import Turbulenc
 from jaxfluids.levelset.extension.iterative_extender import IterativeExtender
 from jaxfluids.solvers.positivity.positivity_handler import get_positvity_state_info
 from jaxfluids.initialization.solid_initializer import SolidsInitializer
-from jaxfluids.data_types.buffers import (SimulationBuffers, 
-    MaterialFieldBuffers, LevelsetFieldBuffers, ForcingParameters, TimeControlVariables, 
-    SolidFieldBuffers)
+from jaxfluids.data_types.buffers import (
+    SimulationBuffers, 
+    MaterialFieldBuffers,
+    LevelsetFieldBuffers,
+    ForcingParameters,
+    TimeControlVariables, 
+    SolidFieldBuffers
+)
 from jaxfluids.data_types import JaxFluidsBuffers
 from jaxfluids.domain.helper_functions import reassemble_buffer, reassemble_buffer_np
-from jaxfluids.data_types.information import (StepInformation, PositivityCounter, LevelsetResidualInformation,
-                                              LevelsetProcedureInformation, PositivityStateInformation,
-                                              DiscretizationCounter, LevelsetPositivityInformation, FlowStatistics)
+from jaxfluids.data_types.information import (
+    StepInformation,
+    PositivityCounter,
+    LevelsetResidualInformation,
+    LevelsetProcedureInformation,
+    PositivityStateInformation,
+    DiscretizationCounter,
+    LevelsetPositivityInformation,
+    FlowStatistics
+)
 from jaxfluids.data_types.statistics import TurbulenceStatisticsInformation
 from jaxfluids.data_types.ml_buffers import (
-    MachineLearningSetup, combine_callables_and_params,
-    ParametersSetup, CallablesSetup)
+    MachineLearningSetup,
+    combine_callables_and_params,
+    ParametersSetup,
+    CallablesSetup
+)
 from jaxfluids.data_types.ml_buffers import (MachineLearningSetup, combine_callables_and_params)
 from jaxfluids.levelset.extension.material_fields.extension_handler import ghost_cell_extension_material_fields
 from jaxfluids.levelset.fluid_fluid.interface_quantities import compute_interface_quantities
 from jaxfluids.levelset.fluid_solid.interface_quantities import compute_thermal_interface_state
 
 Array = jax.Array
+
 
 class InitializationManager:
     """The InitializationManager class implements functionality to create a dictionary of initial buffers that is 
@@ -44,10 +61,7 @@ class InitializationManager:
     Note that if multiple of the above are provided, the priority is 1) - 4).
     """
 
-    def __init__(
-            self,
-            input_manager: InputManager
-            ) -> None:
+    def __init__(self, input_manager: InputManager) -> None:
         
         assert_str = "InitializationManager requires an InputManager object as input."
         assert isinstance(input_manager, InputManager), assert_str
@@ -128,11 +142,11 @@ class InitializationManager:
 
     def initialization(
             self,
-            user_prime_init: Union[np.ndarray, Array] = None,
-            user_time_init: float = None,
-            user_levelset_init: Union[np.ndarray, Array] = None,
-            user_solid_interface_velocity_init: Union[np.ndarray, Array] = None,
-            user_restart_file_path: str = None,
+            user_prime_init: Union[np.ndarray, Array] | None = None,
+            user_time_init: float | None = None,
+            user_levelset_init: Union[np.ndarray, Array] | None = None,
+            user_solid_interface_velocity_init: Union[np.ndarray, Array] | None = None,
+            user_restart_file_path: Path | str | None = None,
             ml_parameters: ParametersSetup = ParametersSetup(),
             ml_callables: CallablesSetup = CallablesSetup()
         ) -> JaxFluidsBuffers:
@@ -147,6 +161,9 @@ class InitializationManager:
         :return: _description_
         :rtype: JaxFluidsBuffers
         """
+
+        if isinstance(user_restart_file_path, Path):
+            user_restart_file_path = str(user_restart_file_path)
 
         is_parallel = self.domain_information.is_parallel
 
@@ -163,7 +180,8 @@ class InitializationManager:
         # LEVELSET
         if self.equation_information.levelset_model:
             levelset_fields = self.levelset_initializer.initialize(
-                user_levelset_init, user_solid_interface_velocity_init,
+                user_levelset_init,
+                user_solid_interface_velocity_init,
                 user_restart_file_path
             )
         else:

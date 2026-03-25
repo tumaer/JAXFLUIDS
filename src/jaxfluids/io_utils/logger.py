@@ -429,7 +429,7 @@ class Logger:
             step_information: StepInformation,
             wall_clock_times: WallClockTimes,
             time_reference: float,
-            ) -> None:
+        ) -> None:
         """Logs information at the end of an integration step.
 
         :param info_list: List of strings to be printed at the end

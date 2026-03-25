@@ -234,7 +234,7 @@ class OutputWriter:
             force_output: bool = False,
             simulation_finish: bool = False,
             flow_statistics: FlowStatistics = None
-            ) -> None:
+        ) -> None:
         """Writes h5 and (optional) xdmf output.
         
         1) Calls hdf5_writer.write_file()

@@ -15,7 +15,8 @@ from jaxfluids.data_types.buffers import (
 )
 from jaxfluids.data_types.ml_buffers import MachineLearningSetup, combine_callables_and_params, CallablesSetup, ParametersSetup
 from jaxfluids.data_types.information import (
-    LevelsetResidualInformation, StepInformation,
+    LevelsetResidualInformation,
+    StepInformation,
     WallClockTimes
 )
 from jaxfluids.data_types.statistics import FlowStatistics
@@ -63,7 +64,7 @@ class SimulationManager:
             self,
             input_manager: InputManager,
             callbacks: Union[Callback, List[Callback]] = None
-            ) -> None:
+        ) -> None:
 
         assert_str = "SimulationManager requires an InputManager object as input."
         assert isinstance(input_manager, InputManager), assert_str
@@ -187,7 +188,7 @@ class SimulationManager:
             jxf_buffers: JaxFluidsBuffers,
             ml_parameters: ParametersSetup = ParametersSetup(),
             ml_callables: CallablesSetup = CallablesSetup(),
-        ) -> int:
+        ) -> None:
         """Performs a conventional CFD simulation.
 
         :param jxf_buffers: _description_
@@ -201,13 +202,12 @@ class SimulationManager:
         """
 
         self.initialize(jxf_buffers)
-        return_value = self.advance(
+        self.advance(
             jxf_buffers,
             ml_parameters,
             ml_callables
         )
 
-        return return_value
 
     def initialize(self, jxf_buffers: JaxFluidsBuffers) -> None:
         """Initializes the simulation, i.e., creates the
@@ -250,13 +250,18 @@ class SimulationManager:
 
         # LOG T0
         self.logger.log_initial_time_step(
-            time_control_variables, step_information,
-            self.unit_handler.time_reference)
+            time_control_variables,
+            step_information,
+            self.unit_handler.time_reference
+        )
 
         self.output_writer.write_output(
-            simulation_buffers, time_control_variables,
-            WallClockTimes(), forcing_parameters, 
-            force_output=True)
+            simulation_buffers,
+            time_control_variables,
+            WallClockTimes(),
+            forcing_parameters, 
+            force_output=True
+        )
 
     def sanity_check(
             self,
@@ -294,13 +299,14 @@ class SimulationManager:
             jxf_buffers: JaxFluidsBuffers,
             ml_parameters: ParametersSetup,
             ml_callables: CallablesSetup,
-        ) -> bool:
+        ) -> None:
         """Advances the initial buffers in time.
         """
 
         # START LOOP
         start_loop = self.synchronize_and_clock(
-            jxf_buffers.simulation_buffers.material_fields.primitives)
+            jxf_buffers.simulation_buffers.material_fields.primitives
+        )
 
         # CALLBACK on_simulation_start
         callback_dict = {}
@@ -322,10 +328,13 @@ class SimulationManager:
         ):
 
             start_step = self.synchronize_and_clock(
-                jxf_buffers.simulation_buffers.material_fields.primitives)
+                jxf_buffers.simulation_buffers.material_fields.primitives
+            )
 
             control_flow_params = self.compute_control_flow_params(
-                time_control_variables, jxf_buffers.step_information)
+                time_control_variables,
+                jxf_buffers.step_information
+            )
 
             # NOTE CALLBACK
             jxf_buffers, callback_dict = self._callback(
@@ -359,7 +368,8 @@ class SimulationManager:
 
             # CLOCK INTEGRATION STEP
             end_step = self.synchronize_and_clock(
-                simulation_buffers.material_fields.primitives)
+                simulation_buffers.material_fields.primitives
+            )
             wall_clock_step = end_step - start_step
 
             # COMPUTE WALL CLOCK TIMES FOR TIME STEP
@@ -397,29 +407,23 @@ class SimulationManager:
             callback_dict=callback_dict
         )
 
-        # UNPACK JAX FLUIDS BUFFERS
-        simulation_buffers = jxf_buffers.simulation_buffers
-        time_control_variables = jxf_buffers.time_control_variables
-        forcing_parameters = jxf_buffers.forcing_parameters
-        step_information = jxf_buffers.step_information
-
         # FINAL OUTPUT
         self.output_writer.write_output(
-            simulation_buffers,
-            time_control_variables,
+            jxf_buffers.simulation_buffers,
+            jxf_buffers.time_control_variables,
             wall_clock_times,
-            forcing_parameters,
+            jxf_buffers.forcing_parameters,
             force_output=True,
             simulation_finish=True,
-            flow_statistics=step_information.statistics
+            flow_statistics=jxf_buffers.step_information.statistics
         )
 
         # LOG SIMULATION FINISH
         end_loop = self.synchronize_and_clock(
-            simulation_buffers.material_fields.primitives)
+            jxf_buffers.simulation_buffers.material_fields.primitives
+        )
         self.logger.log_sim_finish(end_loop - start_loop)
 
-        return bool(physical_simulation_time >= time_control_variables.end_time)
 
     def compute_wall_clock_time(
             self,
@@ -453,12 +457,13 @@ class SimulationManager:
             mean_wall_clock_step = wall_clock_step
             mean_wall_clock_step_cell = wall_clock_step_cell
 
-        wall_clock_times = WallClockTimes(
-            wall_clock_step, wall_clock_step_cell,
-            mean_wall_clock_step, mean_wall_clock_step_cell
-            )
+        return WallClockTimes(
+            wall_clock_step,
+            wall_clock_step_cell,
+            mean_wall_clock_step,
+            mean_wall_clock_step_cell
+        )
             
-        return wall_clock_times
 
     def synchronize_and_clock(
             self,
