@@ -42,7 +42,6 @@ from jaxfluids.data_types.ml_buffers import (
     ParametersSetup,
     CallablesSetup
 )
-from jaxfluids.data_types.ml_buffers import (MachineLearningSetup, combine_callables_and_params)
 from jaxfluids.levelset.extension.material_fields.extension_handler import ghost_cell_extension_material_fields
 from jaxfluids.levelset.fluid_fluid.interface_quantities import compute_interface_quantities
 from jaxfluids.levelset.fluid_solid.interface_quantities import compute_thermal_interface_state
@@ -204,8 +203,9 @@ class InitializationManager:
                 extension_and_interface_quantities_fn = jax.pmap(
                     self.extension_and_interface_quantities,
                     axis_name="i",
-                    in_axes=(0,0,0,None,None),
-                    out_axes=(0,0,0,None,None,None)
+                    in_axes=(0,0,0,None,None,None),
+                    out_axes=(0,0,0,None,None,None),
+                    static_broadcasted_argnums=(4,)
                 )
             else:
                 extension_and_interface_quantities_fn = self.extension_and_interface_quantities
@@ -222,7 +222,8 @@ class InitializationManager:
                 levelset_fields,
                 solid_fields,
                 time_control_variables,
-                ml_setup
+                ml_setup.callables,
+                ml_setup.parameters,
             )
 
         else:
@@ -330,7 +331,8 @@ class InitializationManager:
             levelset_fields: LevelsetFieldBuffers,
             solid_fields: SolidFieldBuffers,
             time_control_variables: TimeControlVariables,
-            ml_setup: MachineLearningSetup
+            ml_callables: CallablesSetup,
+            ml_parameters: ParametersSetup,
         ) -> Tuple[MaterialFieldBuffers, LevelsetFieldBuffers,
                    SolidFieldBuffers, LevelsetResidualInformation,
                    LevelsetPositivityInformation,
@@ -345,6 +347,8 @@ class InitializationManager:
         :return: _description_
         :rtype: Tuple[MaterialFieldBuffers, LevelsetFieldBuffers]
         """
+
+        ml_setup = MachineLearningSetup(ml_callables, ml_parameters)
 
         primitives = material_fields.primitives
         conservatives = material_fields.conservatives

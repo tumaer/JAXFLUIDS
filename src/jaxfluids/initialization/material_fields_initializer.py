@@ -27,7 +27,11 @@ from jaxfluids.data_types.case_setup.initial_conditions import InitialConditionS
 from jaxfluids.data_types.case_setup.restart import RestartSetup
 from jaxfluids.data_types.case_setup import CaseSetup
 from jaxfluids.data_types.numerical_setup import NumericalSetup
-from jaxfluids.data_types.ml_buffers import MachineLearningSetup
+from jaxfluids.data_types.ml_buffers import (
+    MachineLearningSetup,
+    CallablesSetup,
+    ParametersSetup
+)
 
 Array = jax.Array
 
@@ -145,7 +149,8 @@ class MaterialFieldsInitializer:
             self,
             primitives_np: Array,
             physical_simulation_time: float,
-            ml_setup: MachineLearningSetup
+            ml_callables: CallablesSetup,
+            ml_parameters: ParametersSetup,
         ) -> MaterialFieldBuffers:
         """Prepares the material fields given a
         numpy primitive buffer, i.e.,
@@ -160,6 +165,8 @@ class MaterialFieldsInitializer:
         :return: _description_
         :rtype: MaterialFieldBuffers
         """
+
+        ml_setup = MachineLearningSetup(ml_callables, ml_parameters)
 
         nh = self.domain_information.nh_conservatives
         device_number_of_cells = self.domain_information.device_number_of_cells
@@ -366,39 +373,50 @@ class MaterialFieldsInitializer:
                 primitives = primitives[s_]
             
             if is_interpolate:
-                primitives = jax.pmap(interpolate, axis_name="i", 
-                                      in_axes=(None,0,0,None,None,None,None,None),
-                                      static_broadcasted_argnums=(0,4,5,6,7)
-                                      )("MATERIAL",
-                                        local_cell_centers, primitives, 
-                                        physical_simulation_time,
-                                        input_manager_restart.domain_information,
-                                        input_manager_restart.equation_information,
-                                        input_manager_restart.halo_manager,
-                                        dtype)
+                primitives = jax.pmap(
+                    interpolate,
+                    axis_name="i", 
+                    in_axes=(None,0,0,None,None,None,None,None),
+                    static_broadcasted_argnums=(0,4,5,6,7)
+                )(
+                    "MATERIAL",
+                    local_cell_centers,
+                    primitives, 
+                    physical_simulation_time,
+                    input_manager_restart.domain_information,
+                    input_manager_restart.equation_information,
+                    input_manager_restart.halo_manager,
+                    dtype
+                )
 
             material_fields = jax.pmap(
                 self.create_material_fields,
                 axis_name="i",
-                in_axes=(0, None, None)
+                in_axes=(0, None, None, None),
+                static_broadcasted_argnums=(2,),
             )(
                 primitives,
                 physical_simulation_time,
-                ml_setup
+                ml_setup.callables,
+                ml_setup.parameters
             )
         else:
             if is_interpolate:
-                primitives = interpolate("MATERIAL",
-                                         local_cell_centers, primitives, 
-                                         physical_simulation_time,
-                                         input_manager_restart.domain_information,
-                                         input_manager_restart.equation_information,
-                                         input_manager_restart.halo_manager,
-                                         dtype)
+                primitives = interpolate(
+                    "MATERIAL",
+                    local_cell_centers,
+                    primitives, 
+                    physical_simulation_time,
+                    input_manager_restart.domain_information,
+                    input_manager_restart.equation_information,
+                    input_manager_restart.halo_manager,
+                    dtype
+                )
             material_fields = self.create_material_fields(
                 primitives,
                 physical_simulation_time,
-                ml_setup
+                ml_setup.callables,
+                ml_setup.parameters,
             )
 
 
@@ -459,17 +477,20 @@ class MaterialFieldsInitializer:
             material_fields = jax.pmap(
                 self.create_material_fields,
                 axis_name="i",
-                in_axes=(0, None, None)
+                in_axes=(0, None, None, None),
+                static_broadcasted_argnums=(2,),
             )(
                 primitives,
                 physical_simulation_time,
-                ml_setup
+                ml_setup.callables,
+                ml_setup.parameters,
             )
         else:
             material_fields = self.create_material_fields(
                 user_prime_init,
                 physical_simulation_time,
-                ml_setup
+                ml_setup.callables,
+                ml_setup.parameters,
             )
 
         
