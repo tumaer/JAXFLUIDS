@@ -1,14 +1,21 @@
-from typing import Any, Dict, NamedTuple, Tuple
-import jax
+from typing import Any, Callable, NamedTuple, Tuple
+from jax import Array
 import jax.numpy as jnp 
+
 
 class ConvectiveFluxesSetup(NamedTuple):
     flux_function: Any = None
     cell_face_reconstruction: Any = None
 
+class InterfaceFluxCallablesSetup(NamedTuple):
+    convective_interface_flux_fn: Callable
+
+class InterfaceFluxParametersSetup(NamedTuple):
+    actuator: Array
+
 class LevelSetSetup(NamedTuple):
     fluid_fluid: Any = None
-    fluid_solid: Any = None
+    fluid_solid: Any | InterfaceFluxCallablesSetup | InterfaceFluxParametersSetup = None
 
 class BoundaryConditionsFace(NamedTuple):
     bounding_domain: Any = None
