@@ -32,6 +32,7 @@ if __name__=='__main__':
             "matplotlib",
             "numpy",
             "optax",
+            "gymnasium",
         ],
         extras_require={
             # Use cuda to install CUDA version, use as follows:
