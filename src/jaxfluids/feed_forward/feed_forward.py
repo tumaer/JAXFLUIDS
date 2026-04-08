@@ -184,7 +184,10 @@ def initialize_fields_feed_forward(
         if levelset_model == "FLUID-FLUID":
             fluid_fluid_handler = levelset_handler.fluid_fluid_handler
             extender_interface = fluid_fluid_handler.extender_interface
-            curvature = geometry_calculator.compute_curvature(levelset)
+            if sim_manager.numerical_setup.active_physics.is_surface_tension:
+                curvature = geometry_calculator.compute_curvature(levelset)
+            else:
+                curvature = None
             interface_velocity, interface_pressure, _ = \
             compute_interface_quantities(
                 primitives, levelset, volume_fraction, normal, curvature, 

@@ -6,7 +6,7 @@
         "save_dt": 0.5
     },
     "restart": {
-        "flag": false,
+        "is_restart": false,
         "file_path": "./results/tgv/domain/data_0.0000000000.h5"
     },
     "domain": {

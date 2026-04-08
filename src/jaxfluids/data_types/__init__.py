@@ -3,7 +3,7 @@ from typing import Dict, NamedTuple, Tuple
 import jax
 
 from jaxfluids.data_types.buffers import SimulationBuffers, TimeControlVariables, ForcingParameters
-from jaxfluids.data_types.information import StepInformation, FlowStatistics
+from jaxfluids.data_types.information import StepInformation
 
 Array = jax.Array
 

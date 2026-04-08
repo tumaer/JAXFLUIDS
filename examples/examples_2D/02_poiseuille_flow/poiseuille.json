@@ -5,10 +5,6 @@
         "save_path": "./results",
         "save_dt": 0.05
     },
-    "restart": {
-        "flag": false,
-        "file_path": ""
-    },
     "domain": {
         "x": {
             "cells": 4,

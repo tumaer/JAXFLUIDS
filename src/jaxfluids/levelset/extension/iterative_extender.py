@@ -153,7 +153,7 @@ class IterativeExtender:
 
         else:
             def _body_func(args: Tuple[Array]) -> Tuple[Array]:
-                quantity, index, mean_residual, directional_derivative = args
+                quantity, index, mean_residual = args
                 if debug:
                     quantity_in = quantity[index]
                 else:
@@ -181,7 +181,7 @@ class IterativeExtender:
                 return args
             
             def _cond_fun(args: Tuple[int, Array, float]) -> bool:
-                _, index, mean_residual, _ = args
+                _, index, mean_residual  = args
                 condition1 = mean_residual > self.residual_threshold
                 condition2 = index < steps
                 return jnp.logical_and(condition1, condition2)

@@ -434,7 +434,10 @@ class InitializationManager:
             conservatives, primitives, temperature)
         
         if levelset_model == "FLUID-FLUID":
-            curvature = geometry_calculator.compute_curvature(levelset)
+            if self.numerical_setup.active_physics.is_surface_tension:
+                curvature = geometry_calculator.compute_curvature(levelset)
+            else:
+                curvature = None
             interface_velocity, interface_pressure, residual_info_interface = \
             compute_interface_quantities(
                 primitives, levelset, volume_fraction, normal, curvature, 
