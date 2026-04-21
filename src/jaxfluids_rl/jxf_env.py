@@ -27,6 +27,24 @@ class RenderMode(StrEnum):
 class JAXFluidsEnv(gym.Env):
     """Generic wrapper around gym.Env which implements
     basic functionality to use JAX-Fluids in RL applications.
+
+
+    Arguments:
+        - output_dir: Optional. String indicating where the environment outputs are saved.
+            Defaults to 'outputs'.
+        - run_name: Optional. String for the name of the run. Defaults to datetime.now().
+
+        - steps_per_action: Required. Integer, number of JAX-Fluids integration steps
+            per action.
+
+        - render_mode: Optional. String or None, indicating whether and how the environment
+            is rendered. Defaults to None.
+        - render_dpi: Optional. Integer for the dpi of the rendered images. Defaults to 300.
+
+        - log_level: Optional. String indicating the log level.
+        - log_to_file: Optional. Boolean indicating whether logs are written to a log file.
+        - log_every_steps: Optional. Integer indicating every how many steps log is written.
+            Defaults to 10.
     """
 
     def __init__(
