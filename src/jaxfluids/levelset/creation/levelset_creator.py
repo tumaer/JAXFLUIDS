@@ -11,8 +11,14 @@ import numpy as np
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.levelset.creation.NACA_airfoils import NACA_airfoils
 from jaxfluids.levelset.creation.generic_shapes import (
-    get_circle, get_sphere, get_rectangle, get_square, get_diamond,
-    get_ellipse, get_ellipsoid)
+    get_circle,
+    get_sphere,
+    get_rectangle,
+    get_square,
+    get_diamond,
+    get_ellipse,
+    get_ellipsoid
+)
 from jaxfluids.domain.helper_functions import split_buffer
 from jaxfluids.data_types.case_setup.initial_conditions import InitialConditionLevelset
 from jaxfluids.unit_handler import UnitHandler
@@ -50,7 +56,7 @@ class LevelsetCreator:
             "diamond": get_diamond,
             "ellipse": get_ellipse,
             "ellipsoid": get_ellipsoid
-            }
+        }
 
         self.NACA_airfoils = NACA_airfoils(is_double_precision)
 

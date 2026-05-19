@@ -1,0 +1,96 @@
+{
+    "general": {
+        "case_name": "diamond_airfoil",
+        "end_time": 1.0,
+        "save_path": "./results",
+        "save_dt": 0.1
+    },
+    "domain": {
+        "x": {
+            "cells": 400,
+            "range": [-1.0, 3.0]
+        },
+        "y": {
+            "cells": 400,
+            "range": [-2.0, 2.0]
+        },
+        "z": {
+            "cells": 1,
+            "range": [0.0, 1.0]
+        }
+    },
+    "boundary_conditions": {
+        "primitives": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {
+                "type": "DIRICHLET",
+                "primitives_callable": {
+                    "rho": 1.0,
+                    "u": 2.3664319132398465,
+                    "v": 0.0,
+                    "w": 0.0,
+                    "p": 1.0
+                }
+            },
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        },
+        "levelset": {
+            "east": {"type": "ZEROGRADIENT"},
+            "west": {"type": "ZEROGRADIENT"},
+            "north": {"type": "ZEROGRADIENT"},
+            "south": {"type": "ZEROGRADIENT"},
+            "top": {"type": "INACTIVE"},
+            "bottom": {"type": "INACTIVE"}
+        }
+    },
+    "initial_condition": {
+        "primitives": {
+            "rho": 1.0,
+            "u": 2.3664319132398465,
+            "v": 0.0,
+            "w": 0.0,
+            "p": 1.0
+        },
+        "levelset": [
+            {
+                "shape": "diamond",
+                "parameters": {
+                    "chord_length": 1.0,
+                    "maximum_thickness_position": 0.3,
+                    "maximum_thickness": 0.3,
+                    "angle_of_attack": 0.0,
+                    "x_position": 0.0,
+                    "y_position": 0.0,
+                    "z_position": 0.0
+                },
+                "bounding_domain": "lambda x,y: jnp.ones_like(x)"
+            }
+        ]
+    },    
+    "material_properties": {
+        "equation_of_state": {
+            "model": "IdealGas",
+            "specific_heat_ratio": 1.4,
+            "specific_gas_constant": 1.0
+        },
+        "transport": {
+            "dynamic_viscosity": {
+                "model": "CUSTOM",
+                "value": 5e-4
+            },
+            "bulk_viscosity": 0.0,
+            "thermal_conductivity": {
+                "model": "PRANDTL",
+                "prandtl_number": 0.72
+            }
+        }
+    },
+    "output": {
+        "primitives": ["density", "velocity", "pressure", "temperature"],
+        "levelset": ["volume_fraction", "levelset"],
+        "miscellaneous": ["schlieren", "mach_number"]
+    }
+}

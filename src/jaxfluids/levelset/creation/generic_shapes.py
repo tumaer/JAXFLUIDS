@@ -1,13 +1,19 @@
-from typing import List, Tuple
+from typing import Tuple
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import math
 
-from jaxfluids.data_types.case_setup.initial_conditions import CircleParameters, \
-    SphereParameters, RectangleParameters, SquareParameters, DiamondParameters, \
-    EllipsoidParameters, EllipseParameters
+from jaxfluids.data_types.case_setup.initial_conditions import (
+    CircleParameters,
+    SphereParameters,
+    RectangleParameters,
+    SquareParameters,
+    DiamondParameters,
+    EllipsoidParameters,
+    EllipseParameters,
+)
 
 Array = jax.Array
 
@@ -21,7 +27,7 @@ def get_circle(
     :param radius: Radius
     :type radius: float
     :param position: Center position
-    :type position: List
+    :type position: list
     :return: Levelset buffer
     :rtype: Array
     """
@@ -132,7 +138,7 @@ def get_rectangle(
     :param length: Length
     :type length: float
     :param position: Center position
-    :type position: List
+    :type position: list
     :param height: Height, defaults to None
     :type height: float, optional
     :param radius: Radius of the corners, defaults to None
