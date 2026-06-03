@@ -35,12 +35,14 @@ x,y,z = cell_centers
 
 # CREATE ANIMATION
 create_1D_animation(
-    plot_dict,
-    cell_centers,
-    times,
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    axis="y", axis_values=[0.0, 0.0],
-    interval=100)
+    axis="y",
+    axis_values=[0.0, 0.0],
+    interval=100,
+)
 
 # CREATE FIGURE
 fig, ax = plt.subplots(ncols=3, sharex=True, figsize=(15,3))

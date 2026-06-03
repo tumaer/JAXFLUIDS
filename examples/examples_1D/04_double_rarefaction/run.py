@@ -24,7 +24,7 @@ times = jxf_data.times
 
 # PLOT
 plot_dict = {
-    "density": data["density"], 
+    "density": data["density"],
     "velocityX": data["velocity"][:,0],
     "pressure": data["pressure"],
     "temperature": data["temperature"]
@@ -33,16 +33,19 @@ nrows_ncols = (1,4)
 
 # CREATE ANIMATION
 create_1D_animation(
-    plot_dict, 
-    cell_centers, 
-    times, 
-    nrows_ncols=nrows_ncols, 
-    interval=200)
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
+    nrows_ncols=nrows_ncols,
+    interval=200,
+)
 
 # CREATE FIGURE
 create_1D_figure(
-    plot_dict, 
-    cell_centers=cell_centers, 
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
     nrows_ncols=nrows_ncols,
-    axis="x", axis_values=(0,0),
-    save_fig="double_rarefaction.png")
+    axis="x",
+    axis_values=(0,0),
+    save_fig="double_rarefaction.png",
+)

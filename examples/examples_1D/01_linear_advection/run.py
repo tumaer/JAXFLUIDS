@@ -27,16 +27,19 @@ times = jxf_data.times
 
 # CREATE ANIMATION
 create_1D_animation(
-    data,
-    cell_centers,
-    times,
+    data_dict=data,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    interval=200)
+    interval=200,
+)
 
 # CREATE FIGURE
 create_1D_figure(
-    data,
+    data_dict=data,
     cell_centers=cell_centers,
     nrows_ncols=nrows_ncols,
-    axis="x", axis_values=(0,0), 
-    save_fig="linear_advection.png")
+    axis="x",
+    axis_values=(0,0),
+    save_fig="linear_advection.png",
+)

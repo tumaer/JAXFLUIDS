@@ -29,12 +29,12 @@ plot_dict = {
 save_path = os.path.join(path,"images")
 os.makedirs(save_path,exist_ok=True)
 create_2D_animation(
-    plot_dict,
-    cell_centers,
-    times, 
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     levelset=data_dict["levelset"],
     nrows_ncols=nrows_ncols,
     plane="xy",
-    save_png=save_path
+    save_png=save_path,
 )
-# create_2D_figure(plot_dict, cell_centers=cell_centers, plane="xy", plane_value=0.0)
+# create_2D_figure(data_dict=plot_dict, cell_centers=cell_centers, plane="xy", plane_value=0.0)

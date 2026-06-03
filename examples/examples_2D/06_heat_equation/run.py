@@ -27,18 +27,21 @@ nrows_ncols = (1,1)
 
 # CREATE ANIMATION
 create_2D_animation(
-    data,
-    cell_centers,
-    times,
+    data_dict=data,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    interval=100)
+    interval=100,
+)
 
 # CREATE FIGURE
 create_2D_figure(
-    data,
+    data_dict=data,
     cell_centers=cell_centers,
     nrows_ncols=nrows_ncols,
-    plane="xy", plane_value=0.0,
+    plane="xy",
+    plane_value=0.0,
     colorbars="vertical",
     cmap="plasma",
-    save_fig="heat_equation.png")
+    save_fig="heat_equation.png",
+)

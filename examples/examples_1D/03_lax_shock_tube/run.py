@@ -32,16 +32,19 @@ nrows_ncols = (1,3)
 
 # CREATE ANIMATION
 create_1D_animation(
-    plot_dict,
-    cell_centers,
-    times,
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    interval=200)
+    interval=200,
+)
 
 # CREATE FIGURE
 create_1D_figure(
-    plot_dict,
+    data_dict=plot_dict,
     cell_centers=cell_centers,
     nrows_ncols=nrows_ncols,
-    axis="x", axis_values=(0,0), 
-    save_fig="lax_shock_tube.png")
+    axis="x",
+    axis_values=(0,0),
+    save_fig="lax_shock_tube.png",
+)

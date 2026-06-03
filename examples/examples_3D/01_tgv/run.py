@@ -34,9 +34,18 @@ plot_dict = {
 # PLOT
 nrows_ncols = (1,3)
 os.makedirs("images", exist_ok=True)
-create_2D_animation(plot_dict, cell_centers, times, nrows_ncols=nrows_ncols, plane="xy",
-                    plane_value=np.pi/4, interval=100,
-                    save_png="images", fig_args={"figsize": (10,3)}, dpi=100)
+create_2D_animation(
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
+    nrows_ncols=nrows_ncols,
+    plane="xy",
+    plane_value=np.pi/4,
+    interval=100,
+    save_png="images",
+    fig_args={"figsize": (10,3)},
+    dpi=100,
+)
 
 data_ref = np.loadtxt("tgv_reference_data.txt")
 TKE = 0.5 * np.mean(np.sum(data["velocity"]**2, axis=1), axis=(-1,-2,-3))

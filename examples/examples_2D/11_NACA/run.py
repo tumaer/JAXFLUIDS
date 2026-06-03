@@ -18,7 +18,7 @@ sim_manager.simulate(jxf_buffers)
 # LOAD DATA
 path = sim_manager.output_writer.save_path_domain
 quantities = [
-    "density", "schlieren", "mach_number", 
+    "density", "schlieren", "mach_number",
     "levelset", "volume_fraction", "pressure"
 ]
 jxf_data = load_data(path, quantities)
@@ -41,17 +41,22 @@ plot_dict = {
 
 # CREATE ANIMATION
 create_2D_animation(
-    plot_dict, 
-    cell_centers, 
-    times, 
-    nrows_ncols=nrows_ncols, 
-    plane="xy", plane_value=0.0,
-    interval=100)
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
+    nrows_ncols=nrows_ncols,
+    plane="xy",
+    plane_value=0.0,
+    interval=100,
+)
 
 # CREATE FIGURE
 create_2D_figure(
-    plot_dict,
+    data_dict=plot_dict,
     nrows_ncols=nrows_ncols,
-    cell_centers=cell_centers, 
-    plane="xy", plane_value=0.0,
-    dpi=400, save_fig="NACA.png")
+    cell_centers=cell_centers,
+    plane="xy",
+    plane_value=0.0,
+    dpi=400,
+    save_fig="NACA.png",
+)

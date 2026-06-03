@@ -34,12 +34,14 @@ x,y,z = cell_centers
 
 # CREATE ANIMATION
 create_2D_animation(
-    plot_dict,
-    cell_centers, 
-    times, 
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    plane="xy", cmap="seismic",
-    interval=100)
+    plane="xy",
+    cmap="seismic",
+    interval=100,
+)
 
 # CREATE FIGURE
 velX = data["velocity"][-1,0,:,:,0]
@@ -56,7 +58,7 @@ ax[1].plot(reference_data[:,0], reference_data[:,2], linestyle="None", marker=".
 ax[1].plot(y, velX[N//2,:] / u_wall, label="JXF")
 ax[2].plot(reference_data[:,1], reference_data[:,3], linestyle="None", marker=".", label="Reference")
 ax[2].plot(x, velY[:,N//2] / u_wall, label="JXF")
-# create_2D_figure(plot_dict, cell_centers=cell_centers, plane="xy", plane_value=0.0)
+# create_2D_figure(data_dict=plot_dict, cell_centers=cell_centers, plane="xy", plane_value=0.0)
 ax[1].set_xlabel(r"$y$")
 ax[1].set_ylabel(r"$u / u_w$")
 ax[2].set_xlabel(r"$x$")

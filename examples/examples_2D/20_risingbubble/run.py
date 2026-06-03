@@ -41,20 +41,24 @@ plot_dict = {
 image_path = "./images"
 os.makedirs(image_path, exist_ok=True)
 create_2D_animation(
-    plot_dict,
-    cell_centers,
-    times,
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    plane="xy", interval=100)
+    plane="xy",
+    interval=100,
+)
 
 # CREATE FIGURE
 create_2D_figure(
-    plot_dict,
-    nrows_ncols,
+    data_dict=plot_dict,
+    nrows_ncols=nrows_ncols,
     cell_centers=cell_centers,
-    plane="xy", plane_value=0.0,
+    plane="xy",
+    plane_value=0.0,
     dpi=500,
-    save_fig="rising_bubble.png")
+    save_fig="rising_bubble.png",
+)
 
 # MASS
 X, Y, Z = np.meshgrid(cell_centers[0], cell_centers[1], cell_centers[2], indexing="ij")

@@ -35,17 +35,20 @@ nrows_ncols = (1,4)
 
 # CREATE ANIMATION
 create_1D_animation(
-    plot_dict,
-    cell_centers,
-    times,
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
     interval=200,
-    fig_args={"figsize": (15,5)})
+    fig_args={"figsize": (15,5)},
+)
 
 # CREATE FIGURE
 create_1D_figure(
-    plot_dict,
+    data_dict=plot_dict,
     cell_centers=cell_centers,
     nrows_ncols=nrows_ncols,
-    axis="x", axis_values=(0,0),
-    save_fig="twophase_sod.png")
+    axis="x",
+    axis_values=(0,0),
+    save_fig="twophase_sod.png",
+)

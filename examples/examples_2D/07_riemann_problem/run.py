@@ -31,17 +31,21 @@ plot_dict = {
 
 # CREATE ANIMATION
 create_2D_animation(
-    plot_dict,
-    cell_centers,
-    times,
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
-    plane="xy", plane_value=0.0,
-    interval=100)
+    plane="xy",
+    plane_value=0.0,
+    interval=100,
+)
 
 # CREATE FIGURE
 create_2D_figure(
-    plot_dict,
-    nrows_ncols,
+    data_dict=plot_dict,
+    nrows_ncols=nrows_ncols,
     cell_centers=cell_centers,
-    plane="xy", plane_value=0.0,
-    save_fig="riemann_2D.png")
+    plane="xy",
+    plane_value=0.0,
+    save_fig="riemann_2D.png",
+)

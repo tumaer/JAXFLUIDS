@@ -4,56 +4,43 @@ from typing import Dict, List, Tuple
 import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.animation import FuncAnimation
+from matplotlib.text import Text
 import matplotlib.pyplot as plt
 import numpy as np
 plt.rcParams.update({'font.size': 14})
 TITLE_FONTSIZE = 14
 
-#TODO do we want to pass times argument to animation??? 
 #TODO check planes in 3d create figure
 
 def create_1D_animation(
         data_dict: Dict[str, np.ndarray],
         cell_centers: Tuple[np.ndarray],
-        times: np.ndarray,
-        nrows_ncols: Tuple,
+        nrows_ncols: Tuple[int, int],
+        times: np.ndarray | None = None,
         axis: str = "x",
         axis_values: Tuple = (0.0,0.0),
-        minmax_list: List = None,
-        save_anim: str = None,
-        fig_args: Dict = {},
-        axes_args: Dict = {},
-        line_args: Dict = {},
+        minmax_list: List | None = None,
+        save_anim: str | None = None,
+        fig_args: Dict | None = None,
+        axes_args: Dict | None = None,
+        line_args: Dict | None = None,
         interval: int = 50,
-        save_png: str = None,
+        save_png: str | None = None,
+        is_return: bool = False,
         dpi: int = 100
-        ) -> None:
-    """Creates a subplot of 1D line plots. If the levelset argument is 
-    provided, the interface will be visualized as an isoline. If the 
-    static_time argument is provided, no animation is created,
-    but a plot at this time will be shown.
+    ) -> Tuple[mpl.figure.Figure, FuncAnimation] | None:
+    """Create a 1D line animation or save each snapshot as a PNG.
 
-    :param data_dict: Data buffers
-    :type data_dict: List
-    :param cell_centers: Cell center coordinates
-    :type cell_centers: List
-    :param times: Time buffer
-    :type times: np.ndarray
-    :param nrows_ncols: Shape of subplots
-    :type nrows_ncols: Tuple
-    :param axis: Axis to slice, defaults to "x"
-    :type axis: str, optional
-    :param values: Values of remaining axis to slice, defaults to [0.0,0.0]
-    :type values: List, optional
-    :param save_fig: Path to save static plot, defaults to None
-    :type save_fig: str, optional
-    :param save_anim: Path to save animation, defaults to None
-    :type save_anim: str, optional
-    :param interval: Interval in ms for animation, defaults to 50
-    :type interval: int, optional
-    :param dpi: Resolution in dpi, defaults to 100
-    :type dpi: int, optional
+    If ``times`` is provided, the current time is shown as a dynamic
+    suptitle. Returns ``(fig, ani)`` when ``is_return`` is true.
     """
+
+    if fig_args is None:
+        fig_args = {}
+    if axes_args is None:
+        axes_args = {}
+    if line_args is None:
+        line_args = {}
 
     X0, data_dict = prepare_data_1D(
         data_dict,
@@ -72,9 +59,10 @@ def create_1D_animation(
 
         for index_time in range(no_timesnapshots):
             filename = "image_%04d" % (index_time)
-            fig, axes, _ = create_1D_figure(
+            fig, axes, *_ = create_1D_figure(
                 data_dict=data_dict,
                 cell_centers=X0,
+                times=times,
                 nrows_ncols=nrows_ncols,
                 minmax_list=minmax_list,
                 index=index_time,
@@ -90,9 +78,10 @@ def create_1D_animation(
             del fig, axes
 
     else:
-        fig, axes, lines_list = create_1D_figure(
+        fig, axes, lines_list, suptitle = create_1D_figure(
             data_dict=data_dict,
             cell_centers=X0,
+            times=times,
             nrows_ncols=nrows_ncols,
             minmax_list=minmax_list,
             index=0,
@@ -103,87 +92,53 @@ def create_1D_animation(
         ani = FuncAnimation(
             fig, update_1D,
             frames=no_timesnapshots,
-            fargs=(data_dict, lines_list),
+            fargs=(data_dict, times, lines_list, suptitle),
             interval=interval,
-            blit=True,
+            # Figure-level suptitles are not reliably redrawn with blitting.
+            blit=suptitle is None,
             repeat=True
         )
+
+        if is_return:
+            return fig, ani
+
         save_animation(ani, save_anim, dpi)
         plt.show()
 
 def create_2D_animation(
         data_dict: Dict[str, np.ndarray],
         cell_centers: List,
-        times: np.ndarray = None,
-        levelset: np.ndarray = None,
-        nrows_ncols: Tuple = None,
+        times: np.ndarray | None = None,
+        levelset: np.ndarray | None = None,
+        nrows_ncols: Tuple[int, int] | None = None,
         plane: str = "xy",
         plane_value: float = 0.0,
-        minmax_list: List = None,
+        minmax_list: List | None = None,
         cmap: str = "seismic",
-        norm: mpl.colors.Normalize = None,
-        colorbars: Tuple[str] = None,
-        save_anim: str = None,
+        norm: mpl.colors.Normalize | None = None,
+        colorbars: Tuple[str] | None = None,
+        save_anim: str | None = None,
         interval: int = 50,
         dpi: int = 100,
-        fig_args: Dict = {},
-        axes_args: Dict = {},
-        levelset_kwargs: Dict = {},
-        save_png: str = None,
+        fig_args: Dict | None = None,
+        axes_args: Dict | None = None,
+        levelset_kwargs: Dict | None = None,
+        save_png: str | None = None,
         index_offset_name: int = 0,
-        ) -> None:
-    """ Standalone function which creates an animation of the data provided
-    in data_dict. create_2D_figure is invoked to create a 2D pcolormesh.
-    Use create_2D_figure if you want to visualize a static plot. 
-    If the levelset argument is provided, the interface is
-    plotted as an isoline. Returns the figure, the axes and
-    the corresponding plt.pcolormesh and plt.contour objects. 
+        is_return: bool = False,
+    ) -> Tuple[mpl.figure.Figure, FuncAnimation] | None:
+    """Create a 2D pcolormesh animation or save each snapshot as a PNG.
 
-    There are 2 ways how data can be provided:
-    1) Data_dict has 4-dimensional entries with (time, axis0, axis1, axis2)
-        shape. Then plane ("xy", "xz", "yz") and plane_value arguments
-        as well as cell_centers with 3 entries must be provided. The original
-        4D buffers are sliced appropriately and a meshgrid is generated. (Default)
-    
-    2) Data_dict has 3-dimensional entries with (time, axis0, axis1) shape and 
-        cell-centers (2 entries) are provided. Then an appropriate meshgrid is 
-        generated.
-
-    :param data_dict: [description]
-    :type data_dict: Dict
-    :param cell_centers: [description]
-    :type cell_centers: List
-    :param times: [description]
-    :type times: np.ndarray
-    :param levelset: [description], defaults to None
-    :type levelset: np.ndarray, optional
-    :param nrows_ncols: [description], defaults to None
-    :type nrows_ncols: Tuple, optional
-    :param plane: [description], defaults to "xy"
-    :type plane: str, optional
-    :param plane_value: [description], defaults to 0.0
-    :type plane_value: float, optional
-    :param minmax_list: [description], defaults to None
-    :type minmax_list: List, optional
-    :param cmap: [description], defaults to "seismic"
-    :type cmap: str, optional
-    :param save_anim: [description], defaults to None
-    :type save_anim: str, optional
-    :param interval: [description], defaults to 50
-    :type interval: int, optional
-    :param dpi: [description], defaults to 100
-    :type dpi: int, optional
-    :param fig_args: [description], defaults to {}
-    :type fig_args: Dict, optional
-    :param axes_args: [description], defaults to {}
-    :type axes_args: Dict, optional
-    :param save_png: [description], defaults to None
-    :type save_png: str, optional
-    :param index_offset_name: [description], defaults to 0
-    :type index_offset_name: int, optional
-    :return: [description]
-    :rtype: [type]
+    Four-dimensional data is sliced by ``plane`` and ``plane_value``.
+    Returns ``(fig, ani)`` when ``is_return`` is true.
     """
+
+    if fig_args is None:
+        fig_args = {}
+    if axes_args is None:
+        axes_args = {}
+    if levelset_kwargs is None:
+        levelset_kwargs = {}
 
     (X0,X1), data_dict, levelset = prepare_data_2D(
         data_dict = data_dict,
@@ -203,7 +158,7 @@ def create_2D_animation(
         # LOOP OVER TIME SNAPSHOTS
         for index_time in range(no_timesnapshots):
             filename = "image_%04d" % (index_time + index_offset_name)
-            fig, axes, _, _ = create_2D_figure(
+            fig, axes, _, _, _ = create_2D_figure(
                 data_dict=data_dict,
                 times=times,
                 levelset=levelset,
@@ -226,7 +181,7 @@ def create_2D_animation(
 
     else:
         # CREATE SUBPLOTS
-        fig, axes, quadmesh_list, pciset_list = create_2D_figure(
+        fig, axes, quadmesh_list, pciset_list, suptitle = create_2D_figure(
             data_dict=data_dict,
             times=times,
             levelset=levelset,
@@ -245,51 +200,38 @@ def create_2D_animation(
         ani = FuncAnimation(
             fig, update_2D,
             frames=no_timesnapshots,
-            fargs=((X0, X1), data_dict, levelset, axes, quadmesh_list, pciset_list),
+            fargs=((X0, X1), data_dict, levelset, times, axes, quadmesh_list, pciset_list, suptitle),
             interval=interval,
-            blit=True,
+            # Figure-level suptitles are not reliably redrawn with blitting.
+            blit=suptitle is None,
             repeat=True
         )
+        if is_return:
+            return fig, ani
+
         save_animation(ani, save_anim, dpi)
         plt.show()
 
 def create_3D_animation(
         data_dict: Dict[str, np.ndarray],
         cell_centers: List,
-        nrows_ncols: Tuple,
-        minmax_list: List = None,
+        nrows_ncols: Tuple[int, int],
+        minmax_list: List | None = None,
         cmap: str = "seismic",
-        save_anim: str = None,
+        save_anim: str | None = None,
         interval: int = 100,
-        save_png: str = None,
-        index_offset_name = 0,
+        save_png: str | None = None,
+        index_offset_name: int = 0,
         dpi: int = 100,
-        fig_args: Dict = {},
-        axes_args: Dict = {},
+        fig_args: Dict | None = None,
+        axes_args: Dict | None = None,
     ) -> None:
-    """Creates 3D animation. Plots contours for material fields. 
-    Optional save_png argument
-    specifies a path to save timesnapshots as .png files.
+    """Create a 3D contour-slice animation or save each snapshot as a PNG."""
 
-    :param data_dict: _description_
-    :type data_dict: Dict
-    :param cell_centers: _description_
-    :type cell_centers: List
-    :param nrows_ncols: _description_
-    :type nrows_ncols: Tuple
-    :param minmax_list: _description_, defaults to None
-    :type minmax_list: List, optional
-    :param cmap: _description_, defaults to "seismic"
-    :type cmap: str, optional
-    :param interval: _description_, defaults to 50
-    :type interval: int, optional
-    :param save_png: _description_, defaults to None
-    :type save_png: str, optional
-    :param index_offset_name: _description_, defaults to 0
-    :type index_offset_name: int, optional
-    :param dpi: _description_, defaults to 100
-    :type dpi: int, optional
-    """
+    if fig_args is None:
+        fig_args = {}
+    if axes_args is None:
+        axes_args = {}
 
     no_timesnapshots = len(data_dict[list(data_dict.keys())[0]])
     X0, X1, X2 = np.meshgrid(*cell_centers, indexing="ij")
@@ -346,17 +288,24 @@ def create_3D_animation(
 def create_1D_figure(
         data_dict: Dict[str, np.ndarray],
         cell_centers: List,
-        nrows_ncols: Tuple = None,
-        axis: str = None,
-        axis_values: Tuple = None,
-        minmax_list: List = None,
+        times: np.ndarray | None = None,
+        nrows_ncols: Tuple[int, int] | None = None,
+        axis: str | None = None,
+        axis_values: Tuple | None = None,
+        minmax_list: List | None = None,
         index: int = -1,
-        fig_args: Dict = {},
-        line_args: Dict = {},
-        save_fig: str = None,
-        dpi: int = None,
+        fig_args: Dict | None = None,
+        line_args: Dict | None = None,
+        save_fig: str | None = None,
+        dpi: int | None = None,
         is_show: bool = True,
-    ):
+    ) -> Tuple[mpl.figure.Figure, np.ndarray | List, List, Text | None]:
+    """Create a static 1D line figure."""
+
+    if fig_args is None:
+        fig_args = {}
+    if line_args is None:
+        line_args = {}
 
     X0, data_dict = prepare_data_1D(
         data_dict,
@@ -384,7 +333,12 @@ def create_1D_figure(
         squeeze=False, 
         **fig_args
     )
-    fig.tight_layout()
+    # fig.tight_layout()
+    if times is not None:
+        title_str = r"$t = " + f"{times[index]:4.3e}" + "$"
+        suptitle = fig.suptitle(title_str)
+    else:
+        suptitle = None
     if type(axes) != np.ndarray:
         axes = [axes]
     else:
@@ -406,35 +360,31 @@ def create_1D_figure(
     save_figure(fig, save_fig, dpi)
     if is_show:
         plt.show()
-    return fig, axes, lines_list
+    return fig, axes, lines_list, suptitle
 
 def create_2D_figure(
         data_dict: Dict[str, np.ndarray],
-        times: np.ndarray = None,
-        nrows_ncols: Tuple = None,
-        levelset: np.ndarray = None,
-        cell_centers: List = None,
-        meshgrid: Tuple = None,
-        plane: str = None,
-        plane_value: float = None,
-        minmax_list: List = None,
+        times: np.ndarray | None = None,
+        nrows_ncols: Tuple[int, int] | None = None,
+        levelset: np.ndarray | None = None,
+        cell_centers: List | None = None,
+        meshgrid: Tuple | None = None,
+        plane: str | None = None,
+        plane_value: float | None = None,
+        minmax_list: List | None = None,
         index: int = -1,
         cmap: str = "seismic",
-        norm: mpl.colors.Normalize = None,
-        colorbars: Tuple[str] = None,
-        fig_args: Dict = {},
-        levelset_kwargs: Dict = None,
-        save_fig: str = None,
-        dpi: int = None,
+        norm: mpl.colors.Normalize | None = None,
+        colorbars: Tuple[str] | None = None,
+        fig_args: Dict | None = None,
+        levelset_kwargs: Dict | None = None,
+        save_fig: str | None = None,
+        dpi: int | None = None,
         is_show: bool = True,
-    ) -> Tuple[mpl.figure.Figure, List, List, List]:
-    """Standalone function which creates a 2D pcolormesh of the data provided
-    in data_dict. If the levelset argument is provided, the interface is
-    plotted as an isoline. Returns the figure, the axes and
-    the corresponding plt.pcolormesh and plt.contour objects. 
+    ) -> Tuple[mpl.figure.Figure, np.ndarray | List, List, List, Text | None]:
+    """Create a static 2D pcolormesh figure.
 
-    Returns the figure an array of axes, list of pcolormeshes,
-    list of contours and a list of scatter artists.
+    Returns the figure, axes, pcolormeshes, levelset contours, and suptitle.
 
     There are 3 ways how data can be provided:
     1) Data_dict has 4-dimensional entries with (time, axis0, axis1, axis2)
@@ -467,24 +417,26 @@ def create_2D_figure(
     :param plane_value: Float which denotes the value of the remaining axis.
         Can only be used in combination with plane, defaults to None
     :type plane_value: float, optional
-    :param minmax_list: [description], defaults to None
+    :param minmax_list: List of value ranges for each quantity, defaults to None
     :type minmax_list: List, optional
-    :param index: [description], defaults to -1
+    :param index: Time snapshot index, defaults to -1
     :type index: int, optional
-    :param cmap: [description], defaults to "seismic"
+    :param cmap: Colormap name or object, defaults to "seismic"
     :type cmap: str, optional
-    :param fig_args: [description], defaults to {}
+    :param fig_args: Extra keyword arguments passed to plt.subplots
     :type fig_args: Dict, optional
     :param levelset_kwargs: Custom arguments which are passed to ax.contour
         when plotting the level-set contour, defaults to None
     :type levelset_kwargs: Dict, optional
-    :param save_fig: [description], defaults to None
+    :param save_fig: Path to save the figure, defaults to None
     :type save_fig: str, optional
-    :param dpi: [description], defaults to None
+    :param dpi: Resolution in dpi, defaults to None
     :type dpi: int, optional
-    :return: [description]
+    :return: Figure, axes, pcolormeshes, levelset contours, and suptitle
     :rtype: Tuple
     """
+    if fig_args is None:
+        fig_args = {}
     if cell_centers is None and meshgrid is None:
         raise TypeError("Create_figure requires either cell_centers or meshgrid argument.")
    
@@ -572,7 +524,9 @@ def create_2D_figure(
     fig.tight_layout()
     if times is not None:
         title_str = r"$t = " + f"{times[index]:4.3e}" + "$"
-        fig.suptitle(title_str)
+        suptitle = fig.suptitle(title_str)
+    else:
+        suptitle = None
     if type(axes) != np.ndarray:
         axes = [axes]
     else:
@@ -615,39 +569,28 @@ def create_2D_figure(
     save_figure(fig, save_fig, dpi)
     if is_show:
         plt.show()
-    return fig, axes, quadmesh_list, pciset_list
+    return fig, axes, quadmesh_list, pciset_list, suptitle
 
 def create_3D_figure(
         data_dict: Dict[str, np.ndarray],
-        nrows_ncols: Tuple = None,
-        cell_centers: List = None,
-        meshgrid: Tuple = None,
-        minmax_list = None,
+        nrows_ncols: Tuple[int, int] | None = None,
+        cell_centers: List | None = None,
+        meshgrid: Tuple | None = None,
+        minmax_list: List | None = None,
         index: int = -1,
         cmap: str = "seismic",
-        fig_args: Dict = {},
-        axes_args: Dict = {},
-        save_fig: str = None,
-        dpi: int = None,
+        fig_args: Dict | None = None,
+        axes_args: Dict | None = None,
+        save_fig: str | None = None,
+        dpi: int | None = None,
         is_show: bool = True,
-    ):
-    """Creates a 3d plot.
+    ) -> Tuple[mpl.figure.Figure, np.ndarray | List, List, List, List]:
+    """Create a static 3D contour-slice figure."""
 
-    :param data_dict: _description_
-    :type data_dict: Dict
-    :param cell_centers: _description_
-    :type cell_centers: List
-    :param nrows_ncols: _description_
-    :type nrows_ncols: Tuple
-    :param index: _description_, defaults to 0
-    :type index: int, optional
-    :param minmax_list: _description_, defaults to None
-    :type minmax_list: _type_, optional
-    :param cmap: _description_, defaults to "seismic"
-    :type cmap: str, optional
-    :return: _description_
-    :rtype: _type_
-    """
+    if fig_args is None:
+        fig_args = {}
+    if axes_args is None:
+        axes_args = {}
     if cell_centers is None and meshgrid is None:
         raise TypeError("Create_figure requires either cell_centers or meshgrid argument.")
 
@@ -698,6 +641,7 @@ def create_3D_figure(
         else:
             kwargs.append( {"cmap": cmap, "vmin": minmax[0], "vmax": minmax[1], "levels": 200} )
    
+    # Offsets define the three planes on which the contour slices are drawn.
     if "offsets" in axes_args:
         offsets = axes_args["offsets"]
     else:
@@ -739,9 +683,11 @@ def create_3D_figure(
     return fig, axes, collection_list, kwargs, offsets
 
 def update_1D(
-    i: int,
-    data_dict: Dict[str, np.ndarray],
-    lines: List
+        i: int,
+        data_dict: Dict[str, np.ndarray],
+        times: np.ndarray | None,
+        lines: List,
+        suptitle: Text | None
     ) -> List:
     """Update function for FuncAnimation for the create_1D_animation() function.
 
@@ -758,16 +704,24 @@ def update_1D(
     for quantity, line in zip(data_dict, lines):
         line.set_ydata(data_dict[quantity][i,:])
         list_of_collections.append(line)
+
+    if times is not None and suptitle is not None:
+        title_str = r"$t = " + f"{times[i]:4.3e}" + "$"
+        suptitle.set_text(title_str)
+        list_of_collections.append(suptitle)
+
     return list_of_collections
 
 def update_2D(
-    i: int,
-    meshgrid: Tuple,
-    data_dict: Dict[str, np.ndarray],
-    levelset: np.ndarray,
-    axes: np.ndarray,
-    quadmesh_list: List,
-    pciset_list: List,
+        i: int,
+        meshgrid: Tuple,
+        data_dict: Dict[str, np.ndarray],
+        levelset: np.ndarray,
+        times: np.ndarray | None,
+        axes: np.ndarray,
+        quadmesh_list: List,
+        pciset_list: List,
+        suptitle: Text | None,
     ) -> List:
     """Update function for FuncAnimation for the create_2D_animation() function.
 
@@ -799,32 +753,38 @@ def update_2D(
         quadmesh.set_array(data_dict[quantity][i].flatten())
         list_of_collections.append(quadmesh)
 
-        # UPDATE ISOLINE LEVELSET
+        # Contour sets are recreated because their collections are not updated
+        # in-place like the pcolormesh array above.
         if type(levelset) != type(None) and type(pciset[0]) != type(None):
             for tp in pciset[0].collections:
                 tp.remove()
             pciset[0] = ax.contour(X0, X1, np.squeeze(levelset[i]), levels=[0.0], colors="black", linewidths=2)
             list_of_collections += pciset[0].collections
 
+    if times is not None and suptitle is not None:
+        title_str = r"$t = " + f"{times[i]:4.3e}" + "$"
+        suptitle.set_text(title_str)
+        list_of_collections.append(suptitle)
+
     return list_of_collections
 
 def update_3D(
-    i: int,
-    meshgrid: Tuple,
-    data_dict: Dict[str, np.ndarray],
-    axes: List,
-    collection_list: List,
-    offsets: List,
-    kwargs: Dict,
-    ):
+        i: int,
+        meshgrid: Tuple,
+        data_dict: Dict[str, np.ndarray],
+        axes: List,
+        collection_list: List,
+        offsets: List,
+        kwargs: Dict,
+    ) -> List:
     X0, X1, X2 = meshgrid
 
     list_of_collections = []
 
     for quantity, ax, collection, kw in zip(data_dict, axes, collection_list, kwargs):
         
-        # UPDATE QUADMESH
-
+        # Rebuild contour sets because contourf collections do not expose a
+        # simple array update path comparable to pcolormesh.
         for tp1, tp2, tp3 in zip(collection[0].collections, collection[1].collections, collection[2].collections):
             tp1.remove()
             tp2.remove()
@@ -850,9 +810,9 @@ def update_3D(
 
     return list_of_collections
 
-def save_figure(fig,
-                save_fig: str = None,
-                dpi: int = None) -> None:
+def save_figure(fig: mpl.figure.Figure,
+                save_fig: str | None = None,
+                dpi: int | None = None) -> None:
     if save_fig is not None:
         dirname = os.path.abspath(os.path.dirname(save_fig))
         assert_string = (
@@ -865,9 +825,9 @@ def save_figure(fig,
         else:
             fig.savefig("%s.pdf" % save_fig, bbox_inches="tight")
 
-def save_animation(ani,
-                   save_anim: str = None,
-                   dpi: int = None) -> None:
+def save_animation(ani: FuncAnimation,
+                   save_anim: str | None = None,
+                   dpi: int | None = None) -> None:
     if save_anim is not None:
         dirname = os.path.abspath(os.path.dirname(save_anim))
         assert_string = (
@@ -882,13 +842,15 @@ def save_animation(ani,
 
 def prepare_data_1D(
         data_dict: Dict[str, np.ndarray],
-        cell_centers: List,
-        axis: str,
-        axis_values: Tuple
-        ) -> Tuple:
+        cell_centers: List | Tuple[np.ndarray, ...],
+        axis: str | None,
+        axis_values: Tuple | None
+    ) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
 
     is_3D_data = (axis is not None and axis_values is not None)
     if is_3D_data:
+        # Select the nearest point on the two transverse axes, leaving one
+        # temporal and one spatial dimension for each quantity.
         x, y, z = cell_centers
         if axis == "x":
             X0 = x
@@ -929,18 +891,19 @@ def prepare_data_1D(
 
 def prepare_data_2D(
         data_dict: Dict[str, np.ndarray],
-        cell_centers: List = None,
-        meshgrid = None,
-        plane: str = None,
-        plane_value: float = None,
-        levelset: np.ndarray = None,
-        ) -> Tuple:
+        cell_centers: List | None = None,
+        meshgrid: Tuple | None = None,
+        plane: str | None = None,
+        plane_value: float | None = None,
+        levelset: np.ndarray | None = None,
+    ) -> Tuple[Tuple[np.ndarray, np.ndarray], Dict[str, np.ndarray], np.ndarray | None]:
 
     axis_index = {"x": 0, "y": 1, "z": 2}
 
     is_3D_data = (plane is not None and plane_value is not None)
     if is_3D_data:
-        # SET UP SLICE OBJECTS
+        # Slice the 3D volume at the nearest coordinate normal to the requested
+        # plane, preserving time plus the two in-plane spatial dimensions.
         remaining_axis      = [axis for axis in axis_index.keys() if axis not in plane][0]
         plane_coordinates   = [cell_centers[axis_index[axis]] for axis in plane]
         meshgrid            = np.meshgrid(*plane_coordinates, indexing="ij")

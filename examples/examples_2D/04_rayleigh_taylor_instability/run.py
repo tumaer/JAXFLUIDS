@@ -26,23 +26,26 @@ times = jxf_data.times
 # PLOT
 nrows_ncols = (1,2)
 plot_dict = {
-    "density": data["density"], 
+    "density": data["density"],
     "vorticity": data["vorticity"][:,2]
 }
 
 # CREATE ANIMATION
 create_2D_animation(
-    plot_dict,
-    cell_centers,
-    times,
+    data_dict=plot_dict,
+    cell_centers=cell_centers,
+    times=times,
     nrows_ncols=nrows_ncols,
     plane="xy",
-    interval=200)
+    interval=200,
+)
 
 # CREATE FIGURE
 create_2D_figure(
-    plot_dict, 
-    nrows_ncols, 
+    data_dict=plot_dict,
+    nrows_ncols=nrows_ncols,
     cell_centers=cell_centers,
-    plane="xy", plane_value=0.0, 
-    save_fig="rti.png")
+    plane="xy",
+    plane_value=0.0,
+    save_fig="rti.png",
+)
