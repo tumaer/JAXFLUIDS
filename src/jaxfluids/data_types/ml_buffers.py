@@ -7,6 +7,11 @@ class ConvectiveFluxesSetup(NamedTuple):
     flux_function: Any = None
     cell_face_reconstruction: Any = None
 
+class DiffusiveFluxesSetup(NamedTuple):
+    dynamic_viscosity: Any | None = None
+    bulk_viscosity: Any | None = None
+    thermal_conductivity: Any | None = None
+
 class InterfaceFluxCallablesSetup(NamedTuple):
     convective_interface_flux_fn: Callable
 
@@ -40,10 +45,11 @@ class BoundaryConditionSetup(NamedTuple):
     solids: BoundaryConditionsField = None
 
 class BaseSetup(NamedTuple):
-    convective_fluxes: ConvectiveFluxesSetup = None
-    levelset: LevelSetSetup = None
-    boundary_conditions: BoundaryConditionSetup = None
-    callbacks: Any = None
+    convective_fluxes: ConvectiveFluxesSetup | None = None
+    diffusive_fluxes: DiffusiveFluxesSetup | None = None
+    levelset: LevelSetSetup | None = None
+    boundary_conditions: BoundaryConditionSetup | None = None
+    callbacks: Any | None = None
 
 class ParametersSetup(BaseSetup):
     pass
@@ -52,8 +58,8 @@ class CallablesSetup(BaseSetup):
     pass
 
 class MachineLearningSetup(NamedTuple):
-    callables: CallablesSetup = None
-    parameters: ParametersSetup = None
+    callables: CallablesSetup | None = None
+    parameters: ParametersSetup | None = None
 
 def combine_callables_and_params(
         callables_setup: CallablesSetup,

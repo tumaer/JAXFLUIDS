@@ -569,7 +569,7 @@ class SpaceSolver:
                 rhs_conservatives_xi = rhs_conservatives_xi.at[self.s_momentum_and_energy].add(viscous_term_xi)
             else:
                 viscous_flux_xi = self.source_term_solver.compute_viscous_flux_xi(
-                    primitives, temperature, axis)
+                    primitives, temperature, axis, ml_setup)
                 flux_xi = flux_xi.at[self.s_momentum_and_energy].add(-viscous_flux_xi)
 
 

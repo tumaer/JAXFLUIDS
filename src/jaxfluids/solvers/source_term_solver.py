@@ -1,6 +1,3 @@
-from functools import partial
-from typing import Dict, Union
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -13,6 +10,7 @@ from jaxfluids.stencils.spatial_derivative import SpatialDerivative
 from jaxfluids.stencils.spatial_reconstruction import SpatialReconstruction
 from jaxfluids.data_types.numerical_setup import NumericalSetup
 from jaxfluids.data_types.case_setup.forcings import GeometricSourceSetup
+from jaxfluids.data_types.ml_buffers import MachineLearningSetup
 from jaxfluids.config import precision
 
 Array = jax.Array
@@ -246,6 +244,7 @@ class SourceTermSolver:
             primitives: Array,
             temperature: Array,
             axis: int,
+            ml_setup: MachineLearningSetup | None = None,
         ) -> Array:
         """Computes viscous flux in one spatial direction
 
@@ -278,12 +277,33 @@ class SourceTermSolver:
             volume_fraction_at_cf = self.reconstruct_stencil_ui.reconstruct_xi(
                 primitives[self.s_volume_fraction], axis)            
 
-        dynamic_viscosity = self.material_manager.get_dynamic_viscosity(
-            temperature_at_cf, 
-            None,
-            None,
-            volume_fraction_at_cf,
-            mass_fraction_at_cf)
+        if (
+            ml_setup.parameters.diffusive_fluxes is not None
+            and ml_setup.parameters.diffusive_fluxes.dynamic_viscosity is not None
+        ):
+            params = ml_setup.parameters.diffusive_fluxes.dynamic_viscosity
+            if (
+                ml_setup.callables.diffusive_fluxes is not None
+                and ml_setup.callables.diffusive_fluxes.dynamic_viscosity is not None
+            ):
+                callable = ml_setup.callables.diffusive_fluxes.dynamic_viscosity
+                dynamic_viscosity = callable(
+                    temperature_at_cf, 
+                    None,
+                    None,
+                    volume_fraction_at_cf,
+                    mass_fraction_at_cf,
+                    params=params
+                )
+            else:
+                dynamic_viscosity = params
+        else:
+            dynamic_viscosity = self.material_manager.get_dynamic_viscosity(
+                temperature_at_cf, 
+                None,
+                None,
+                volume_fraction_at_cf,
+                mass_fraction_at_cf)
         bulk_viscosity = self.material_manager.get_bulk_viscosity(
             temperature_at_cf,
             None,
