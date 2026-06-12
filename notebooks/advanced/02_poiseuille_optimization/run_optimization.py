@@ -21,17 +21,27 @@ def build_feed_forward(sim_manager: SimulationManager) -> Callable[[Array], Arra
 
     # Advance enough steps for the channel flow to approach steady state.
     feed_forward_setup = FeedForwardSetup(
-        outer_steps=200,
+        outer_steps=300,
         inner_steps=100,
         is_include_halos=False,
     )
 
-    def feed_forward(viscosity: Array) -> Array:
+    def initial_condition():
+        # Compute initial conditions
         primitives = jnp.array([1.0, 0.0, 0.0, 0.0, 1.0]).reshape(5, 1, 1, 1)
         X, _ = domain_information.compute_device_mesh_grid()
-        primitives = jnp.broadcast_to(primitives, (5,) + X.shape)
+        return jnp.broadcast_to(primitives, (5,) + X.shape)
 
-        # The optimizer controls viscosity through the differentiable ML buffer.
+    def extract_velX(solution_array: Array) -> Array:
+        # Extract x-velocity from the feed forward solution
+        primitives = solution_array["primitives"][-1]
+        return primitives[1, 0, :, 0]
+
+    def feed_forward(viscosity: Array) -> Array:
+        primitives = initial_condition()
+
+        # The optimizer controls viscosity 
+        # through the differentiable ML buffer.
         ml_parameters = ParametersSetup(
             diffusive_fluxes=DiffusiveFluxesSetup(
                 dynamic_viscosity=viscosity
@@ -46,8 +56,7 @@ def build_feed_forward(sim_manager: SimulationManager) -> Callable[[Array], Arra
             ml_parameters=ml_parameters,
         )
 
-        primitives = solution_array["primitives"][-1]
-        return primitives[1, 0, :, 0]
+        return extract_velX(solution_array)
 
     return feed_forward
 
@@ -56,7 +65,10 @@ def build_loss_fn(
         feed_forward: Callable[[Array], Array],
     ) -> Callable[[Array, Array], tuple[Array, Array]]:
 
-    def loss_fn(viscosity: Array, velX_ref: Array) -> tuple[Array, Array]:
+    def loss_fn(
+            viscosity: Array,
+            velX_ref: Array,
+        ) -> tuple[Array, Array]:
         velX = feed_forward(viscosity)
         loss = jnp.mean(jnp.square(velX - velX_ref))
         return loss, velX
@@ -71,13 +83,20 @@ def create_reference_plot(
 
     fig, ax = plt.subplots()
 
-    for key, value in plot_data.items():
+    for ii, (key, value) in enumerate(plot_data.items()):
         y, velX = value
         nu = float(key)
 
-        ax.plot(y, velX, color="red", linestyle="-")
+        ax.plot(
+            y, velX, color="red", linestyle="-",
+            label="JXF" if ii == 0 else None,
+        )
         # Analytic Poiseuille profile for the same viscosity.
-        ax.plot(y, 0.5 / nu * y * (1 - y), color="black", linestyle="--")
+        ax.plot(
+            y, 0.5 / nu * y * (1 - y),
+            color="black", linestyle="--",
+            label="Exact" if ii == 0 else None,
+        )
 
         # Label each curve near the channel center.
         y_label = 0.5
@@ -94,8 +113,9 @@ def create_reference_plot(
 
     ax.set_xlim([0, 1.0])
     ax.set_ylim([0, 0.275])
-    ax.set_xlabel(r"$x$")
+    ax.set_xlabel(r"$y$")
     ax.set_ylabel(r"$u$")
+    ax.legend()
     ax.set_box_aspect(1.0)
 
     plt.savefig(save_path, dpi=200, bbox_inches="tight")
@@ -123,8 +143,8 @@ def create_optimization_plot(
     ax[0].set_ylim([1e-10, 1e-2])
     ax[0].set_box_aspect(1.0)
 
-    ax[1].plot(y, velX, color="black", label="jxf")
-    ax[1].plot(y, velX_ref, color="red", linestyle="--", label="ref")
+    ax[1].plot(y, velX, color="red", label="JXF")
+    ax[1].plot(y, velX_ref, color="black", linestyle="--", label="Exact")
     ax[1].legend()
     ax[1].set_xlabel(r"$y$")
     ax[1].set_ylabel(r"$u$")
@@ -180,9 +200,7 @@ def main() -> None:
     for i in steps_vec:
         (loss, velX), grad = value_and_grad(params, velX_ref)
 
-        # Update the scalar viscosity from the differentiable profile mismatch.
         updates, opt_state = optimizer.update(grad, opt_state)
-        params = optax.apply_updates(params, updates)
 
         loss_history.append(loss)
 
@@ -199,6 +217,7 @@ def main() -> None:
             loss=loss,
             save_path=output_path / f"iter_{i:04d}.png",
         )
+        params = optax.apply_updates(params, updates)
 
 if __name__ == "__main__":
     main()
