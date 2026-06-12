@@ -190,6 +190,7 @@ class SourceTermSolver:
             temperature: Array,
             primitives: Array,
             axis: int,
+            ml_setup: MachineLearningSetup | None = None,
         ) -> Array:
         """Computes the heat flux in axis direction.
         
@@ -217,13 +218,34 @@ class SourceTermSolver:
             volume_fraction_at_cf = self.reconstruct_stencil_ui.reconstruct_xi(
                 primitives[self.s_volume_fraction], axis)
 
-        thermal_conductivity = self.material_manager.get_thermal_conductivity(
-            temperature_at_cf,
-            None,
-            None,
-            None,
-            volume_fraction_at_cf,
-            mass_fraction_at_cf)
+        if (
+            ml_setup.parameters.diffusive_fluxes is not None
+            and ml_setup.parameters.diffusive_fluxes.thermal_conductivity is not None
+        ):
+            params = ml_setup.parameters.diffusive_fluxes.thermal_conductivity
+            if (
+                ml_setup.callables.diffusive_fluxes is not None
+                and ml_setup.callables.diffusive_fluxes.thermal_conductivity is not None
+            ):  
+                callable = ml_setup.callables.diffusive_fluxes.thermal_conductivity
+                thermal_conductivity = callable(
+                    temperature_at_cf, 
+                    None,
+                    None,
+                    volume_fraction_at_cf,
+                    mass_fraction_at_cf,
+                    params=params
+                )
+            else:
+                thermal_conductivity = params
+        else:
+            thermal_conductivity = self.material_manager.get_thermal_conductivity(
+                temperature_at_cf,
+                None,
+                None,
+                None,
+                volume_fraction_at_cf,
+                mass_fraction_at_cf)
 
         temperature_grad = self.derivative_stencil_face.derivative_xi(
             temperature, cell_sizes[axis], axis)
@@ -562,7 +584,7 @@ class SourceTermSolver:
             conservatives: Array,
             primitives: Array,
             temperature: Array,
-            ) -> Array:
+        ) -> Array:
         """Computes geometric source terms due to symmetries.
         1) Axisymmetric (2D)
         2) Cylindrical symmetry (2D)

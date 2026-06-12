@@ -581,7 +581,7 @@ class SpaceSolver:
                 rhs_conservatives_xi = rhs_conservatives_xi.at[self.ids_energy].add(heat_term_xi)
             else:
                 heat_flux_xi = self.source_term_solver.compute_heat_flux_xi(
-                    temperature, primitives, axis)
+                    temperature, primitives, axis, ml_setup)
                 flux_xi = flux_xi.at[self.ids_energy].add(heat_flux_xi)
 
 
