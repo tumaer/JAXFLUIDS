@@ -36,16 +36,22 @@ class NumericalSetupReader(SetupReader):
 
         active_physics_setup = read_active_physics_setup(numerical_setup_dict)
         active_forcings_setup = read_active_forcings_setup(numerical_setup_dict)
-        conservatives_setup = read_conservatives_setup(numerical_setup_dict,
-                                                       active_physics_setup,
-                                                       self.unit_handler)
-        levelset_setup = read_levelset_setup(numerical_setup_dict,
-                                             self.unit_handler,
-                                             conservatives_setup,
-                                             active_physics_setup)
-        diffuse_interface_setup = read_diffuse_interface_setup(numerical_setup_dict,
-                                                               conservatives_setup,
-                                                               self.unit_handler)
+        conservatives_setup = read_conservatives_setup(
+            numerical_setup_dict,
+            active_physics_setup,
+            self.unit_handler,
+        )
+        levelset_setup = read_levelset_setup(
+            numerical_setup_dict,
+            self.unit_handler,
+            conservatives_setup,
+            active_physics_setup,
+        )
+        diffuse_interface_setup = read_diffuse_interface_setup(
+            numerical_setup_dict,
+            conservatives_setup,
+            self.unit_handler,
+        )
         cavitation_setup = read_cavitation_setup(numerical_setup_dict)
         output_setup = read_output_setup(numerical_setup_dict, conservatives_setup)
         precision_setup = read_precision_setup(numerical_setup_dict)

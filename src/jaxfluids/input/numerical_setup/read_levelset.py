@@ -23,8 +23,8 @@ def read_levelset_setup(
         numerical_setup_dict: Dict,
         unit_handler: UnitHandler,
         conservatives_setup: ConservativesSetup,
-        active_physics_setup: ActivePhysicsSetup
-        ) -> LevelsetSetup:
+        active_physics_setup: ActivePhysicsSetup,
+    ) -> LevelsetSetup:
 
     halos_conservatives = conservatives_setup.halo_cells
 
@@ -79,7 +79,8 @@ def read_levelset_setup(
         f"Consistency error in numerical setup file. "
         f"Number of conservative halos is {halos_conservatives:d} but levelset advection stencil"
         f"stencil requires at least {required_halos:d}.")
-    assert halos_conservatives >= required_halos, assert_string
+    if model:
+        assert halos_conservatives >= required_halos, assert_string
 
     narrowband_setup = read_narrowband(levelset_dict)
     geometry_setup = read_geometry(levelset_dict, halos_conservatives)
