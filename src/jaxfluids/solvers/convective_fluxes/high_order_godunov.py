@@ -123,7 +123,7 @@ class HighOrderGodunov(ConvectiveFluxSolver):
             volume_fraction: Array = None,
             apertures: Tuple[Array] = None,
             ml_setup: MachineLearningSetup = None,
-        ) -> Tuple[Array, Array, Array, int]:
+        ) -> Tuple[Array, Array, Array, int, int]:
         """Computes the numerical flux in a specified spatial direction.
 
         :param primitives: Buffer of primitive variables.

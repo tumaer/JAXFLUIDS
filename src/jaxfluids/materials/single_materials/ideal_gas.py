@@ -87,6 +87,10 @@ class IdealGas(Material):
         # Specific internal energy
         return p / (rho * (self.gamma - 1.0))
 
+    def get_volumetric_energy(self, p: Array) -> Array:
+        # Volumetric internal energy
+        return p / (self.gamma - 1.0)
+
     def get_total_energy(
             self,
             p: Array,

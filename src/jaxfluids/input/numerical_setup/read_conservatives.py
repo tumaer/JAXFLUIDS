@@ -305,7 +305,8 @@ def read_central(convective_fluxes_dict: Dict):
     path = get_path_to_key(path_central, "reconstruction_stencil")
     reconstruction_stencil_str = get_setup_value(
         central_dict, "reconstruction_stencil", path, 
-        str, is_optional=False, possible_string_values=CENTRAL_RECONSTRUCTION_DICT.keys())
+        str, is_optional=True, default_value="CENTRAL2",
+        possible_string_values=CENTRAL_RECONSTRUCTION_DICT.keys())
     
     reconstruction_stencil = CENTRAL_RECONSTRUCTION_DICT[reconstruction_stencil_str]
 
