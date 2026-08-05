@@ -77,13 +77,21 @@ def initialize_fields_feed_forward(
     primitives = unit_handler.non_dimensionalize(primitives, "specified", quantity_list)
     conservatives = sim_manager.equation_manager.get_conservatives_from_primitives(primitives)
     primitives, conservatives = sim_manager.halo_manager.perform_halo_update_material(
-        primitives, t_start, fill_edge_halos_material, 
-        fill_vertex_halos_material, conservatives,
-        ml_setup=ml_setup)
+        primitives,
+        t_start,
+        fill_edge_halos_material, 
+        fill_vertex_halos_material,
+        conservatives,
+        ml_setup=ml_setup,
+    )
     if equation_information.is_compute_temperature:
         temperature = material_manager.get_temperature(primitives)
         temperature = halo_manager.perform_outer_halo_update_temperature(
-            temperature, t_start)
+            temperature,
+            t_start,
+            fill_edge_halos_material, 
+            fill_vertex_halos_material,
+        )
     else:
         temperature = None
 
@@ -170,13 +178,21 @@ def initialize_fields_feed_forward(
         )
 
         primitives, conservatives = halo_manager.perform_halo_update_material(
-            primitives, t_start, fill_edge_halos_material,
-            fill_vertex_halos_material, conservatives,
-            ml_setup=ml_setup)
+            primitives,
+            t_start,
+            fill_edge_halos_material,
+            fill_vertex_halos_material,
+            conservatives,
+            ml_setup=ml_setup,
+        )
         if equation_information.is_compute_temperature:
             temperature = material_manager.get_temperature(primitives)
             temperature = halo_manager.perform_outer_halo_update_temperature(
-                temperature, t_start)
+                temperature,
+                t_start,
+                fill_edge_halos_material,
+                fill_vertex_halos_material,
+            )
         else:
             temperature = None
 

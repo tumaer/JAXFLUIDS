@@ -194,13 +194,22 @@ class MaterialFieldsInitializer:
         primitives = self.unit_handler.non_dimensionalize(primitives, "specified", quantity_list)
         conservatives = self.equation_manager.get_conservatives_from_primitives(primitives)
         primitives, conservatives = self.halo_manager.perform_halo_update_material(
-            primitives, physical_simulation_time, fill_edge_halos,
-            fill_vertex_halos, conservatives, ml_setup=ml_setup)
+            primitives,
+            physical_simulation_time,
+            fill_edge_halos,
+            fill_vertex_halos,
+            conservatives,
+            ml_setup=ml_setup,
+        )
         
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
             temperature = self.halo_manager.perform_outer_halo_update_temperature(
-                temperature, physical_simulation_time)
+                temperature,
+                physical_simulation_time,
+                fill_edge_halos,
+                fill_vertex_halos,
+            )
         else:
             temperature = None
         
@@ -525,13 +534,21 @@ class MaterialFieldsInitializer:
         primitives = primitives.at[...,nhx,nhy,nhz].set(primitives_init)
         conservatives = self.equation_manager.get_conservatives_from_primitives(primitives)
         primitives, conservatives = self.halo_manager.perform_halo_update_material(
-            primitives, 0.0, fill_edge_halos, 
-            fill_vertex_halos, conservatives)
+            primitives,
+            0.0,
+            fill_edge_halos, 
+            fill_vertex_halos,
+            conservatives,
+        )
 
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
             temperature = self.halo_manager.perform_outer_halo_update_temperature(
-                temperature, 0.0)
+                temperature,
+                0.0,
+                fill_edge_halos, 
+                fill_vertex_halos,
+            )
         else:
             temperature = None
 
@@ -573,13 +590,21 @@ class MaterialFieldsInitializer:
         primitives = primitives.at[...,nhx,nhy,nhz].set(primitives_init)
         conservatives = self.equation_manager.get_conservatives_from_primitives(primitives)
         primitives, conservatives = self.halo_manager.perform_halo_update_material(
-            primitives, 0.0, fill_edge_halos, 
-            fill_vertex_halos, conservatives)
+            primitives,
+            0.0,
+            fill_edge_halos, 
+            fill_vertex_halos,
+            conservatives,
+        )
 
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
             temperature = self.halo_manager.perform_outer_halo_update_temperature(
-                temperature, 0.0)
+                temperature,
+                0.0,
+                fill_edge_halos, 
+                fill_vertex_halos,
+            )
         else:
             temperature = None
 
@@ -672,15 +697,22 @@ class MaterialFieldsInitializer:
         fill_vertex_halos = self.halo_manager.fill_vertex_halos_material
 
         primitives, conservatives = self.halo_manager.perform_halo_update_material(
-            primitives, 0.0, fill_edge_halos,
-            fill_vertex_halos, conservatives,
-            ml_setup=ml_setup
+            primitives,
+            0.0,
+            fill_edge_halos,
+            fill_vertex_halos,
+            conservatives,
+            ml_setup=ml_setup,
         )
         
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
             temperature = self.halo_manager.perform_outer_halo_update_temperature(
-                temperature, 0.0)
+                temperature,
+                0.0,
+                fill_edge_halos,
+                fill_vertex_halos,
+            )
         else:
             temperature = None
 

@@ -13,6 +13,7 @@ from jaxfluids.halos.inner.mesh import HaloCommunicationMesh
 from jaxfluids.halos.inner.solids import HaloCommunicationSolids
 from jaxfluids.halos.outer.levelset import BoundaryConditionLevelset
 from jaxfluids.halos.outer.material import BoundaryConditionMaterial
+from jaxfluids.halos.outer.temperature import BoundaryConditionTemperature
 from jaxfluids.halos.outer.conservative_mixing import BoundaryConditionConservativeMixing
 from jaxfluids.halos.outer.diffuse_curvature import BoundaryConditionDiffuseCurvature
 from jaxfluids.halos.outer.solids_mixing import BoundaryConditionSolidsMixing
@@ -60,12 +61,19 @@ class HaloManager:
         self.boundary_condition_material = BoundaryConditionMaterial(    
             domain_information=domain_information,
             equation_manager=equation_manager,
-            boundary_conditions=boundary_conditions_material)
+            boundary_conditions=boundary_conditions_material,
+        )
         if self.is_parallel:
             self.halo_communication_material = HaloCommunicationMaterial(
                 domain_information = domain_information,
                 equation_manager = equation_manager,
                 boundary_conditions = boundary_conditions_material)
+
+        self.boundary_condition_temperature = BoundaryConditionTemperature(
+            domain_information=domain_information,
+            equation_manager=equation_manager,
+            boundary_conditions=boundary_conditions_material,
+        )
 
         self.boundary_condition_mesh = BoundaryConditionMesh(
             domain_information = domain_information,
@@ -236,8 +244,10 @@ class HaloManager:
     def perform_outer_halo_update_temperature(
             self,
             temperature: Array,
-            physical_simulation_time: float
-            ) -> Array:
+            physical_simulation_time: float,
+            fill_edge_halos: bool,
+            fill_vertex_halos: bool,
+        ) -> Array:
         """Updates the outer halos of the
         temperature buffer
 
@@ -248,8 +258,16 @@ class HaloManager:
         :return: _description_
         :rtype: Array
         """
-        temperature = self.boundary_condition_material.face_halo_update_temperature(
-            temperature, physical_simulation_time)
+        temperature = self.boundary_condition_temperature.face_halo_update(
+            temperature, physical_simulation_time
+        )
+        if self.dim > 1 and fill_edge_halos:
+            temperature = self.boundary_condition_temperature.edge_halo_update(
+                temperature)
+        if self.dim == 3 and fill_vertex_halos:
+            temperature = self.boundary_condition_temperature.vertex_halo_update(
+                temperature)
+
         return temperature
 
     def perform_halo_update_levelset(

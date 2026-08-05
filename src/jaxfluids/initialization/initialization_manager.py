@@ -421,12 +421,21 @@ class InitializationManager:
             )
         
         primitives, conservatives = halo_manager.perform_halo_update_material(
-            primitives, physical_simulation_time, fill_edge_halos_material,
-            fill_vertex_halos_material, conservatives, ml_setup=ml_setup)
+            primitives,
+            physical_simulation_time,
+            fill_edge_halos_material,
+            fill_vertex_halos_material,
+            conservatives,
+            ml_setup=ml_setup,
+        )
         if self.equation_information.is_compute_temperature:
             temperature = self.material_manager.get_temperature(primitives)
             temperature = halo_manager.perform_outer_halo_update_temperature(
-                temperature, physical_simulation_time)
+                temperature,
+                physical_simulation_time,
+                fill_edge_halos_material,
+                fill_vertex_halos_material,
+            )
         else:
             temperature = None
 

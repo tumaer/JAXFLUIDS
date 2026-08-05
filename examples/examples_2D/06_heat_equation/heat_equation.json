@@ -21,44 +21,40 @@
     },
     "boundary_conditions": {
         "east": {
-            "type": "DIRICHLET",
-            "primitives_callable": {
-                "rho": 1.0,
+            "type": "ISOTHERMALWALL",
+            "wall_velocity_callable": {
                 "u": 0.0,
                 "v": 0.0,
-                "w": 0.0,
-                "p": 1.0
-            }
+                "w": 0.0
+            },
+            "wall_temperature_callable": 1.0
         },
         "west": {
-            "type": "DIRICHLET",
-            "primitives_callable": {
-                "rho": 1.0,
+            "type": "ISOTHERMALWALL",
+            "wall_velocity_callable": {
                 "u": 0.0,
                 "v": 0.0,
-                "w": 0.0,
-                "p": 1.0
-            }
+                "w": 0.0
+            },
+            "wall_temperature_callable": 1.0
         },
         "north": {
-            "type": "DIRICHLET",
-            "primitives_callable": {
-                "rho": 1.0,
+            "type": "ISOTHERMALWALL",
+            "wall_velocity_callable": {
                 "u": 0.0,
                 "v": 0.0,
-                "w": 0.0,
-                "p": "lambda x,t: 1.0 + jnp.sin(jnp.pi * x)"
-            }
+                "w": 0.0
+            },
+            "wall_temperature_callable": "lambda x,t: 1.0 + jnp.sin(jnp.pi * x)"
         },
         "south": {
-            "type": "DIRICHLET",
-            "primitives_callable": {
-                "rho": 1.0,
+            "type": "ISOTHERMALWALL",
+            "wall_velocity_callable": {
                 "u": 0.0,
                 "v": 0.0,
-                "w": 0.0,
-                "p": 1.0
-            }
+                "w": 0.0
+            },
+            "wall_temperature_callable": 1.0
         },
         "top": {"type": "INACTIVE"},
         "bottom": {"type": "INACTIVE"}

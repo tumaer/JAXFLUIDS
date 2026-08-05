@@ -28,8 +28,8 @@ class BoundaryConditionMaterial(BoundaryCondition):
             self,
             domain_information: DomainInformation,
             equation_manager: EquationManager,
-            boundary_conditions: BoundaryConditionsField
-            ) -> None:
+            boundary_conditions: BoundaryConditionsField,
+        ) -> None:
 
         super().__init__(domain_information, boundary_conditions)
 
@@ -41,14 +41,18 @@ class BoundaryConditionMaterial(BoundaryCondition):
         self.upwind_difference_sign = {
             "east"  : -1, "west"  :  1,
             "north" : -1, "south" :  1,
-            "top"   : -1, "bottom":  1 }
+            "top"   : -1, "bottom":  1,
+        }
 
-        no_primes = self.equation_information.no_primes
-        equation_type = self.equation_information.equation_type
-        vel_indices = self.equation_information.ids_velocity
-        self.face_signs_symmetry, self.edge_signs_symmetry, \
-        self.vertex_signs_symmetry = get_signs_symmetry(
-            no_primes, equation_type, vel_indices)
+        (
+            self.face_signs_symmetry,
+            self.edge_signs_symmetry,
+            self.vertex_signs_symmetry
+        ) = get_signs_symmetry(
+            self.equation_information.no_primes,
+            self.equation_information.equation_type,
+            self.equation_information.ids_velocity,
+        )
 
         active_face_locations = self.domain_information.active_face_locations
 
@@ -290,7 +294,7 @@ class BoundaryConditionMaterial(BoundaryCondition):
             self,
             primitives: Array,
             conservatives: Array = None,
-            ) -> Tuple[Array, Array]:
+        ) -> Tuple[Array, Array]:
         """Fills the edge halo cells of the
         conservative and primitive buffer.
 
@@ -1076,114 +1080,8 @@ class BoundaryConditionMaterial(BoundaryCondition):
 
         return halos_primes
 
-    # NOTE @aaron introduce temperature boundary condition class ?
-    def face_halo_update_temperature(
-            self,
-            temperature: Array,
-            physical_simulation_time: float,
-            ) -> Array:
-        """Fills the face halos of the temperature
-        buffer.
-
-        :param temperature: _description_
-        :type temperature: Array
-        :param physical_simulation_time: _description_
-        :type physical_simulation_time: float
-        :raises NotImplementedError: _description_
-        :return: _description_
-        :rtype: Array
-        """
-
-        is_parallel = self.domain_information.is_parallel
-        active_face_locations = self.domain_information.active_face_locations
-        for face_location in active_face_locations:
-
-            boundary_conditions_face_tuple: Tuple[BoundaryConditionsFace] = \
-            getattr(self.boundary_conditions, face_location)
-            if len(boundary_conditions_face_tuple) > 1:
-                multiple_types_at_face = True
-            else:
-                multiple_types_at_face = False
-
-            for boundary_conditions_face in boundary_conditions_face_tuple:
-
-                boundary_type = boundary_conditions_face.boundary_type
-                if boundary_type in ["ISOTHERMALWALL", "ISOTHERMALMASSTRANSFERWALL"]:
-                    wall_temperature_callable = boundary_conditions_face.wall_temperature_callable
-                    halos = self.wall_temperature(
-                        temperature, face_location,
-                        wall_temperature_callable,
-                        physical_simulation_time)
-
-                else:
-                    continue
-
-                if multiple_types_at_face:
-                    meshgrid, axes_to_expand = self.get_boundary_coordinates_at_location(
-                        face_location)
-                    bounding_domain_callable = boundary_conditions_face.bounding_domain_callable
-                    bounding_domain_mask = bounding_domain_callable(*meshgrid)
-                    for axis in axes_to_expand:
-                        bounding_domain_mask = jnp.expand_dims(bounding_domain_mask, axis)
-                else:
-                    bounding_domain_mask = 1.0
-
-                slices_fill = self.halo_slices.face_slices_conservatives[face_location]
-
-                if is_parallel:
-                    device_id = jax.lax.axis_index(axis_name="i")
-                    device_mask = self.face_halo_mask
-                    device_mask = device_mask[face_location][device_id]
-                    mask = bounding_domain_mask * device_mask
-                else:
-                    mask = bounding_domain_mask
-
-                temperature = temperature.at[slices_fill].mul(1 - mask)
-                temperature = temperature.at[slices_fill].add(halos * mask)
-
-        return temperature
-    
-    def wall_temperature(
-            self, 
-            temperature: Array,
-            face_location: str, 
-            wall_temperature_callable: Callable,
-            physical_simulation_time: float, 
-            ) -> Array:
-        """Computes the temperature halos for
-        isothermal wall boundaries.
-
-        :param temperature: _description_
-        :type temperature: Array
-        :param face_location: _description_
-        :type face_location: str
-        :param temperature_functions: _description_
-        :type temperature_functions: Dict
-        :param physical_simulation_time: _description_
-        :type physical_simulation_time: float
-        :return: _description_
-        :rtype: Array
-        """
-
-        meshgrid, axes_to_expand = \
-        self.get_boundary_coordinates_at_location(
-            face_location)
         
-        wall_temperature = wall_temperature_callable(
-            *meshgrid, physical_simulation_time)
-        
-        for axis in axes_to_expand:
-            wall_temperature = jnp.expand_dims(wall_temperature, axis)
-
-        slices_retrieve = self.face_slices_retrieve_conservatives["SYMMETRY"][face_location]
-        halos_temperature = 2 * wall_temperature - temperature[slices_retrieve]
-
-        return halos_temperature
-    
-    def get_cell_size_at_face(
-            self,
-            face_location
-            ) -> float:
+    def get_cell_size_at_face(self, face_location) -> float:
         """Gets the cell size at the present
         face location.
 

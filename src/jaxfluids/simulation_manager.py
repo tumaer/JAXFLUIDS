@@ -971,7 +971,11 @@ class SimulationManager:
             if self.equation_information.is_compute_temperature: 
                 temperature = self.material_manager.get_temperature(primitives)
                 temperature = self.halo_manager.perform_outer_halo_update_temperature(
-                    temperature, current_time_stage)
+                    temperature,
+                    current_time_stage,
+                    fill_edge_halos_material,
+                    fill_vertex_halos_material, 
+                )
             if solid_coupling.thermal == "TWO-WAY":
                 raise NotImplementedError
 
