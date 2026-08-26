@@ -1,11 +1,11 @@
-from functools import partial
-from typing import Callable, Dict, Union, List, Tuple
+from typing import Callable, Union, Tuple
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
 Array = jax.Array
+
 
 class UnitHandler:
     """The UnitHandler class implements functionaly
@@ -25,8 +25,8 @@ class UnitHandler:
             length_reference: float,
             velocity_reference: float,
             temperature_reference: float,
-            amount_of_substance_reference: float = 1.0
-            ) -> None:
+            amount_of_substance_reference: float = 1.0,
+        ) -> None:
 
         self.density_reference = density_reference
         self.length_reference = length_reference
@@ -155,8 +155,8 @@ class UnitHandler:
             quantity: Union[str, Callable],
             quantity_list: Tuple = None,
             is_spatial_derivative: bool = False,
-            is_temporal_derivative: bool = False
-            ) -> Union[Array, float]:
+            is_temporal_derivative: bool = False,
+        ) -> Union[Array, float]:
         """Non-dimensionalizes the given buffer w.r.t. the specified quantity.
 
         :param value: Dimensional quantity buffer
@@ -205,8 +205,8 @@ class UnitHandler:
             self,
             value: Union[Array, float],
             quantity: Union[str, Callable],
-            quantity_list: Tuple = None
-            ) -> Union[Array, float]:
+            quantity_list: Tuple = None,
+        ) -> Union[Array, float]:
         """Dimensionalizes the given quantity buffer w.r.t. the specified quanty.
 
         :param value: Non-dimensional quantity buffer
