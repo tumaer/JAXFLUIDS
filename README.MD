@@ -110,6 +110,10 @@ Check out the [documentation](https://jax-fluids.readthedocs.io/en/latest/index.
 We gratefully acknowledge access to TPU compute resources granted by Google's TRC program.
 
 ## Citation
+
+If you use JAX-Fluids in your research, please cite the relevant framework
+publication(s).
+
 JAX-Fluids 2.0: Towards HPC for differentiable CFD of compressible two-phase flows
 https://doi.org/10.1016/j.cpc.2024.109433
 ```
@@ -144,6 +148,32 @@ https://doi.org/10.1016/j.cpc.2022.108527
    year = {2023},
 }
 ```
+
+## Publications using JAX-Fluids
+
+### Publications by the JAX-Fluids team
+
+1. A. B. Buhendwa, D. A. Bezgin, P. Karnakov, N. A. Adams, and P. Koumoutsakos,
+   “Data-driven shape inference in three-dimensional steady-state supersonic
+   flows: Optimizing a discrete loss with JAX-Fluids,” *Physical Review Fluids*,
+   **10**, 084902 (2025).
+   [DOI](https://doi.org/10.1103/9wj9-nmr8)
+
+2. D. A. Bezgin, A. B. Buhendwa, S. J. Schmidt, and N. A. Adams, “ML-ILES:
+   End-to-end optimization of data-driven high-order Godunov-type finite-volume
+   schemes for compressible homogeneous isotropic turbulence,” *Journal of
+   Computational Physics*, **522**, 113560 (2025).
+   [DOI](https://doi.org/10.1016/j.jcp.2024.113560)
+
+### Publications by other researchers
+
+1. C. Lagemann et al., “The HydroGym reinforcement learning platform for fluid
+   dynamics,” *Nature* (2026).
+   [DOI](https://doi.org/10.1038/s41586-026-10917-6)
+
+If you use JAX-Fluids in a publication, please open an issue or message us
+to have your work added to this list.
+
 ## License
 This project is licensed under the GNU General Public License v3 - see 
 the [LICENSE](LICENSE) file or for details https://www.gnu.org/licenses/.
