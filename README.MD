@@ -20,7 +20,7 @@ Authors:
 - [Aaron B. Buhendwa](https://www.epc.ed.tum.de/en/aer/mitarbeiter-innen/cv-2/a-d/m-sc-aaron-buhendwa/)
 - [Nikolaus A. Adams](https://www.epc.ed.tum.de/en/aer/members/cv/prof-adams/)
 
-Correspondence via [mail](mailto:aaron.buhendwa@tum.de,mailto:deniz.bezgin@tum.de).
+Correspondence via [mail](mailto:aaron.buhendwa@tum.de,deniz.bezgin@tum.de).
 
 ## Physical models and numerical methods
 

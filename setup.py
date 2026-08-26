@@ -15,7 +15,7 @@ if __name__=='__main__':
     setup(
         name="jaxfluids",
         version=__version__,
-        description="Fully-differentiable CFD solver for compressible two-phase flows.",
+        description="Fully-differentiable CFD solver for compressible single- and two-phase flows.",
         author="Deniz Bezgin, Aaron Buhendwa",
         author_email="deniz.bezgin@tum.de, aaron.buhendwa@tum.de",
         long_description=open(os.path.join(_CURRENT_DIR, "README.MD")).read(),
