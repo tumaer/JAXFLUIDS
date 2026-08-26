@@ -253,7 +253,7 @@ class JAXFluidsEnv(gym.Env):
             wall_clock_step = end_step - start_step
 
             # COMPUTE WALL CLOCK TIMES FOR TIME STEP
-            self.wall_clock_times = sim_manager.compute_wall_clock_time(
+            self.wall_clock_times = sim_manager._compute_wall_clock_time(
                 wall_clock_step,
                 self.wall_clock_times,
                 jxf_buffers.time_control_variables.simulation_step

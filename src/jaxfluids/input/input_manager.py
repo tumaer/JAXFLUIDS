@@ -34,7 +34,7 @@ class InputManager:
             case_setup: Union[str, Dict],
             numerical_setup: Union[str, Dict],
             materials_setup: Union[str, Dict] = None,
-            ) -> None:
+        ) -> None:
 
         # CASE SETUP
         self.case_setup_dict = read_json_setup(case_setup, "case setup")
@@ -59,7 +59,7 @@ class InputManager:
         self.case_setup, self.equation_information = case_setup_reader.initialize_case_setup(
             self.case_setup_dict, self.numerical_setup)
 
-        self.set_precision_config(self.numerical_setup.precision)
+        self._set_precision_config(self.numerical_setup.precision)
 
         levelset_model = self.numerical_setup.levelset.model
         diffuse_interface_model = self.numerical_setup.diffuse_interface.model
@@ -111,9 +111,9 @@ class InputManager:
             if self.halo_manager.boundary_condition_levelset.is_linear_extrapolation:
                 self.halo_manager.boundary_condition_levelset.set_stencils_linear_extrapolation()
 
-        self.sanity_check()
+        self._sanity_check()
 
-    def sanity_check(self) -> None:
+    def _sanity_check(self) -> None:
 
         # MESH-STRETCHING
         convective_solver = self.numerical_setup.conservatives.convective_fluxes.convective_solver
@@ -249,7 +249,7 @@ class InputManager:
 
         return numerical_setup_dict, case_setup_dict
 
-    def set_precision_config(self, precision_setup: PrecisionSetup):
+    def _set_precision_config(self, precision_setup: PrecisionSetup) -> None:
         """Sets the precision config according to the
         numerical setup json file.
 
@@ -281,7 +281,7 @@ class InputManager:
         def retrieve_values_eps(
                 epsilons_tuple_input: Epsilons,
                 epsilons_tuple_default: Epsilons,
-                ) -> Tuple[float, float, float]:
+            ) -> Tuple[float, float, float]:
             """Retrieves the epsilons for the positivity fixes
             from the numerical setup file and sets default values
             if they are not provided.

@@ -201,15 +201,15 @@ class SimulationManager:
         :rtype: int
         """
 
-        self.initialize(jxf_buffers)
-        self.advance(
+        self._initialize(jxf_buffers)
+        self._advance(
             jxf_buffers,
             ml_parameters,
             ml_callables
         )
 
 
-    def initialize(self, jxf_buffers: JaxFluidsBuffers) -> None:
+    def _initialize(self, jxf_buffers: JaxFluidsBuffers) -> None:
         """Initializes the simulation, i.e., creates the
         output directory, logs the numerical and case setup,
         and writes the initial output.
@@ -226,7 +226,7 @@ class SimulationManager:
         forcing_parameters = jxf_buffers.forcing_parameters
         step_information = jxf_buffers.step_information
 
-        self.sanity_check(simulation_buffers, time_control_variables, forcing_parameters)
+        self._sanity_check(simulation_buffers, time_control_variables, forcing_parameters)
 
         # CREATE OUTPUT FOLDER, CASE SETUP AND NUMERICAL SETUP
         # TODO has to be done before call to simulate, otherwise race condition
@@ -263,7 +263,7 @@ class SimulationManager:
             force_output=True
         )
 
-    def sanity_check(
+    def _sanity_check(
             self,
             simulation_buffers: SimulationBuffers,
             time_control_variables: TimeControlVariables,
@@ -294,7 +294,7 @@ class SimulationManager:
             assert forcing_parameters is not None and not is_all_forcing_parameters_none, \
                 assert_string
 
-    def advance(
+    def _advance(
             self,
             jxf_buffers: JaxFluidsBuffers,
             ml_parameters: ParametersSetup,
@@ -373,7 +373,7 @@ class SimulationManager:
             wall_clock_step = end_step - start_step
 
             # COMPUTE WALL CLOCK TIMES FOR TIME STEP
-            wall_clock_times = self.compute_wall_clock_time(
+            wall_clock_times = self._compute_wall_clock_time(
                 wall_clock_step,
                 wall_clock_times,
                 time_control_variables.simulation_step
@@ -425,7 +425,7 @@ class SimulationManager:
         self.logger.log_sim_finish(end_loop - start_loop)
 
 
-    def compute_wall_clock_time(
+    def _compute_wall_clock_time(
             self,
             wall_clock_step: float,
             wall_clock_times: WallClockTimes,

@@ -34,7 +34,7 @@ def _get_setup_value(
         default_value: Any = None,
         possible_string_values: Tuple[str] = None,
         numerical_value_condition: Tuple = None,
-        ) -> Any:
+    ) -> Any:
     """Retrieves the specified key from the 
     setup dictionary. Performs
     consistency checks, i.e., asserts if
