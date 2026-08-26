@@ -40,10 +40,10 @@ if __name__=='__main__':
             "cuda": ["jaxlib"],
         },
         url="https://github.com/tumaer/JAXFLUIDS",
-        license="MIT",
+        license="GPL-3.0-only",
         classifiers=[
-            "Programming Language :: Python :: 3"
-            "License :: OSI Approved :: MIT License"
-            "Operating System :: OS Independent"
+            "Programming Language :: Python :: 3",
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+            "Operating System :: OS Independent",
         ]
     )
