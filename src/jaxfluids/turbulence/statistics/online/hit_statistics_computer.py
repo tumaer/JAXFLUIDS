@@ -1,18 +1,21 @@
-from typing import Dict, Tuple
+from typing import Dict
 
 import jax
 import jax.numpy as jnp
 
 from jaxfluids.data_types.case_setup.statistics import TurbulenceStatisticsSetup
-from jaxfluids.turbulence.statistics.online.helper_functions import update_sum_square, update_sum_square_cov
 from jaxfluids.turbulence.statistics.online.turbulence_statistics_computer import TurbulenceStatisticsComputer
 from jaxfluids.domain.domain_information import DomainInformation
 from jaxfluids.materials.material_manager import MaterialManager
 
 from jaxfluids.data_types.case_setup.statistics import TurbulenceStatisticsSetup
 from jaxfluids.data_types.statistics import (
-    HITStatisticsLogging, TurbulenceStatisticsInformation,
-    StatisticsLogging, Metrics, StatisticsCumulative)
+    HITStatisticsLogging,
+    TurbulenceStatisticsInformation,
+    StatisticsLogging,
+    Metrics,
+    StatisticsCumulative,
+)
 
 Array = jax.Array
 

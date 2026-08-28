@@ -1,5 +1,4 @@
-from functools import partial
-from typing import Dict, Tuple
+from typing import Dict
 
 import jax
 import jax.numpy as jnp
@@ -10,8 +9,12 @@ from jaxfluids.materials.material_manager import MaterialManager
 
 from jaxfluids.data_types.case_setup.statistics import TurbulenceStatisticsSetup
 from jaxfluids.data_types.statistics import (
-    ChannelStatisticsLogging, TurbulenceStatisticsInformation,
-    StatisticsLogging, Metrics, StatisticsCumulative)
+    ChannelStatisticsLogging,
+    TurbulenceStatisticsInformation,
+    StatisticsLogging,
+    Metrics,
+    StatisticsCumulative,
+)
 
 from jaxfluids.turbulence.statistics.utilities import van_driest_transform
 
@@ -25,7 +28,7 @@ class ChannelStatisticsComputer(TurbulenceStatisticsComputer):
             self,
             turbulence_statistics_setup: TurbulenceStatisticsSetup, 
             domain_information: DomainInformation,
-            material_manager: MaterialManager
+            material_manager: MaterialManager,
         ) -> None:
         super().__init__(turbulence_statistics_setup, domain_information, material_manager)
 

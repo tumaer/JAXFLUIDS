@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from functools import partial
-from typing import Callable, Dict, Tuple, List
+from typing import Dict, Tuple, List
 
 import jax
 import jax.numpy as jnp
@@ -9,9 +8,7 @@ import numpy as np
 
 from jaxfluids.data_types.case_setup.statistics import TurbulenceStatisticsSetup
 from jaxfluids.domain.domain_information import DomainInformation
-from jaxfluids.equation_manager import EquationManager
 from jaxfluids.materials.material_manager import MaterialManager
-from jaxfluids.domain.helper_functions import reassemble_buffer
 from jaxfluids.config import precision
 from jaxfluids.data_types.buffers import TimeControlVariables
 
@@ -19,10 +16,14 @@ from jaxfluids.data_types.statistics import (
     TurbulenceStatisticsInformation, 
     StatisticsLogging,
     StatisticsCumulative,
-    Metrics)
+    Metrics,
+)
 
-from jaxfluids.turbulence.statistics.online.helper_functions import update_mean, update_sum_square, update_sum_square_cov, \
-    parallel_mean, parallel_sum
+from jaxfluids.turbulence.statistics.online.helper_functions import (
+    update_mean,
+    update_sum_square_cov,
+    parallel_sum,
+)
 
 Array = jax.Array
 
@@ -40,7 +41,7 @@ class TurbulenceStatisticsComputer(ABC):
             turbulence_statistics_setup: TurbulenceStatisticsSetup,
             domain_information: DomainInformation,
             material_manager: MaterialManager,
-            ) -> None:
+        ) -> None:
 
         self.domain_information = domain_information
         self.equation_information = material_manager.equation_information
@@ -107,9 +108,10 @@ class TurbulenceStatisticsComputer(ABC):
     
     @abstractmethod
     def compute_cumulative_statistics(
-        self, primitives: Array, 
-        cumulative_statistics: StatisticsCumulative
-        ) -> StatisticsCumulative:
+        self,
+        primitives: Array, 
+        cumulative_statistics: StatisticsCumulative,
+    ) -> StatisticsCumulative:
         pass
 
 
@@ -155,7 +157,7 @@ class TurbulenceStatisticsComputer(ABC):
             turbulence_statistics: TurbulenceStatisticsInformation,
             logging_frequency: int,
             time_control_variables: TimeControlVariables,
-            ) -> Tuple[bool]:
+        ) -> Tuple[bool]:
 
         physical_simulation_time = time_control_variables.physical_simulation_time
         simulation_step = time_control_variables.simulation_step
@@ -180,8 +182,8 @@ class TurbulenceStatisticsComputer(ABC):
     def update_metrics(
             self,
             quantities: Dict[str, Array], 
-            metrics: Metrics
-            ) -> Metrics:
+            metrics: Metrics,
+        ) -> Metrics:
 
         sampling_dt = metrics.sampling_dt
         next_sampling_time = metrics.next_sampling_time
@@ -255,8 +257,8 @@ class TurbulenceStatisticsComputer(ABC):
     
 
     def compute_means(
-        self, 
-        quantities: Dict[str, Array]
+            self, 
+            quantities: Dict[str, Array],
         ) -> Tuple[Dict[str, Array], Dict[str, Array]]:
 
         # reynolds_means = {
@@ -286,10 +288,10 @@ class TurbulenceStatisticsComputer(ABC):
         return reynolds_means, favre_means
 
     def compute_covariances(
-        self, 
-        reynolds_fluctuations: Dict[str, Array],
-        favre_fluctuations: Dict[str, Array],
-        density: Array
+            self, 
+            reynolds_fluctuations: Dict[str, Array],
+            favre_fluctuations: Dict[str, Array],
+            density: Array,
         ) -> Tuple[Dict[str, Array], Dict[str, Array]]:
 
 

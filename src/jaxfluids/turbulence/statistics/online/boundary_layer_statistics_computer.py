@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import jax
 import jax.numpy as jnp
 
@@ -11,8 +9,12 @@ from jaxfluids.materials.material_manager import MaterialManager
 
 from jaxfluids.data_types.case_setup.statistics import TurbulenceStatisticsSetup
 from jaxfluids.data_types.statistics import (
-    BoundaryLayerStatisticsLogging, TurbulenceStatisticsInformation,
-    StatisticsLogging, Metrics, StatisticsCumulative)
+    BoundaryLayerStatisticsLogging,
+    TurbulenceStatisticsInformation,
+    StatisticsLogging,
+    Metrics,
+    StatisticsCumulative,
+)
 
 
 from jaxfluids.turbulence.statistics.utilities import reynolds_average
@@ -26,7 +28,7 @@ class BoundaryLayerStatisticsComputer(TurbulenceStatisticsComputer):
             self,
             turbulence_statistics_setup: TurbulenceStatisticsSetup,
             domain_information: DomainInformation,
-            material_manager: MaterialManager
+            material_manager: MaterialManager,
         ) -> None:
         super().__init__(turbulence_statistics_setup, domain_information, material_manager)
 
@@ -100,7 +102,7 @@ class BoundaryLayerStatisticsComputer(TurbulenceStatisticsComputer):
     def compute_cumulative_statistics(
             self, 
             primitives: Array, 
-            cumulative_statistics: StatisticsCumulative
+            cumulative_statistics: StatisticsCumulative,
         ) -> StatisticsCumulative:
 
         raise NotImplementedError

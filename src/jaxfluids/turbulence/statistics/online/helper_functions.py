@@ -8,7 +8,8 @@ Array = jax.Array
 def parallel_mean(
         buffer: Array, is_parallel: bool,
         axis: int | Sequence[int] = None,
-        keepdims: bool = False) -> Array:
+        keepdims: bool = False,
+    ) -> Array:
 
     buffer = jnp.mean(buffer, axis=axis, keepdims=keepdims)
     if is_parallel:
@@ -18,21 +19,31 @@ def parallel_mean(
 def parallel_sum(
         buffer: Array, is_parallel: bool,
         axis: int | Sequence[int] = None,
-        keepdims: bool = False) -> Array:
+        keepdims: bool = False,
+    ) -> Array:
 
     buffer= jnp.sum(buffer, axis=axis, keepdims=keepdims)
     if is_parallel:
         buffer = jax.lax.psum(buffer, axis_name="i")
     return buffer
 
-def update_mean(mean_agg: Array, N_agg: int, mean_new: Array, N_new: int) -> Array:
+def update_mean(
+        mean_agg: Array,
+        N_agg: int,
+        mean_new: Array,
+        N_new: int,
+    ) -> Array:
     mean = mean_agg + (mean_new - mean_agg) * N_new / (N_agg + N_new)
     return mean
 
 def update_sum_square(
-        sum_of_squares_agg: Array, mean_agg: Array, N_agg: int,
-        sum_of_squares_new: Array, mean_new: Array, N_new: int,
-        ) -> Array:
+        sum_of_squares_agg: Array,
+        mean_agg: Array,
+        N_agg: int,
+        sum_of_squares_new: Array,
+        mean_new: Array,
+        N_new: int,
+    ) -> Array:
     # Chan et al. - 1979 - 
     # UPDATING FORMULAE AND A PAIRWISE ALGORITHM FOR COMPUTING SAMPLE VARIANCES
     # Eq. (2.1b)
@@ -42,8 +53,14 @@ def update_sum_square(
     return sum_of_squares
 
 def update_sum_square_cov(
-        sum_of_squares_agg: Array, mean_x_agg: Array, mean_y_agg: Array, N_agg: int,
-        sum_of_squares_new: Array, mean_x_new: Array, mean_y_new: Array, N_new: int,
+        sum_of_squares_agg: Array,
+        mean_x_agg: Array,
+        mean_y_agg: Array,
+        N_agg: int,
+        sum_of_squares_new: Array,
+        mean_x_new: Array,
+        mean_y_new: Array,
+        N_new: int,
     ) -> Array:
     # Chan et al. - 1979 - 
     # UPDATING FORMULAE AND A PAIRWISE ALGORITHM FOR COMPUTING SAMPLE VARIANCES
